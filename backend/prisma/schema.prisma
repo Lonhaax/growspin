@@ -231,3 +231,12 @@ model CryptoInvoice {
 
   user User @relation(fields: [userId], references: [id])
 }
+
+model AdminItem {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  value     Int
+  color     String   @default("#ffffff")
+  imageUrl  String   @db.Text
+  createdAt DateTime @default(now())
+}

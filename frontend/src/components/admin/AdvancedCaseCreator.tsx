@@ -2,9 +2,10 @@
 
 import React, { useState, useMemo } from "react";
 import { Search, Trash2, Box, Palette, Save, AlertTriangle } from "lucide-react";
-import { GT_ITEMS, GTItem } from "@/lib/itemDatabase";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import { apiFetch } from "@/lib/auth";
+
+type GTItem = { id: number; name: string; value: number; color: string; imageUrl: string; };
 
 export default function AdvancedCaseCreator() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,9 +16,23 @@ export default function AdvancedCaseCreator() {
   const [manualPrice, setManualPrice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [items, setItems] = useState<GTItem[]>([]);
+
+  React.useEffect(() => {
+    const loadItems = async () => {
+      try {
+        const res = await apiFetch("/admin/items");
+        if (res.ok) setItems(await res.json());
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadItems();
+  }, []);
+
   // Sorting and filtering the master list
   const filteredItems = useMemo(() => {
-    let result = GT_ITEMS.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    let result = [...items].filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
     if (sortOption === "name-asc") result.sort((a, b) => a.name.localeCompare(b.name));
     if (sortOption === "name-desc") result.sort((a, b) => b.name.localeCompare(a.name));
     if (sortOption === "price-desc") result.sort((a, b) => b.value - a.value);
@@ -74,7 +89,7 @@ export default function AdvancedCaseCreator() {
           value: Math.floor(si.item.value * 100), // convert to subunits
           color: si.item.color,
           weight: si.chance,
-          imageUrl: `/items/${si.item.image}`,
+          imageUrl: si.item.imageUrl,
           isLuckyStarItem: si.chance < 5 // arbitrarily mark items < 5% as rare
         }))
       };
@@ -150,7 +165,7 @@ export default function AdvancedCaseCreator() {
               >
                 <div className="w-12 h-12 mb-3 relative">
                   <div className="absolute inset-0 opacity-20 blur-xl" style={{ backgroundColor: item.color }}></div>
-                  <img src={`/items/${item.image}`} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
+                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="text-[10px] text-gray-300 font-bold text-center leading-tight mb-1">{item.name}</div>
                 <div className="text-[10px] font-black" style={{ color: item.color }}>
@@ -178,7 +193,7 @@ export default function AdvancedCaseCreator() {
             {selectedItems.map((si, i) => (
               <div key={si.item.name} className="flex items-center gap-4 bg-[#0a0d14] p-3 rounded-xl border border-[#202535]">
                 <div className="w-10 h-10 p-1 bg-[#13161f] rounded-lg border border-[#202535]">
-                  <img src={`/items/${si.item.image}`} className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+                  <img src={si.item.imageUrl} className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold text-white">{si.item.name}</div>

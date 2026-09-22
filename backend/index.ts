@@ -11,7 +11,8 @@ import axios from 'axios';
 import crypto from 'crypto';
 import http from 'http';
 import { Server } from 'socket.io';
-
+import fs from 'fs';
+import path from 'path';
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
@@ -2654,6 +2655,99 @@ app.post('/api/jackpot/roll', requireAuth, requireNotFrozen, async (req: AuthReq
 });
 
 // ─── ADMIN ENDPOINTS ───────────────────────────────────────────────────────────
+
+// GET /api/admin/items
+app.get('/api/admin/items', async (req, res) => {
+  try {
+    const items = await prisma.adminItem.findMany({ orderBy: { name: 'asc' } });
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch items' });
+  }
+});
+
+// POST /api/admin/items
+app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  const { name, value, color } = req.body;
+  if (!name || typeof value !== 'number') return res.status(400).json({ error: 'Invalid data' });
+
+  try {
+    // Check if it exists
+    const existing = await prisma.adminItem.findUnique({ where: { name } });
+    if (existing) return res.status(400).json({ error: 'Item already exists' });
+
+    // Fetch from Wiki
+    let imageUrl = '';
+    const wikiTitle = `File:${name.replace(/ /g, '_')}.png`;
+    const apiUrl = `https://growtopia.fandom.com/api.php?action=query&format=json&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(wikiTitle)}`;
+    
+    try {
+      const wikiRes = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const pages = wikiRes.data.query?.pages;
+      if (pages) {
+        for (const pageId in pages) {
+          if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
+            imageUrl = pages[pageId].imageinfo[0].url;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Wiki fetch error:', e);
+    }
+
+    if (!imageUrl) {
+      return res.status(404).json({ error: 'Could not find image on Growtopia Wiki' });
+    }
+
+    // Download image
+    const imageFilename = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+    const imagePath = path.join(__dirname, '../frontend/public/items', imageFilename);
+    
+    // Ensure dir exists
+    fs.mkdirSync(path.join(__dirname, '../frontend/public/items'), { recursive: true });
+
+    const imgStream = await axios.get(imageUrl, { responseType: 'stream', headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const writer = fs.createWriteStream(imagePath);
+    imgStream.data.pipe(writer);
+
+    await new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+    });
+
+    const item = await prisma.adminItem.create({
+      data: {
+        name,
+        value,
+        color: color || '#ffffff',
+        imageUrl: `/items/${imageFilename}`
+      }
+    });
+
+    res.json(item);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add item' });
+  }
+});
+
+// DELETE /api/admin/items/:id
+app.delete('/api/admin/items/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const item = await prisma.adminItem.delete({
+      where: { id: parseInt(req.params.id) }
+    });
+    // Try to delete image
+    try {
+      const imagePath = path.join(__dirname, '../frontend/public', item.imageUrl);
+      if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    } catch (e) {}
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
 
 // POST /api/admin/cases
 app.post('/api/admin/cases', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {

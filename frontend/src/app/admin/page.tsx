@@ -6,10 +6,11 @@ import { apiFetch } from "@/lib/auth";
 import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
-import { Image as ImageIcon } from "lucide-react";
+import ItemManager from "@/components/admin/ItemManager";
+import { Image as ImageIcon, Database } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -318,6 +319,17 @@ export default function AdminPage() {
           >
             <ImageIcon size={15} />
             <span>Studio</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("items")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "items"
+                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Database size={15} />
+            <span>Items</span>
           </button>
         </div>
       </div>
@@ -973,6 +985,11 @@ export default function AdminPage() {
       {/* TAB 4: CASE STUDIO */}
       {activeTab === "studio" && (
         <AdvancedCaseCreator />
+      )}
+
+      {/* TAB 5: ITEM MANAGER */}
+      {activeTab === "items" && (
+        <ItemManager />
       )}
 
     </div>
