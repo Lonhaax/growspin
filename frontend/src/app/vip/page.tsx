@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
 import { apiFetch } from "@/lib/auth";
-import { Trophy, Gift, Star, ArrowRight, ShieldCheck, Activity, Package, Clock, Lock, PackageOpen } from "lucide-react";
+import { Trophy, Gift, Star, ArrowRight, ShieldCheck, Activity, Package, Clock, Lock, PackageOpen, X } from "lucide-react";
+import { playWinFanfare, playClaimSound } from "@/lib/sounds";
 
 type VIPStatus = {
   level: number;
@@ -37,6 +38,7 @@ export default function VIPPage() {
   const [status, setStatus] = useState<VIPStatus | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimingCaseId, setClaimingCaseId] = useState<string | null>(null);
+  const [rewardData, setRewardData] = useState<any | null>(null);
 
   const handleClaimCase = async (tierId: string) => {
     setClaimingCaseId(tierId);
@@ -46,6 +48,9 @@ export default function VIPPage() {
         body: JSON.stringify({ tier: tierId })
       });
       if (res.ok) {
+        const data = await res.json();
+        setRewardData(data.winningItem);
+        playWinFanfare();
         await fetchBalance();
         await fetchStatus();
       }
@@ -266,6 +271,56 @@ export default function VIPPage() {
           ))}
         </div>
       </div>
+
+      {/* Reward Modal */}
+      {rewardData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl relative animate-in fade-in zoom-in duration-300">
+            <button
+              onClick={() => {
+                setRewardData(null);
+                playClaimSound();
+              }}
+              className="absolute right-4 top-4 text-[#7a819c] hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <h3 className="text-2xl font-black text-white mb-2">You Won!</h3>
+            <p className="text-[#7a819c] mb-6">VIP Case Unboxed</p>
+
+            <div className="flex flex-col items-center justify-center mb-8">
+              <div 
+                className="w-24 h-24 rounded-full flex items-center justify-center mb-4 border-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+                style={{ borderColor: rewardData.color, backgroundColor: `${rewardData.color}20` }}
+              >
+                <PackageOpen size={40} color={rewardData.color} />
+              </div>
+              <div className="text-xl font-black text-white">{rewardData.name}</div>
+              <div className="text-sm font-bold mt-1" style={{ color: rewardData.color }}>
+                {rewardData.value > 0 ? (
+                  <span className="flex items-center gap-1 justify-center">
+                    <img src="/dl.webp" className="w-4 h-4 object-contain" alt="DL" />
+                    {(rewardData.value / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                ) : (
+                  "Cosmetic Item"
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setRewardData(null);
+                playClaimSound();
+              }}
+              className="w-full py-3 rounded-xl bg-accent-blue hover:bg-blue-600 text-white font-bold transition-colors"
+            >
+              Awesome!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
