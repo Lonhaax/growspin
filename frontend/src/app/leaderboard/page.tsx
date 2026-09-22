@@ -14,6 +14,8 @@ interface LeaderboardUser {
   mockBalance: number;
 }
 
+import { apiFetch } from "@/lib/auth";
+
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +23,7 @@ export default function LeaderboardPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/leaderboard");
+        const res = await apiFetch("/leaderboard");
         if (res.ok) {
           const data = await res.json();
           setUsers(data);

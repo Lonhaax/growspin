@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { apiFetch, setAccessToken, getAccessToken, refreshSession } from "@/lib/auth";
+import { apiFetch, setAccessToken, getAccessToken, refreshSession, API_URL } from "@/lib/auth";
 
 interface User {
   id: number;
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (username: string, password: string): Promise<string | null> => {
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (username: string, password: string): Promise<string | null> => {
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", {
+    await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     }).catch(() => {});

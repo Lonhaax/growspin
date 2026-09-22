@@ -14,6 +14,9 @@ interface SlotGame {
   image: string;
 }
 
+import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/auth";
+
 export default function SlotsPage() {
   const { user, refreshUser, openAuthModal } = useAuth();
   const [games, setGames] = useState<SlotGame[]>([]);
@@ -24,7 +27,7 @@ export default function SlotsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    fetch("/api/bgaming/games")
+    apiFetch("/bgaming/games")
       .then(r => r.json())
       .then(data => {
         setGames(data);
