@@ -36,8 +36,9 @@ export function Topbar() {
   const progressPercent = isMaxLevel ? 100 : (user ? Math.min(100, Math.max(0, ((user.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100)) : 0);
 
   return (
-    <header className="h-16 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-20">
-      <div className="flex items-center gap-4">
+    <>
+      <header className="h-16 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-20">
+        <div className="flex items-center gap-4">
         <Link href="/" className="md:hidden flex items-center gap-2">
           <img src="/dl.webp" alt="DL" className="w-6 h-6 object-contain" />
           <span className="font-black text-white text-base">GrowBet</span>
@@ -205,8 +206,6 @@ export function Topbar() {
                 )}
               </AnimatePresence>
             </div>
-
-            <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
           </>
         ) : (
           <div className="flex items-center gap-3">
@@ -226,5 +225,7 @@ export function Topbar() {
         )}
       </div>
     </header>
+    {user && <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />}
+    </>
   );
 }
