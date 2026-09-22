@@ -14,7 +14,7 @@ interface SlotGame {
   image: string;
 }
 
-import { apiFetch } from "@/lib/auth";
+import { apiFetch, API_URL } from "@/lib/auth";
 
 export default function SlotsPage() {
   const { user, refreshUser, openAuthModal } = useAuth();
@@ -90,7 +90,7 @@ export default function SlotsPage() {
 
   const token = getAccessToken() || "";
   const launchUrl = activeGame
-    ? `/api/bgaming/launch/${activeGame.id}?token=${encodeURIComponent(token)}`
+    ? `${API_URL}/bgaming/launch/${activeGame.id}?token=${encodeURIComponent(token)}`
     : "";
 
   const categories = ["All", "Slots", "Table Games", "Instant Win"];
