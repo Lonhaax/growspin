@@ -236,8 +236,8 @@ function generateRefreshToken(userId: number) {
 function setRefreshCookie(res: Response, token: string) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: false, // set to true in prod with HTTPS
-    sameSite: 'lax',
+    secure: true, // required for cross-domain
+    sameSite: 'none', // required for cross-domain
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 }

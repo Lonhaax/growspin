@@ -5,7 +5,7 @@ let refreshPromise: Promise<boolean> | null = null;
 export function getAccessToken() { return _accessToken; }
 export function setAccessToken(t: string | null) { _accessToken = t; }
 
-export const API_URL = '/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '/api';
 
 export function refreshSession(): Promise<boolean> {
   if (!refreshPromise) {

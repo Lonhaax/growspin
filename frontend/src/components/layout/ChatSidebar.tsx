@@ -44,7 +44,7 @@ export function ChatSidebar() {
     fetchMessages();
 
     // Connect to Socket.io
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
     socketRef.current = io(backendUrl, { withCredentials: true });
 
     socketRef.current.on('chat_message', (msg: ChatMsg) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { getAccessToken } from "@/lib/auth";
+import { getAccessToken, API_URL } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { Coins, AlertTriangle, ShieldCheck } from "lucide-react";
 
@@ -33,7 +33,7 @@ export default function LoanPage() {
 
     try {
       const token = getAccessToken();
-      const res = await fetch("/api/loan/repay-all", {
+      const res = await fetch(`${API_URL}/loan/repay-all`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
