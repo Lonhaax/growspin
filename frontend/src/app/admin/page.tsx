@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
 import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
-import CaseCreator from "@/components/admin/CaseCreator";
+import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
@@ -972,7 +972,7 @@ export default function AdminPage() {
 
       {/* TAB 4: CASE STUDIO */}
       {activeTab === "studio" && (
-        <CaseCreator />
+        <AdvancedCaseCreator />
       )}
 
     </div>
