@@ -1,0 +1,7 @@
+growspin.lol, www.growspin.lol {
+    reverse_proxy frontend:3000
+}
+
+api.growspin.lol {
+    reverse_proxy backend:3001
+}
