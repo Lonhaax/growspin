@@ -54,8 +54,8 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later.' }
 });
 
-app.use('/api/', apiLimiter);
-app.use('/api/auth/', authLimiter);
+// app.use('/api/', apiLimiter);
+// app.use('/api/auth/', authLimiter);
 // ─── VIP Helpers & Tiers ──────────────────────────────────────────────────────
 const VIP_TIERS = [
   {
