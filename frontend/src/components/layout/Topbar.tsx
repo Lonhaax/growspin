@@ -113,15 +113,16 @@ export function Topbar() {
             )}
 
             {/* Wallet Button */}
-            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-xl p-1">
-              <div className="px-3 py-1.5 flex items-center gap-2">
+            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-xl p-1 h-10">
+              <div className="px-3 flex items-center gap-2">
                 <DLCurrency amount={user.mockBalance} size="sm" className="text-white" />
               </div>
               <button 
                 onClick={() => setDepositOpen(true)}
-                className="bg-accent-green hover:bg-emerald-400 text-black p-2 rounded-lg transition-colors flex items-center justify-center shadow-[0_0_10px_rgba(0,230,118,0.4)]"
+                className="bg-accent-green hover:bg-emerald-400 text-black px-4 h-full rounded-lg transition-colors flex items-center justify-center gap-2 font-bold shadow-[0_0_10px_rgba(0,230,118,0.4)]"
               >
                 <Wallet size={16} />
+                <span>Deposit</span>
               </button>
             </div>
 
