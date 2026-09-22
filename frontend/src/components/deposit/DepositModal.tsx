@@ -192,7 +192,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-white/60 text-sm font-medium mb-2">Your GrowID</label>
+                    <label className="block text-white/60 text-sm font-medium mb-2">Your GrowID (Crypto tabs are above!)</label>
                     <input 
                       type="text" 
                       value={growId}
