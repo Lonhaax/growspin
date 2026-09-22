@@ -45,17 +45,19 @@ services:
       - backend
 
   proxy:
-    image: nginx:alpine
+    image: caddy:2-alpine
     container_name: gambling_proxy
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
     depends_on:
       - frontend
       - backend
 
 volumes:
   db_data:
+  caddy_data:
