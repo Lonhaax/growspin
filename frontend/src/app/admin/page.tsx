@@ -5,10 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
 import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
-
+import CaseCreator from "@/components/admin/CaseCreator";
+import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -306,6 +307,17 @@ export default function AdminPage() {
           >
             <Settings2 size={15} />
             <span>Settings</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("studio")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "studio"
+                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <ImageIcon size={15} />
+            <span>Studio</span>
           </button>
         </div>
       </div>
@@ -956,6 +968,11 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+      )}
+
+      {/* TAB 4: CASE STUDIO */}
+      {activeTab === "studio" && (
+        <CaseCreator />
       )}
 
     </div>
