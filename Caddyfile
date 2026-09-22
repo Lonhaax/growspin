@@ -1,4 +1,4 @@
-growspin.lol, www.growspin.lol {
+growspin.lol {
     reverse_proxy frontend:3000
 }
 
