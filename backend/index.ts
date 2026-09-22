@@ -499,21 +499,40 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
   }
 });
 
+app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
+  try {
+    const secret = req.headers.authorization;
+    if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const intents = await prisma.depositIntent.findMany({
+      where: { status: 'PENDING' },
+      select: { worldName: true, growId: true }
+    });
+
+    res.json({ intents });
+  } catch (err) {
+    console.error('Internal Intents Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
   try {
-    const { secret, growId, amount } = req.body;
+    const { secret, worldName, amount } = req.body;
     // VERY simple auth for the bot
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const intent = await prisma.depositIntent.findFirst({
-      where: { growId, status: 'PENDING' },
+      where: { worldName, status: 'PENDING' },
       orderBy: { createdAt: 'desc' }
     });
 
     if (!intent) {
-      return res.status(404).json({ error: 'No pending deposit found for this GrowID' });
+      return res.status(404).json({ error: 'No pending deposit found for this worldName' });
     }
 
     const newBalance = await withUserLock(intent.userId, async () => {
