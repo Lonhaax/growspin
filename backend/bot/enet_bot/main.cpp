@@ -75,7 +75,6 @@ int main() {
     }
 
     client->checksum = enet_crc32;
-    client->usingNewPacket = 1;
 
     ENetAddress address;
     // Note: Live builds require hitting the login API first to get the dynamic IP and meta token.
