@@ -14,7 +14,6 @@ interface SlotGame {
   image: string;
 }
 
-import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
 
 export default function SlotsPage() {
