@@ -13,6 +13,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
   cors: {
