@@ -7,7 +7,7 @@ import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
-import { Image as ImageIcon, Database } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items">("players");
