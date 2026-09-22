@@ -1156,7 +1156,8 @@ app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRe
 
 // POST /api/play/mines/start
 app.post('/api/play/mines/start', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { amount, minesCount } = req.body;
+  const { minesCount } = req.body;
+  const amount = Number(req.body.amount);
   const userId = req.userId!;
 
   if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount.' });
@@ -1228,7 +1229,8 @@ app.post('/api/play/mines/start', requireAuth, requireNotFrozen, async (req: Aut
 
 // POST /api/play/mines/click
 app.post('/api/play/mines/click', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { gameId, tileIndex } = req.body;
+  const { gameId } = req.body;
+  const tileIndex = parseInt(req.body.tileIndex, 10);
   const userId = req.userId!;
 
   try {
