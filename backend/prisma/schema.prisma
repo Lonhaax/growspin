@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int             @id @default(autoincrement())
+  username        String          @unique
+  passwordHash    String
+  role            String          @default("user") // "user" or "admin"
+  mockBalance     Int             @default(1000)
+  level           Int             @default(1)
+  xp              Int             @default(0)
+  rakebackBalance Int             @default(0)
+  totalWagered    Int             @default(0)
+  debt            Int             @default(0)
+  debtCreatedAt   DateTime?
+  isFrozen        Boolean         @default(false)
+  lastFaucetClaim DateTime?
+  createdAt       DateTime        @default(now())
+  transactions    Transaction[]
+  refreshTokens   RefreshToken[]
+  inventory       UserItem[]
+  chatMessages    ChatMessage[]
+  provablyFair    ProvablyFair[]
+  minesGames      MinesGame[]
+  dailyClaims     DailyClaim[]
+  depositIntents  DepositIntent[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  amount    Int
+  gameType  String
+  result    String
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Battle {
+  id            Int      @id @default(autoincrement())
+  caseIds       String   @db.Text // JSON string of case IDs
+  mode          String   @default("normal") // "normal", "crazy", "terminal"
+  entryFee      Int
+  status        String   @default("waiting") // "waiting", "running", "finished"
+  winnerId      String? // Could be "bot-X" or userId as string
+  totalPotValue Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  participants BattleParticipant[]
+}
+
+model BattleParticipant {
+  id        Int    @id @default(autoincrement())
+  battleId  Int
+  userId    String // "bot-1", "bot-2", or actual numeric userId converted to string for simplicity
+  lootTotal Int    @default(0)
+  position  Int // 1, 2, 3, 4 (seat number)
+
+  battle Battle @relation(fields: [battleId], references: [id])
+}
+
+model JackpotRound {
+  id            Int       @id @default(autoincrement())
+  status        String    @default("waiting") // "waiting", "spinning", "finished"
+  totalPotValue Int       @default(0)
+  winnerId      String?
+  winningTicket Int?
+  createdAt     DateTime  @default(now())
+  finishedAt    DateTime?
+
+  entries JackpotEntry[]
+}
+
+model JackpotEntry {
+  id        Int    @id @default(autoincrement())
+  roundId   Int
+  userId    String // could be bot
+  amount    Int
+  ticketMin Int
+  ticketMax Int
+
+  round JackpotRound @relation(fields: [roundId], references: [id])
+}
+
+model UserItem {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  value       Int
+  color       String
+  imageUrl    String?  @db.Text
+  status      String   @default("inventory") // inventory, sold, wagered, borrowed
+  isBorrowed  Boolean  @default(false)
+  borrowPrice Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  content   String   @db.Text
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ProvablyFair {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  serverSeed String   @db.Text // the actual secret seed
+  serverHash String // the hashed version shown to user before play
+  clientSeed String   @db.Text // the user-provided seed
+  nonce      Int      @default(0) // increments per game
+  active     Boolean  @default(true) // is this the current active seed pair?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model MinesGame {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  betAmount     Int
+  minesCount    Int
+  boardState    String   @db.Text // JSON string of the grid: e.g. [0,1,0,0,2,...] where 0=hidden, 1=safe, 2=mine
+  mineLocations String   @db.Text // JSON string of indices where mines are
+  status        String   @default("playing") // playing, cashed_out, blown_up
+  multiplier    Float    @default(1.0)
+  profit        Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Case {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Int
+  image     String?  @db.Text
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  items CaseItem[]
+}
+
+model CaseItem {
+  id          Int      @id @default(autoincrement())
+  caseId      Int
+  name        String
+  value       Int
+  color       String
+  weight      Float
+  image       String?  @db.Text
+  imageUrl    String?  @db.Text
+  isLuckyStarItem Boolean @default(false)
+  
+  case        Case     @relation(fields: [caseId], references: [id])
+}
+
+model SiteSettings {
+  id                    Int      @id @default(1)
+  maintenanceMode       Boolean  @default(false)
+  mockBalanceOnRegister Int      @default(100000)
+  coinflipHouseEdge     Float    @default(0.05)
+  rouletteHouseEdge     Float    @default(0.05)
+  minesHouseEdge        Float    @default(0.05)
+  coinflipEnabled       Boolean  @default(true)
+  rouletteEnabled       Boolean  @default(true)
+  minesEnabled          Boolean  @default(true)
+  borrowEnabled         Boolean  @default(true)
+  maxBorrowLimit        Int      @default(100000) // Default 1,000 DLs (100,000 cents)
+  slotsEnabled          Boolean  @default(true)
+  slotsHouseEdge        Float    @default(0.05)
+  casinoPot             Int      @default(0)
+  updatedAt             DateTime @updatedAt
+}
+
+model DailyClaim {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  tier        String // "bronze", "silver", "gold", "platinum", "diamond"
+  claimedAt   DateTime @default(now())
+  rewardName  String
+  rewardValue Int
+  rewardColor String
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, tier])
+}
+
+model DepositIntent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  growId    String
+  worldName String
+  botName   String
+  status    String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  amount    Int      @default(0) // In subunits (cents)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
