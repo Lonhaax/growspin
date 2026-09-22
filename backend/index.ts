@@ -34,7 +34,8 @@ const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || 'your_ipn_s
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false
 }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
