@@ -27,6 +27,7 @@ const PORT = process.env.PORT || 3001;
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(helmet());
@@ -3547,6 +3548,17 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(Number(PORT), HOST, () => {
-  console.log(`✅ Server running on http://${HOST}:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`\n✅ Server running on http://0.0.0.0:${PORT}`);
+
+  if (DISCORD_WEBHOOK_URL) {
+    axios.post(DISCORD_WEBHOOK_URL, {
+      embeds: [{
+        title: "🟢 System Online",
+        description: "The GrowSpin backend has successfully started.",
+        color: 0x00ff00,
+        timestamp: new Date().toISOString()
+      }]
+    }).catch(err => console.error("Failed to send Discord webhook:", err.message));
+  }
 });

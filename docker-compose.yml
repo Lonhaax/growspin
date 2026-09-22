@@ -27,6 +27,7 @@ services:
       - DATABASE_URL=mysql://gambling_user:f3f2b3dfcacbea3e0aa20e822b4421d1@db:3306/gambling
       - JWT_ACCESS_SECRET=f71d68a2e0bbec1b48cb4de5478469c7757d9d336c2258329d5db4083bb74eb4
       - JWT_REFRESH_SECRET=904b431a76f0170ca3c387603ee2b03134f4c3fda6f08dac1d1b0bd4ad8163d4
+      - DISCORD_WEBHOOK_URL=
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
     depends_on:
