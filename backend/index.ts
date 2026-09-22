@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { withUserLock } from './utils/mutex';
@@ -27,9 +29,25 @@ const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
+app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests from this IP, please try again later.' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // Limit each IP to 20 auth requests per hour
+  message: { error: 'Too many authentication attempts, please try again later.' }
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/', authLimiter);
 // ─── VIP Helpers & Tiers ──────────────────────────────────────────────────────
 const VIP_TIERS = [
   {
