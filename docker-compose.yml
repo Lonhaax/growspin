@@ -6,10 +6,10 @@ services:
     container_name: gambling_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_ROOT_PASSWORD: 759a2d7bc948c40ce1fe17577b3f1729
       MYSQL_DATABASE: gambling
       MYSQL_USER: gambling_user
-      MYSQL_PASSWORD: user_password_here
+      MYSQL_PASSWORD: f3f2b3dfcacbea3e0aa20e822b4421d1
     ports:
       - "3306:3306"
     volumes:
@@ -24,9 +24,9 @@ services:
     expose:
       - "3001"
     environment:
-      - DATABASE_URL=mysql://gambling_user:user_password_here@db:3306/gambling
-      - JWT_ACCESS_SECRET=your_super_secret_access_jwt_key_here
-      - JWT_REFRESH_SECRET=your_super_secret_refresh_jwt_key_here
+      - DATABASE_URL=mysql://gambling_user:f3f2b3dfcacbea3e0aa20e822b4421d1@db:3306/gambling
+      - JWT_ACCESS_SECRET=f71d68a2e0bbec1b48cb4de5478469c7757d9d336c2258329d5db4083bb74eb4
+      - JWT_REFRESH_SECRET=904b431a76f0170ca3c387603ee2b03134f4c3fda6f08dac1d1b0bd4ad8163d4
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
     depends_on:
