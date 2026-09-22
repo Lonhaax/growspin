@@ -321,9 +321,9 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
   }
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    // Auto-assign admin if username is 'admin' or 'lon1337', or if it's the very first user
+    // Auto-assign admin ONLY if it's the very first user on the site
     const userCount = await prisma.user.count();
-    const role = (username === 'admin' || username === 'lon1337' || userCount === 0) ? 'admin' : 'user';
+    const role = (userCount === 0) ? 'admin' : 'user';
 
     const user = await prisma.user.create({
       data: { username, passwordHash, role },
