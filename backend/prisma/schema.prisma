@@ -30,6 +30,7 @@ model User {
   minesGames      MinesGame[]
   dailyClaims     DailyClaim[]
   depositIntents  DepositIntent[]
+  cryptoInvoices  CryptoInvoice[]
 }
 
 model Transaction {
@@ -214,6 +215,19 @@ model DepositIntent {
   status    String   @default("PENDING") // PENDING, COMPLETED, FAILED
   amount    Int      @default(0) // In subunits (cents)
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model CryptoInvoice {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  paymentId      String   @unique
+  status         String   @default("waiting") // waiting, finished, failed
+  payAmount      Float
+  payCurrency    String
+  dlsCredited    Int
+  createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }

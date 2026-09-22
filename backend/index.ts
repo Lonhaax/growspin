@@ -28,6 +28,8 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
+const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || 'your_api_key_here';
+const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || 'your_ipn_secret_here';
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(helmet());
@@ -536,6 +538,110 @@ app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
     res.json({ success: true, newBalance });
   } catch (err: any) {
     console.error('Bot Credit Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+  try {
+    const { amountUSD, payCurrency } = req.body;
+    if (!amountUSD || amountUSD < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
+    if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required (e.g. ltc, btc)' });
+
+    // 1 USD = 2 DLs (200 subunits)
+    const dlsCredited = Math.floor(amountUSD * 200);
+
+    const paymentId = crypto.randomBytes(16).toString('hex');
+
+    const invoice = await prisma.cryptoInvoice.create({
+      data: {
+        userId: req.userId!,
+        paymentId,
+        payAmount: amountUSD,
+        payCurrency: payCurrency.toLowerCase(),
+        dlsCredited
+      }
+    });
+
+    const npRes = await axios.post('https://api.nowpayments.io/v1/payment', {
+      price_amount: amountUSD,
+      price_currency: 'usd',
+      pay_currency: payCurrency.toLowerCase(),
+      ipn_callback_url: `${FRONTEND_URL}/api/crypto/ipn`, // We map /api in Caddy
+      order_id: paymentId,
+      order_description: `GrowSpin DL Deposit`
+    }, {
+      headers: { 'x-api-key': NOWPAYMENTS_API_KEY }
+    });
+
+    res.json({ success: true, invoice: npRes.data, internalInvoiceId: invoice.id });
+  } catch (err: any) {
+    console.error('Crypto Request Error:', err?.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to generate crypto invoice' });
+  }
+});
+
+app.post('/api/deposit/crypto/ipn', async (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['x-nowpayments-sig'] as string;
+    if (!signature) return res.status(400).json({ error: 'Missing signature' });
+
+    // Verify HMAC signature
+    const hmac = crypto.createHmac('sha512', NOWPAYMENTS_IPN_SECRET);
+    hmac.update(JSON.stringify(req.body));
+    if (hmac.digest('hex') !== signature) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    const { payment_status, order_id, actually_paid } = req.body;
+
+    const invoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    if (payment_status === 'finished' && invoice.status !== 'finished') {
+      await withUserLock(invoice.userId, async () => {
+        // Recheck status
+        const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
+        if (freshInvoice?.status === 'finished') return;
+
+        await prisma.cryptoInvoice.update({
+          where: { paymentId: order_id },
+          data: { status: 'finished' }
+        });
+
+        await prisma.user.update({
+          where: { id: invoice.userId },
+          data: { mockBalance: { increment: invoice.dlsCredited } }
+        });
+      });
+    } else if (payment_status === 'failed' || payment_status === 'expired') {
+      await prisma.cryptoInvoice.update({
+        where: { paymentId: order_id },
+        data: { status: 'failed' }
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.error('Crypto IPN Error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+app.get('/api/deposit/crypto/status', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const invoiceId = Number(req.query.id);
+    if (!invoiceId) return res.status(400).json({ error: 'Missing invoice id' });
+
+    const invoice = await prisma.cryptoInvoice.findFirst({
+      where: { id: invoiceId, userId: req.userId! }
+    });
+
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    res.json({ success: true, invoice });
+  } catch (err: any) {
+    console.error('Crypto Status Error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

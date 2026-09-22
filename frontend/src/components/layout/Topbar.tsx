@@ -7,7 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/auth";
 import { DLCurrency } from "@/components/ui/DLCurrency";
-import GrowtopiaDepositModal from "@/components/deposit/GrowtopiaDepositModal";
+import DepositModal from "@/components/deposit/DepositModal";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
@@ -205,7 +205,7 @@ export function Topbar() {
               </AnimatePresence>
             </div>
 
-            <GrowtopiaDepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
+            <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
           </>
         ) : (
           <div className="flex items-center gap-3">

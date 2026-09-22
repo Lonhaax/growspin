@@ -28,6 +28,8 @@ services:
       - JWT_ACCESS_SECRET=f71d68a2e0bbec1b48cb4de5478469c7757d9d336c2258329d5db4083bb74eb4
       - JWT_REFRESH_SECRET=904b431a76f0170ca3c387603ee2b03134f4c3fda6f08dac1d1b0bd4ad8163d4
       - DISCORD_WEBHOOK_URL=
+      - NOWPAYMENTS_API_KEY=your_api_key_here
+      - NOWPAYMENTS_IPN_SECRET=your_ipn_secret_here
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
     depends_on:
