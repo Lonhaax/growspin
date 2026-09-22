@@ -33,7 +33,7 @@ export default function LoanPage() {
 
     try {
       const token = getAccessToken();
-      const res = await fetch("http://localhost:3001/api/loan/repay-all", {
+      const res = await fetch("/api/loan/repay-all", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`

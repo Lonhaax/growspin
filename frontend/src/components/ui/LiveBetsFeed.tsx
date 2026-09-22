@@ -20,7 +20,7 @@ export function LiveBetsFeed() {
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
     socketRef.current = io(backendUrl, { withCredentials: true });
 
     socketRef.current.on('live_bet', (data: any) => {
