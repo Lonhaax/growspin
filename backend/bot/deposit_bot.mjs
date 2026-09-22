@@ -1,5 +1,5 @@
-const { Client } = require('growtopia.js');
-const axios = require('axios');
+import { Client } from 'growtopia.js';
+import axios from 'axios';
 
 // ==========================================
 // CONFIGURATION
@@ -46,7 +46,7 @@ bot.on('onDrop', async (data) => {
       // Optionally collect the DL
       // bot.collect(data.netID);
     } catch (err) {
-      console.error(`❌ [BOT] Failed to credit user:`, err.response?.data || err.message);
+      console.error(`❌ [BOT] Failed to credit user:`, err?.response?.data || err.message);
     }
   }
 });
