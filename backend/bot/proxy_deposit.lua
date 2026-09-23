@@ -72,93 +72,35 @@ function DepositHandler(var, pkt)
     end
 end
 
-local lastObjects = {}
+-- Trade Deposit Logger
 
--- Helper to check if an object is newly dropped
-local function detectNewDrops()
-    -- This relies on GetObjects() being supported by the proxy
-    if type(GetObjects) ~= "function" then return end
-    
-    local success, currentObjects = pcall(GetObjects)
-    if not success or type(currentObjects) ~= "table" then return end
-    
-    local currentObjMap = {}
-    
-    for _, obj in pairs(currentObjects) do
-        -- Typically obj has .id (object id in world) and .itemID
-        -- Growlauncher uses .id for unique instance ID, .itemid for the type
-        local objId = obj.id or obj.uid or obj.oid
-        if objId then
-            currentObjMap[objId] = obj
-            
-            -- If we haven't seen this specific object ID before, it's a new drop!
-            if not lastObjects[objId] then
-                local itemID = obj.itemid or obj.itemID or obj.id
-                local count = obj.count or obj.amount or 1
-                
-                local multiplier = TARGET_ITEMS[itemID]
-                if multiplier then
-                    local totalAmount = count * multiplier
-                    
-                    -- We don't know who dropped it purely from GetObjects, so we credit the nearest player
-                    local dropper = "UNKNOWN"
-                    if type(GetPlayers) == "function" then
-                        local pcallSuccess, players = pcall(GetPlayers)
-                        if pcallSuccess and type(players) == "table" then
-                            local minDist = 999999
-                            for _, p in pairs(players) do
-                                if p.name and p.x and p.y and obj.x and obj.y then
-                                    local dist = (p.x - obj.x)^2 + (p.y - obj.y)^2
-                                    if dist < minDist then
-                                        minDist = dist
-                                        dropper = p.name
-                                    end
-                                end
-                            end
-                        end
-                    end
-                    
-                    local currentWorld = GetWorldName()
-                    if currentWorld == "" then currentWorld = "UNKNOWN" end
-                    
-                    log(string.format("[+] POLLER: Detected drop of %d items (ID %d) near %s | Value: %d", count, itemID, dropper, totalAmount))
-                    
-                    runThread(function()
-                        local url = string.format("%s?secret=%s&worldName=%s&amount=%d&playerName=%s",
-                            BACKEND_URL, SECRET, urlencode(currentWorld), totalAmount, urlencode(dropper))
-                        local res, err = fetch(url)
-                        if err then log("[-] Backend error: " .. tostring(err)) else log("[+] Backend response: " .. tostring(res)) end
-                    end)
-                end
-            end
+local function logTradePackets(pktType, packet)
+    -- Log outgoing trade packets (Type 2/3)
+    if pktType == 2 or pktType == 3 then
+        if packet and (packet:lower():find("trade") or packet:lower():find("dialog")) then
+            log("DEBUG TRADE PKT: " .. tostring(packet))
         end
     end
-    
-    lastObjects = currentObjMap
 end
+addHook(logTradePackets, "OnSendPacket")
 
-local lastWorldUpdate = 0
-local lastWorld = ""
-
-addHook(function()
-    detectNewDrops()
+local function logTradeVariants(var)
+    if not var or not var.v0 then return end
     
-    local now = os.time()
-    if now - lastWorldUpdate >= 5 then
-        lastWorldUpdate = now
-        local currentWorld = GetWorldName()
-        if currentWorld and currentWorld ~= "" and currentWorld ~= lastWorld then
-            lastWorld = currentWorld
-            
-            runThread(function()
-                local STATUS_URL = BACKEND_URL:gsub("/credit", "/status")
-                local url = string.format("%s?secret=%s&worldName=%s",
-                    STATUS_URL, SECRET, urlencode(currentWorld))
-                fetch(url)
-                log("[+] Updated backend with active deposit world: " .. currentWorld)
-            end)
+    local v0 = tostring(var.v0)
+    
+    -- Filter out pure movement and visual spam, log everything else to catch the trade sequence
+    if v0 == "OnConsoleMessage" or v0 == "OnTalkBubble" then
+        if var.v1 and var.v1:lower():find("trade") then
+            log("DEBUG TRADE CHAT: " .. tostring(var.v1))
         end
+    elseif string.find(v0:lower(), "trade") or v0 == "OnDialogRequest" then
+        log("DEBUG TRADE VAR: " .. v0)
+        if var.v1 then log("  v1=" .. tostring(var.v1)) end
+        if var.v2 then log("  v2=" .. tostring(var.v2)) end
+        if var.v3 then log("  v3=" .. tostring(var.v3)) end
     end
-end, "onDraw")
+end
+addHook(logTradeVariants, "OnVariant")
 
-log("[+] Growlauncher State-Poller Deposit Script loaded. Polling for drops...")
+log("[+] Growlauncher Trade-Logger Script loaded. Trade the bot and accept!")
