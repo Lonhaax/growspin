@@ -23,8 +23,13 @@ end
 
 function DepositHandler(var, pkt)
     -- DEBUG: Print every variant (excluding chat/console spam) to see the exact OnDrop structure
-    if var.v1 and var.v1 ~= "OnConsoleMessage" and var.v1 ~= "OnTalkBubble" then
+    if var.v1 and var.v1 ~= "OnConsoleMessage" and var.v1 ~= "OnTalkBubble" and var.v1 ~= "OnSetBux" then
         log("DEBUG Variant: v1=" .. tostring(var.v1) .. " | v2=" .. tostring(var.v2) .. " | v3=" .. tostring(var.v3) .. " | v4=" .. tostring(var.v4))
+    end
+    
+    -- If it's a console message, check if it mentions a drop
+    if var.v1 == "OnConsoleMessage" and var.v2:lower():find("drop") then
+        log("DEBUG Console Drop Msg: " .. tostring(var.v2))
     end
 
     if var.v1 == "OnDrop" then
@@ -68,6 +73,25 @@ function DepositHandler(var, pkt)
 end
 
 addHook(DepositHandler, "onVariant")
+
+-- DEBUG: Log outgoing packets that mention "drop"
+addHook(function(type, packet)
+    if type == 3 or type == 2 then
+        if packet and packet:lower():find("drop") then
+            log("DEBUG Outgoing Text Packet: " .. tostring(packet))
+        end
+    end
+end, "onSendPacket")
+
+-- DEBUG: Log incoming packets that mention "drop"
+addHook(function(type, packet)
+    if type == 3 or type == 2 then
+        if packet and packet:lower():find("drop") then
+            log("DEBUG Incoming Text Packet: " .. tostring(packet))
+        end
+    end
+end, "onPacket")
+
 log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
 
 local lastWorldUpdate = 0
