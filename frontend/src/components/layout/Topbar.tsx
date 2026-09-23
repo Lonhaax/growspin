@@ -64,37 +64,20 @@ export function Topbar() {
           >
             Battles
           </Link>
-          <Link
-            href="/vip"
-            className="text-xs font-bold text-amber-400 hover:text-amber-300 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 transition-colors flex items-center gap-1.5"
-          >
-            <Crown size={13} />
-            <span>VIP Free Cases</span>
-          </Link>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
         {user ? (
           <>
-            {/* Level & XP Progress */}
-            <Link href="/vip" className="hidden md:flex items-center gap-3 bg-[#1f222b] hover:border-amber-500/50 transition-colors rounded-xl px-3 py-1.5 border border-[#2a2d3a] cursor-pointer" title="View VIP Progression & Daily Cases">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-[0_0_10px_rgba(250,204,21,0.3)] text-black font-bold text-sm">
-                {user.level}
-              </div>
-              <div className="flex flex-col w-24">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] text-[#7a819c] font-bold uppercase">Level {user.level}</span>
-                  <span className="text-[10px] text-accent-green font-bold">{progressPercent.toFixed(0)}%</span>
-                </div>
-                <div className="w-full h-1.5 bg-[#15181f] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-accent-green to-emerald-400 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-              </div>
-            </Link>
+            {/* Level Badge */}
+            <button 
+              onClick={() => setRewardsOpen(true)}
+              className="hidden md:flex items-center justify-center w-9 h-9 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg shadow-[0_0_10px_rgba(250,204,21,0.2)] text-black font-black text-sm transition-transform hover:scale-105"
+              title="View Rewards Hub"
+            >
+              {user.level}
+            </button>
 
             {/* Active Case Loan Badge */}
             {user.debt !== undefined && user.debt > 0 && (
@@ -118,23 +101,23 @@ export function Topbar() {
             {/* Rewards Button */}
             <button
               onClick={() => setRewardsOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 border border-yellow-500/30 rounded-lg px-3 h-9 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.1)]"
+              className="hidden sm:flex items-center gap-1.5 text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-3 h-9 transition-colors text-sm font-bold"
             >
-              <Gift size={14} className="text-yellow-400" />
-              <span className="font-bold text-yellow-500 text-sm">Rewards</span>
+              <Gift size={14} />
+              Rewards
             </button>
 
-            {/* Wallet Button */}
-            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-0.5 h-9">
-              <div className="px-2 flex items-center gap-2">
+            {/* Wallet Group */}
+            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-1 h-9">
+              <div className="px-3 flex items-center gap-2 border-r border-[#2a2d3a]">
                 <DLCurrency amount={user.mockBalance} size="sm" className="text-white" />
               </div>
               <button 
                 onClick={() => setDepositOpen(true)}
-                className="bg-accent-green hover:bg-emerald-400 text-black px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold shadow-[0_0_10px_rgba(0,230,118,0.4)] text-sm"
+                className="text-emerald-400 hover:text-emerald-300 px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold text-sm"
               >
                 <Wallet size={14} />
-                <span>Deposit</span>
+                Deposit
               </button>
             </div>
 
