@@ -7,10 +7,11 @@ import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -330,6 +331,17 @@ export default function AdminPage() {
           >
             <Database size={15} />
             <span>Items</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "analytics"
+                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Activity size={15} />
+            <span>Analytics</span>
           </button>
         </div>
       </div>
@@ -990,6 +1002,10 @@ export default function AdminPage() {
       {/* TAB 5: ITEM MANAGER */}
       {activeTab === "items" && (
         <ItemManager />
+      )}
+
+      {activeTab === "analytics" && (
+        <AnalyticsDashboard />
       )}
 
     </div>

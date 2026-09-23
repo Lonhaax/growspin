@@ -3160,6 +3160,172 @@ app.get('/api/admin/growtopia/search', requireAuth, requireAdmin, async (req: Au
   }
 });
 
+// GET /api/admin/analytics - Aggregate analytics for the admin dashboard
+app.get('/api/admin/analytics', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // ── Overview KPIs ──
+    const [totalUsers, settings, activeToday, newUsersToday, newUsersThisWeek, wageredAgg] = await Promise.all([
+      prisma.user.count(),
+      prisma.siteSettings.findUnique({ where: { id: 1 } }),
+      prisma.transaction.findMany({
+        where: { timestamp: { gte: oneDayAgo } },
+        select: { userId: true },
+        distinct: ['userId'],
+      }),
+      prisma.user.count({ where: { createdAt: { gte: oneDayAgo } } }),
+      prisma.user.count({ where: { createdAt: { gte: oneWeekAgo } } }),
+      prisma.user.aggregate({ _sum: { totalWagered: true } }),
+    ]);
+
+    // ── Revenue by game type (last 30 days) ──
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentTxs = await prisma.transaction.findMany({
+      where: { timestamp: { gte: thirtyDaysAgo } },
+      select: { gameType: true, amount: true },
+    });
+
+    const gameMap: Record<string, { wagered: number; count: number }> = {};
+    for (const tx of recentTxs) {
+      const key = tx.gameType;
+      if (!gameMap[key]) gameMap[key] = { wagered: 0, count: 0 };
+      gameMap[key].wagered += tx.amount;
+      gameMap[key].count += 1;
+    }
+    const revenueByGame = Object.entries(gameMap)
+      .map(([game, stats]) => ({ game, ...stats }))
+      .sort((a, b) => b.wagered - a.wagered);
+
+    // ── Top 10 players by total wagered ──
+    const topPlayers = await prisma.user.findMany({
+      orderBy: { totalWagered: 'desc' },
+      take: 10,
+      select: { id: true, username: true, totalWagered: true, mockBalance: true, level: true, createdAt: true },
+    });
+
+    // ── 14-day registration trend ──
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const recentUsers = await prisma.user.findMany({
+      where: { createdAt: { gte: fourteenDaysAgo } },
+      select: { createdAt: true },
+    });
+
+    const regMap: Record<string, number> = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      regMap[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const u of recentUsers) {
+      const key = u.createdAt.toISOString().slice(0, 10);
+      if (regMap[key] !== undefined) regMap[key]++;
+    }
+    const registrationsTrend = Object.entries(regMap).map(([date, count]) => ({ date, count }));
+
+    // ── 14-day wager trend (from Transaction table) ──
+    const recentTxsForTrend = await prisma.transaction.findMany({
+      where: { timestamp: { gte: fourteenDaysAgo } },
+      select: { timestamp: true, amount: true },
+    });
+
+    const wagerMap: Record<string, number> = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      wagerMap[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const tx of recentTxsForTrend) {
+      const key = tx.timestamp.toISOString().slice(0, 10);
+      if (wagerMap[key] !== undefined) wagerMap[key] += tx.amount;
+    }
+    const wagerTrend = Object.entries(wagerMap).map(([date, wagered]) => ({ date, wagered }));
+
+    // ── Game breakdown (all-time counts) ──
+    const allTxGameTypes = await prisma.transaction.groupBy({
+      by: ['gameType'],
+      _count: { gameType: true },
+      _sum: { amount: true },
+    });
+
+    const GAME_CATEGORIES: Record<string, string[]> = {
+      mines: ['mines'],
+      coinflip: ['coinflip'],
+      roulette: ['roulette'],
+      crash: ['crash'],
+      dice: ['dice'],
+      plinko: ['plinko'],
+      slots: [], // catches slot_* prefix
+      cases: ['case', 'cases'],
+      battles: ['battle', 'battles'],
+      jackpot: ['jackpot'],
+    };
+
+    const gameBreakdown: Record<string, number> = {
+      mines: 0, coinflip: 0, roulette: 0, crash: 0, dice: 0,
+      plinko: 0, slots: 0, cases: 0, battles: 0, jackpot: 0,
+    };
+
+    for (const row of allTxGameTypes) {
+      const gt = row.gameType.toLowerCase();
+      let matched = false;
+      for (const [cat, keys] of Object.entries(GAME_CATEGORIES)) {
+        if (cat === 'slots') continue;
+        if (keys.some(k => gt.includes(k))) {
+          gameBreakdown[cat] += row._count.gameType;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched && gt.startsWith('slot_')) {
+        gameBreakdown.slots += row._count.gameType;
+      }
+    }
+
+    // ── VIP tier distribution ──
+    const VIP_THRESHOLDS = [
+      { tier: 'Diamond', threshold: 1000000 },
+      { tier: 'Platinum', threshold: 250000 },
+      { tier: 'Gold', threshold: 50000 },
+      { tier: 'Silver', threshold: 10000 },
+      { tier: 'Bronze', threshold: 0 },
+    ];
+
+    const allWagered = await prisma.user.findMany({ select: { totalWagered: true } });
+    const vipCounts: Record<string, number> = { Diamond: 0, Platinum: 0, Gold: 0, Silver: 0, Bronze: 0 };
+    for (const u of allWagered) {
+      for (const tier of VIP_THRESHOLDS) {
+        if (u.totalWagered >= tier.threshold) {
+          vipCounts[tier.tier]++;
+          break;
+        }
+      }
+    }
+    const vipDistribution = Object.entries(vipCounts).map(([tier, count]) => ({ tier, count }));
+
+    res.json({
+      overview: {
+        totalUsers,
+        totalWagered: wageredAgg._sum.totalWagered ?? 0,
+        casinoPot: settings?.casinoPot ?? 0,
+        activeToday: activeToday.length,
+        newUsersToday,
+        newUsersThisWeek,
+      },
+      revenueByGame,
+      topPlayers,
+      registrationsTrend,
+      wagerTrend,
+      gameBreakdown,
+      vipDistribution,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── BGAMING SLOTS PROXY ENGINE ───────────────────────────────────────────────
 
 interface BgamingSession {
