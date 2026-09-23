@@ -13,7 +13,6 @@ import http from 'http';
 import { Server } from 'socket.io';
 import fs from 'fs';
 import path from 'path';
-const { Wiki } = require('@ncd0/growtopia');
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
