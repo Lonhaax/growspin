@@ -90,4 +90,4 @@ bot.on('onDrop', async (data) => {
   }
 });
 
-bot.login();
+bot.connect();
