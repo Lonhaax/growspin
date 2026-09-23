@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
+import { motion, useSpring, useTransform } from "framer-motion";
 
 interface DLCurrencyProps {
   amount: number;
@@ -18,9 +20,18 @@ export function DLCurrency({
   showAmount = true,
 }: DLCurrencyProps) {
   const value = isRaw ? amount : amount / 100;
-  const formatted = value.toLocaleString(undefined, {
-    minimumFractionDigits: value % 1 !== 0 ? 2 : 0,
-    maximumFractionDigits: 2,
+
+  const springValue = useSpring(value, { bounce: 0, duration: 800 });
+  
+  useEffect(() => {
+    springValue.set(value);
+  }, [value, springValue]);
+
+  const displayValue = useTransform(springValue, (current) => {
+    return current.toLocaleString(undefined, {
+      minimumFractionDigits: current % 1 !== 0 ? 2 : 0,
+      maximumFractionDigits: 2,
+    });
   });
 
   const imgSize =
@@ -56,7 +67,7 @@ export function DLCurrency({
   return (
     <span className={`inline-flex items-center gap-1 font-bold ${textSize} ${className}`}>
       {iconFirst && img}
-      {showAmount && <span>{formatted}</span>}
+      {showAmount && <motion.span>{displayValue}</motion.span>}
       {!iconFirst && img}
     </span>
   );

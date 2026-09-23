@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/auth';
+import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Wallet, Gamepad2, Coins, CheckCircle2, ArrowRight, Copy, ExternalLink, Loader2 } from 'lucide-react';
 
@@ -31,6 +32,7 @@ const CRYPTO_OPTIONS = [
 ];
 
 export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { refreshUser } = useAuth();
   const [tab, setTab] = useState<'growtopia' | 'crypto' | 'withdraw'>('growtopia');
 
   // Withdraw State
@@ -171,6 +173,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
       const data = await res.json();
       if (res.ok) {
         setSuccessMsg(`Withdrawal requested for ${withdrawAmount} DLs!`);
+        refreshUser();
       } else {
         setError(data.error || 'Withdrawal failed');
       }
