@@ -8,11 +8,13 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/auth";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import DepositModal from "@/components/deposit/DepositModal";
+import RewardsModal from "@/components/rewards/RewardsModal";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
+  const [rewardsOpen, setRewardsOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
 
   const handleClaimRakeback = async () => {
@@ -112,6 +114,15 @@ export function Topbar() {
                 <DLCurrency amount={user.debt} size="xs" className={user.isFrozen ? "text-red-400 font-black" : "text-amber-300 font-black"} />
               </Link>
             )}
+
+            {/* Rewards Button */}
+            <button
+              onClick={() => setRewardsOpen(true)}
+              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 border border-yellow-500/30 rounded-xl px-4 h-10 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.1)]"
+            >
+              <Gift size={16} className="text-yellow-400" />
+              <span className="font-bold text-yellow-500">Rewards</span>
+            </button>
 
             {/* Wallet Button */}
             <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-xl p-1 h-10">
@@ -225,7 +236,12 @@ export function Topbar() {
         )}
       </div>
     </header>
-    {user && <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />}
+    {user && (
+      <>
+        <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
+        <RewardsModal isOpen={rewardsOpen} onClose={() => { setRewardsOpen(false); refreshUser(); }} />
+      </>
+    )}
     </>
   );
 }
