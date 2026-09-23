@@ -603,8 +603,8 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
     if (!amountUSD || amountUSD < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
     if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required (e.g. ltc, btc)' });
 
-    // 1 USD = 2 DLs (200 subunits)
-    const dlsCredited = Math.floor(amountUSD * 200);
+    // 100 DLs = 2.6 USD (1 USD = ~38.46 DLs)
+    const dlsCredited = Math.floor((amountUSD / 2.6) * 10000);
 
     const paymentId = crypto.randomBytes(16).toString('hex');
 
@@ -718,7 +718,7 @@ app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest
     const { amount, method, address } = req.body;
 
     if (!amount || typeof amount !== 'number' || amount < 5000) {
-      return res.status(400).json({ error: "Minimum withdrawal is 50 DLs ($50.00)" });
+      return res.status(400).json({ error: "Minimum withdrawal is 50 DLs ($1.30)" });
     }
     if (!method || !['crypto', 'growtopia'].includes(method)) {
       return res.status(400).json({ error: "Invalid withdrawal method" });
