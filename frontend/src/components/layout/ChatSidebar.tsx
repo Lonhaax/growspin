@@ -156,47 +156,47 @@ export function ChatSidebar() {
               <button onClick={() => setIsOpen(false)} className="text-[#7a819c] hover:text-white relative z-10">
                 <ChevronRight size={20} />
               </button>
-
-              {/* Rain Animation Overlay */}
-              <AnimatePresence>
-                {activeRain && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="absolute top-16 left-0 right-0 z-20 bg-gradient-to-r from-blue-600/90 to-blue-400/90 border-b border-blue-400/50 shadow-[0_10px_20px_rgba(59,130,246,0.3)] backdrop-blur-md overflow-hidden"
-                  >
-                    <div className="p-3 flex flex-col items-center justify-center gap-2">
-                      <div className="flex items-center gap-2 text-white font-bold text-sm">
-                        <Droplet size={18} className="animate-bounce text-blue-200" />
-                        RAIN DROP: {(activeRain.amount / 100).toFixed(2)} DLs
-                      </div>
-                      <div className="flex w-full items-center justify-between text-xs font-semibold text-blue-100 px-2">
-                        <span>{activeRain.joinedCount} Joined</span>
-                        <span>{rainTimeLeft}s Left</span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (!user) return openAuthModal("login");
-                          if (!activeRain.hasJoined) {
-                            socketRef.current.emit("join_rain", { userId: user.id });
-                            setActiveRain({ ...activeRain, hasJoined: true });
-                          }
-                        }}
-                        disabled={activeRain.hasJoined}
-                        className={`w-full py-2 rounded font-bold text-xs shadow-lg transition-all ${
-                          activeRain.hasJoined 
-                            ? "bg-black/40 text-blue-200 cursor-not-allowed" 
-                            : "bg-white text-blue-600 hover:bg-blue-50"
-                        }`}
-                      >
-                        {activeRain.hasJoined ? "JOINED" : "JOIN RAIN"}
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
+
+            {/* Rain Animation Overlay */}
+            <AnimatePresence>
+              {activeRain && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="absolute top-16 left-0 right-0 z-20 bg-gradient-to-r from-blue-600/90 to-blue-400/90 border-b border-blue-400/50 shadow-[0_10px_20px_rgba(59,130,246,0.3)] backdrop-blur-md overflow-hidden"
+                >
+                  <div className="p-3 flex flex-col items-center justify-center gap-2">
+                    <div className="flex items-center gap-2 text-white font-bold text-sm">
+                      <Droplet size={18} className="animate-bounce text-blue-200" />
+                      RAIN DROP: {(activeRain.amount / 100).toFixed(2)} DLs
+                    </div>
+                    <div className="flex w-full items-center justify-between text-xs font-semibold text-blue-100 px-2">
+                      <span>{activeRain.joinedCount} Joined</span>
+                      <span>{rainTimeLeft}s Left</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!user) return openAuthModal("login");
+                        if (!activeRain.hasJoined) {
+                          socketRef.current.emit("join_rain", { userId: user.id });
+                          setActiveRain({ ...activeRain, hasJoined: true });
+                        }
+                      }}
+                      disabled={activeRain.hasJoined}
+                      className={`w-full py-2 rounded font-bold text-xs shadow-lg transition-all ${
+                        activeRain.hasJoined 
+                          ? "bg-black/40 text-blue-200 cursor-not-allowed" 
+                          : "bg-white text-blue-600 hover:bg-blue-50"
+                      }`}
+                    >
+                      {activeRain.hasJoined ? "JOINED" : "JOIN RAIN"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
