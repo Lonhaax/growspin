@@ -47,7 +47,7 @@ export function LiveBetsFeed() {
       
       setBets(prev => {
         const next = [newBet, ...prev];
-        return next.slice(0, 20); // Keep last 20 bets
+        return next.slice(0, 10); // Keep last 10 bets
       });
     });
 

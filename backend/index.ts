@@ -37,7 +37,7 @@ const recentLiveBets: any[] = [];
 
 function emitLiveBet(ioInstance: any, betData: any) {
   recentLiveBets.unshift(betData);
-  if (recentLiveBets.length > 20) recentLiveBets.pop();
+  if (recentLiveBets.length > 10) recentLiveBets.pop();
   ioInstance.emit('live_bet', betData);
 }
 
