@@ -21,6 +21,21 @@ export function LiveBetsFeed() {
 
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    
+    // Fetch initial bets
+    fetch(`${backendUrl}/api/bets/live`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBets(data.map(bet => ({
+            ...bet,
+            id: Math.random().toString(36).substring(7),
+            timestamp: new Date() // Fallback timestamp since it's not stored
+          })));
+        }
+      })
+      .catch(console.error);
+
     socketRef.current = io(backendUrl, { withCredentials: true });
 
     socketRef.current.on('live_bet', (data: any) => {

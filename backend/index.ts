@@ -33,6 +33,14 @@ const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
 const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || 'your_api_key_here';
 const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || 'your_ipn_secret_here';
 
+const recentLiveBets: any[] = [];
+
+function emitLiveBet(ioInstance: any, betData: any) {
+  recentLiveBets.unshift(betData);
+  if (recentLiveBets.length > 20) recentLiveBets.pop();
+  ioInstance.emit('live_bet', betData);
+}
+
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -1083,6 +1091,10 @@ app.get('/api/leaderboard', async (req: Request, res: Response) => {
 
 // ─── GAME ROUTES (protected) ──────────────────────────────────────────────────
 
+app.get('/api/bets/live', (req: Request, res: Response) => {
+  res.json(recentLiveBets);
+});
+
 // POST /api/play/coinflip
 app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   const { amount, betOn } = req.body;
@@ -1142,7 +1154,7 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Coinflip', betAmount: amount, multiplier: result.win ? 2 : 0, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Coinflip', betAmount: amount, multiplier: result.win ? 2 : 0, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1209,7 +1221,7 @@ app.post('/api/play/crash', requireAuth, requireNotFrozen, async (req: AuthReque
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Crash', betAmount: amount, multiplier: result.win ? cashoutMultiplier : 0, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Crash', betAmount: amount, multiplier: result.win ? cashoutMultiplier : 0, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1274,7 +1286,7 @@ app.post('/api/play/dice', requireAuth, requireNotFrozen, async (req: AuthReques
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Dice', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Dice', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1353,7 +1365,7 @@ app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRe
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Roulette', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Roulette', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1579,7 +1591,7 @@ app.post('/api/play/mines/cashout', requireAuth, requireNotFrozen, async (req: A
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Mines', betAmount: result.betAmount, multiplier: result.profit > 0 ? 1 : 0, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Mines', betAmount: result.betAmount, multiplier: result.profit > 0 ? 1 : 0, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1649,7 +1661,7 @@ app.post('/api/play/plinko', requireAuth, requireNotFrozen, async (req: AuthRequ
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Plinko', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
+    emitLiveBet(io, { user: result.updatedUser.username, game: 'Plinko', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -2044,7 +2056,7 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
         });
 
         if (!result.isDemo && !result.isBorrow) {
-          io.emit('live_bet', { 
+          emitLiveBet(io, { 
             user: result.updatedUser.username, 
             game: `Case (${selectedCase.name})`, 
             betAmount: selectedCase.price, 
@@ -2617,7 +2629,7 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
     if (!result.winnerId.startsWith('bot-')) {
       const winnerUser = await prisma.user.findUnique({ where: { id: parseInt(result.winnerId) } });
       if (winnerUser) {
-        io.emit('live_bet', { 
+        emitLiveBet(io, { 
           user: winnerUser.username, 
           game: 'Case Battle', 
           betAmount: result.entryFee, 
