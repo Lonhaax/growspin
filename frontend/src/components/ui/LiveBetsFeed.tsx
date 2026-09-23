@@ -95,8 +95,9 @@ export function LiveBetsFeed() {
           <tbody>
             <AnimatePresence initial={false}>
               {bets.map((bet) => {
-                const isWin = bet.profit > 0;
-                const payoutAmount = bet.profit > 0 ? bet.betAmount + bet.profit : 0;
+                const payoutAmount = bet.betAmount + bet.profit;
+                const hasPayout = payoutAmount > 0;
+                const isProfit = bet.profit > 0;
                 
                 return (
                   <motion.tr 
@@ -118,23 +119,26 @@ export function LiveBetsFeed() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5 text-[#a0a5b5] font-bold text-xs">
-                        <img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-3 h-3 object-contain" alt="DL" />
+                        <img src="/dl.webp" className="w-3 h-3 object-contain" alt="DL" />
                         {(bet.betAmount / 100).toFixed(2)}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`font-black text-xs ${isWin ? 'text-green-400' : 'text-[#7a819c]'}`}>
+                      <span className={`font-black text-xs ${isProfit ? 'text-green-400' : (hasPayout ? 'text-yellow-400' : 'text-[#7a819c]')}`}>
                         {bet.multiplier.toFixed(2)}x
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {isWin ? (
-                        <div className="flex items-center justify-end gap-1.5 text-green-400 font-black text-xs">
-                          +<img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-3 h-3 object-contain opacity-80" alt="DL" />
+                      {hasPayout ? (
+                        <div className={`flex items-center justify-end gap-1.5 font-black text-xs ${isProfit ? 'text-green-400' : 'text-yellow-400'}`}>
+                          <img src="/dl.webp" className="w-3 h-3 object-contain opacity-80" alt="DL" />
                           {(payoutAmount / 100).toFixed(2)}
                         </div>
                       ) : (
-                        <span className="text-[#7a819c] font-medium">-</span>
+                        <div className="flex items-center justify-end gap-1.5 font-black text-xs text-[#7a819c]">
+                          <img src="/dl.webp" className="w-3 h-3 object-contain opacity-50 grayscale" alt="DL" />
+                          0.00
+                        </div>
                       )}
                     </td>
                   </motion.tr>
