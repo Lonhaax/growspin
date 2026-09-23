@@ -274,11 +274,11 @@ function setRefreshCookie(res: Response, token: string) {
 }
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   userId?: number;
 }
 
-function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
+export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -3038,7 +3038,7 @@ app.post('/api/admin/chat/rain', requireAuth, requireAdmin, async (req: AuthRequ
       });
       const msg = await tx.chatMessage.create({
         data: {
-          userId: req.user!.id,
+          userId: req.userId!,
           content: `🌧️ Admin just manually dropped ${amount} DLs on ${activeUserIds.length} active chatters! (+${amountPerUser} DLs each)`
         },
         include: { user: { select: { username: true, totalWagered: true } } }
