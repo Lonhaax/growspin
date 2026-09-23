@@ -70,7 +70,7 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-24">
       {/* Hero Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#131620] to-[#0c0e14] border border-[#222738] p-8 md:p-12 shadow-2xl">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#131620] to-[#0c0e14] border border-[#222738] p-6 md:p-8 shadow-2xl">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-accent-green/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -112,7 +112,7 @@ export default function Home() {
           </div>
 
           {/* Quick Stat Card */}
-          <div className="w-full lg:w-80 bg-[#151824]/90 backdrop-blur-md border border-[#262c3f] rounded-2xl p-6 shadow-xl space-y-4">
+          <div className="w-full lg:w-80 bg-[#151824]/90 backdrop-blur-md border border-[#262c3f] rounded-2xl p-5 shadow-xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#202535]">
               <span className="text-xs font-bold text-[#878eab] uppercase tracking-wider">Casino Live Status</span>
               <span className="flex items-center gap-1.5 text-xs font-black text-accent-green">
@@ -164,7 +164,7 @@ export default function Home() {
               <Link
                 key={game.name}
                 href={game.href}
-                className={`group relative bg-[#131620] border border-[#222738] ${game.border} rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl overflow-hidden flex flex-col justify-between min-h-[200px]`}
+                className={`group relative bg-[#131620] border border-[#222738] ${game.border} rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl overflow-hidden flex flex-col justify-between min-h-[160px]`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${game.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
 
@@ -177,7 +177,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <div className="relative z-10 mt-6 space-y-1">
+                <div className="relative z-10 mt-4 space-y-1">
                   <div className="text-lg font-black text-white flex items-center gap-2 group-hover:text-cyan-300 transition-colors">
                     <span>{game.name}</span>
                     <ArrowRight size={16} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
@@ -209,7 +209,7 @@ export default function Home() {
               <Link
                 key={game.name}
                 href={game.href}
-                className="group relative bg-[#12141c] border border-[#1f2433] hover:border-[#2e364c] rounded-2xl p-5 flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-1 hover:bg-[#161a24] shadow-md"
+                className="group relative bg-[#12141c] border border-[#1f2433] hover:border-[#2e364c] rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-1 hover:bg-[#161a24] shadow-md"
               >
                 <div className="w-14 h-14 rounded-xl bg-[#191d2a] border border-[#282f42] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-inner">
                   <Icon size={26} className={game.color} />

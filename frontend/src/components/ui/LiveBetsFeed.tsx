@@ -61,7 +61,7 @@ export function LiveBetsFeed() {
 
   return (
     <div className="w-full mt-8 bg-[#15181f] border border-[#2a2d3a] rounded-xl overflow-hidden">
-      <div className="bg-[#1f222b] border-b border-[#2a2d3a] px-6 py-4 flex items-center gap-3">
+      <div className="bg-[#1f222b] border-b border-[#2a2d3a] px-4 py-3 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
         <h3 className="font-bold text-white uppercase tracking-wider text-sm">Live Bets</h3>
       </div>
@@ -70,11 +70,11 @@ export function LiveBetsFeed() {
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
             <tr className="text-xs text-[#7a819c] border-b border-[#2a2d3a]">
-              <th className="px-6 py-4 font-medium uppercase tracking-wider w-1/4">Game</th>
-              <th className="px-6 py-4 font-medium uppercase tracking-wider w-1/4">User</th>
-              <th className="px-6 py-4 font-medium uppercase tracking-wider w-1/6">Bet</th>
-              <th className="px-6 py-4 font-medium uppercase tracking-wider w-1/6">Multiplier</th>
-              <th className="px-6 py-4 font-medium uppercase tracking-wider w-1/6 text-right">Payout</th>
+              <th className="px-4 py-2.5 font-bold uppercase tracking-widest text-[10px] w-1/4">Game</th>
+              <th className="px-4 py-2.5 font-bold uppercase tracking-widest text-[10px] w-1/4">User</th>
+              <th className="px-4 py-2.5 font-bold uppercase tracking-widest text-[10px] w-1/6">Bet</th>
+              <th className="px-4 py-2.5 font-bold uppercase tracking-widest text-[10px] w-1/6">Multiplier</th>
+              <th className="px-4 py-2.5 font-bold uppercase tracking-widest text-[10px] w-1/6 text-right">Payout</th>
             </tr>
           </thead>
           <tbody>
@@ -92,30 +92,30 @@ export function LiveBetsFeed() {
                     transition={{ duration: 0.5 }}
                     className="border-b border-[#2a2d3a]/50 hover:bg-[#1a1d24] transition-colors"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 font-medium">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 font-bold text-xs">
                         {getGameIcon(bet.game)}
                         <span className="text-white">{bet.game}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-gray-300">{bet.user}</span>
+                    <td className="px-4 py-3">
+                      <span className="font-bold text-xs text-gray-300">{bet.user}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 text-[#a0a5b5] font-medium">
-                        <img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-4 h-4 object-contain" alt="DL" />
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-[#a0a5b5] font-bold text-xs">
+                        <img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-3 h-3 object-contain" alt="DL" />
                         {(bet.betAmount / 100).toFixed(2)}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`font-bold ${isWin ? 'text-green-400' : 'text-[#7a819c]'}`}>
+                    <td className="px-4 py-3">
+                      <span className={`font-black text-xs ${isWin ? 'text-green-400' : 'text-[#7a819c]'}`}>
                         {bet.multiplier.toFixed(2)}x
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-3 text-right">
                       {isWin ? (
-                        <div className="flex items-center justify-end gap-1.5 text-green-400 font-bold">
-                          +<img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-4 h-4 object-contain opacity-80" alt="DL" />
+                        <div className="flex items-center justify-end gap-1.5 text-green-400 font-black text-xs">
+                          +<img src="https://growtopiagame.com/assets/images/diamond_lock.png" className="w-3 h-3 object-contain opacity-80" alt="DL" />
                           {(payoutAmount / 100).toFixed(2)}
                         </div>
                       ) : (

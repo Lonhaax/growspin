@@ -165,14 +165,14 @@ export function ChatSidebar() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="absolute top-16 left-0 right-0 z-20 bg-gradient-to-r from-blue-600/90 to-blue-400/90 border-b border-blue-400/50 shadow-[0_10px_20px_rgba(59,130,246,0.3)] backdrop-blur-md overflow-hidden"
+                  className="absolute top-16 left-0 right-0 z-20 bg-[#161a24]/95 border-b border-blue-500/30 shadow-lg backdrop-blur-md overflow-hidden"
                 >
                   <div className="p-3 flex flex-col items-center justify-center gap-2">
-                    <div className="flex items-center gap-2 text-white font-bold text-sm">
-                      <Droplet size={18} className="animate-bounce text-blue-200" />
-                      RAIN DROP: {(activeRain.amount / 100).toFixed(2)} DLs
+                    <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-widest">
+                      <Droplet size={14} className="animate-pulse" />
+                      Rain Drop: {(activeRain.amount / 100).toFixed(2)} DLs
                     </div>
-                    <div className="flex w-full items-center justify-between text-xs font-semibold text-blue-100 px-2">
+                    <div className="flex w-full items-center justify-between text-[10px] font-bold text-[#7a819c] px-2 uppercase tracking-wider">
                       <span>{activeRain.joinedCount} Joined</span>
                       <span>{rainTimeLeft}s Left</span>
                     </div>
@@ -187,8 +187,8 @@ export function ChatSidebar() {
                       disabled={activeRain.hasJoined}
                       className={`w-full py-2 rounded font-bold text-xs shadow-lg transition-all ${
                         activeRain.hasJoined 
-                          ? "bg-black/40 text-blue-200 cursor-not-allowed" 
-                          : "bg-white text-blue-600 hover:bg-blue-50"
+                          ? "bg-blue-500/10 text-blue-500/50 border border-blue-500/20 cursor-not-allowed" 
+                          : "bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-blue-400"
                       }`}
                     >
                       {activeRain.hasJoined ? "JOINED" : "JOIN RAIN"}
@@ -199,30 +199,30 @@ export function ChatSidebar() {
             </AnimatePresence>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            <div className="flex-1 overflow-y-auto p-2 space-y-2">
               {messages.length === 0 ? (
                 <div className="text-center text-[#7a819c] text-sm mt-10">No messages yet.</div>
               ) : (
                 messages.map((msg) => (
-                  <div key={msg.id} className="text-sm animate-in fade-in slide-in-from-bottom-2">
-                    <div className="flex items-baseline gap-2 mb-1">
+                  <div key={msg.id} className="text-[13px] animate-in fade-in slide-in-from-bottom-2">
+                    <div className="flex items-baseline gap-1.5 mb-0.5">
                       {msg.user.username === 'System' ? (
-                        <span className="font-black text-xs uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">
+                        <span className="font-black text-[9px] uppercase px-1 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400">
                           SYSTEM
                         </span>
                       ) : (
-                        <span className={`font-black text-xs uppercase px-1.5 py-0.5 rounded bg-black/30 ${getVIPColor(msg.user.totalWagered)}`}>
+                        <span className={`font-black text-[9px] uppercase px-1 py-0.5 rounded bg-[#161a24] border border-[#2a2d3a] ${getVIPColor(msg.user.totalWagered)}`}>
                           {getVIPTierName(msg.user.totalWagered)}
                         </span>
                       )}
                       <span className={`font-bold ${msg.user.username === 'System' ? 'text-blue-400' : 'text-white'}`}>
                         {msg.user.username}
                       </span>
-                      <span className="text-xs text-[#7a819c]">
+                      <span className="text-[10px] text-[#5c637a]">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className={`${msg.user.username === 'System' ? 'text-blue-300 font-medium' : 'text-[#a0a5b5]'} leading-relaxed break-words pl-1`}>
+                    <div className={`${msg.user.username === 'System' ? 'text-blue-300 font-medium' : 'text-[#878eab]'} leading-snug break-words pl-0.5`}>
                       {msg.content}
                     </div>
                   </div>
