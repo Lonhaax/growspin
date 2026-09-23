@@ -70,51 +70,29 @@ function DepositHandler(var, pkt)
             end)
         end
     end
-end
-
+-- Cleaned up basic hooks to prevent engine crash
 addHook(DepositHandler, "onVariant")
-addHook(DepositHandler, "OnVariant")
 
-local function OutgoingHook(type, packet)
-    if type == 3 or type == 2 then
-        if packet and packet:lower():find("drop") then
-            log("DEBUG Outgoing Text Packet: " .. tostring(packet))
+addHook(function(type, packet)
+    -- Log all incoming variant list packets
+    if type == 1 then
+        log("DEBUG Type 1 (Variant List)")
+    end
+    -- Log all text packets
+    if type == 2 or type == 3 then
+        if packet and string.find(string.lower(packet), "drop") then
+            log("DEBUG Text Packet with 'drop': " .. tostring(packet))
         end
     end
-end
-addHook(OutgoingHook, "onSendPacket")
-addHook(OutgoingHook, "OnSendPacket")
+end, "onPacket")
 
-local function IncomingTextHook(type, packet)
-    if type == 3 or type == 2 then
-        if packet and packet:lower():find("drop") then
-            log("DEBUG Incoming Text Packet: " .. tostring(packet))
+addHook(function(type, packet)
+    if type == 2 or type == 3 then
+        if packet and string.find(string.lower(packet), "drop") then
+            log("DEBUG Outgoing Text Packet with 'drop': " .. tostring(packet))
         end
     end
-end
-addHook(IncomingTextHook, "onPacket")
-addHook(IncomingTextHook, "OnPacket")
-addHook(IncomingTextHook, "OnGamePacket")
-
--- DEBUG: Log EVERY packet to see what happens when dropping
-local captureDrops = false
-local function IncomingTankHook(type, packet)
-    if type == 4 then
-        if type(packet) == "table" then
-            if packet.type == 14 then
-                log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
-                local str = ""
-                for k, v in pairs(packet) do
-                    str = str .. k .. "=" .. tostring(v) .. " "
-                end
-                log("DEBUG TankPacket Data: " .. str)
-            end
-        end
-    end
-end
-addHook(IncomingTankHook, "onPacket")
-addHook(IncomingTankHook, "OnPacket")
-addHook(IncomingTankHook, "OnGamePacket")
+end, "onSendPacket")
 
 log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
 
