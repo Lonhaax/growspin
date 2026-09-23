@@ -139,7 +139,7 @@ export default function ItemManager() {
     <div className="space-y-6">
       
       {/* Add Item Panel */}
-      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
         <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
           <Database className="text-emerald-500" /> Add New Item
         </h2>
@@ -216,7 +216,7 @@ export default function ItemManager() {
       </div>
 
       {/* Item List */}
-      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h2 className="text-xl font-black text-white flex items-center gap-2">
             Items Database ({items.length})

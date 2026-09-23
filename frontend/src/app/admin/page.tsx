@@ -340,7 +340,7 @@ export default function AdminPage() {
     <div className="max-w-6xl mx-auto space-y-10 pb-32">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6 bg-[#131620] p-6 rounded-3xl border border-[#222738] shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6 bg-[#131620] p-5 rounded-2xl border border-[#222738] shadow-xl">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
             <Shield size={28} />
@@ -819,7 +819,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         {/* Casino Pot */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl mb-8">
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl mb-8">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
             <Settings2 className="text-amber-400" size={20} /> Casino Pot
           </h2>
@@ -839,7 +839,7 @@ export default function AdminPage() {
         </div>
 
         {/* Global Configuration */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
             <Settings2 className="text-accent-blue" size={20} /> Global Configuration
           </h2>
@@ -871,7 +871,7 @@ export default function AdminPage() {
         </div>
 
         {/* Case Borrowing Configuration */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
             <HandCoins className="text-amber-400" size={20} /> Case Borrowing & Credit Limit
           </h2>
@@ -918,7 +918,7 @@ export default function AdminPage() {
         </div>
 
         {/* Slots Configuration */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
             <Dice1 className="text-emerald-500" size={20} /> Slots Configuration
           </h2>
@@ -964,7 +964,7 @@ export default function AdminPage() {
         </div>
 
         {/* House Edge & Game Toggles */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
             <Dice1 className="text-purple-500" size={20} /> Games Configuration
           </h2>
@@ -1006,7 +1006,7 @@ export default function AdminPage() {
 
       {/* TAB 3: CASE MANAGEMENT */}
       {activeTab === "cases" && (
-      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-black text-white flex items-center gap-2">
             <PackageOpen className="text-accent-green" size={20} /> Case Management
@@ -1020,7 +1020,7 @@ export default function AdminPage() {
         </div>
 
         {editingCase || isCreatingCase ? (
-          <div className="bg-[#1f222b] p-6 rounded-2xl border border-[#2a2d3a] space-y-6">
+          <div className="bg-[#1f222b] p-5 rounded-2xl border border-[#2a2d3a] space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-black text-white">{isCreatingCase ? 'Create Case' : 'Edit Case'}</h3>
               <button onClick={() => { setEditingCase(null); setIsCreatingCase(false); }} className="text-[#7a819c] font-bold text-sm hover:text-white">CANCEL</button>

@@ -120,7 +120,7 @@ export default function AdvancedCaseCreator() {
     <div className="space-y-6">
       
       {/* SECTION 1: Item Selection Grid */}
-      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h2 className="text-xl font-black text-white flex items-center gap-2">
             <Box className="text-indigo-500" /> Create new case
@@ -181,7 +181,7 @@ export default function AdvancedCaseCreator() {
       </div>
 
       {/* SECTION 2: Item Chances */}
-      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
         <h3 className="text-sm font-bold text-[#7a819c] mb-4 uppercase tracking-wider">Item chances</h3>
         
         {selectedItems.length === 0 ? (
@@ -227,12 +227,12 @@ export default function AdvancedCaseCreator() {
       </div>
 
       {/* SECTION 3: Style & Create */}
-      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-6 shadow-xl">
+      <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
         <h3 className="text-sm font-bold text-[#7a819c] mb-6 uppercase tracking-wider">Style your case</h3>
         
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left: Chest Preview */}
-          <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0a0d14] rounded-2xl border border-[#202535] relative overflow-hidden group">
+          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-[#0a0d14] rounded-2xl border border-[#202535] relative overflow-hidden group">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5"></div>
             
             {/* We use an SVG chest or a highly stylable placeholder */}
