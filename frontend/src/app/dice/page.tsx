@@ -13,7 +13,7 @@ export default function DicePage() {
   const { user, refreshUser, openAuthModal } = useAuth();
   
   const [betAmount, setBetAmount] = useState<string>("10.00");
-  const [target, setTarget] = useState<number>(50); // Roll over this number to win (0-100)
+  const [target, setTarget] = useState<number>(50); // Roll under this number to win (0-100)
   
   const [isRolling, setIsRolling] = useState(false);
   const [result, setResult] = useState<{ roll: number, win: boolean, profit: number } | null>(null);
@@ -56,7 +56,7 @@ export default function DicePage() {
     }
   };
 
-  const winChance = 100 - target;
+  const winChance = target;
   const multiplier = 99 / winChance;
   const potentialWin = parseFloat(betAmount) * multiplier;
 
@@ -104,10 +104,10 @@ export default function DicePage() {
             </motion.div>
           )}
 
-          {/* Slider background (red = lose, green = win based on target) */}
+          {/* Slider background (green = win, red = lose based on target) */}
           <div className="h-4 rounded-full flex overflow-hidden shadow-inner bg-[#1f222b] relative">
-            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${target}%` }} />
-            <div className="h-full bg-accent-green transition-all duration-300 shadow-[0_0_15px_rgba(0,230,118,0.8)]" style={{ width: `${100 - target}%` }} />
+            <div className="h-full bg-accent-green transition-all duration-300 shadow-[0_0_15px_rgba(0,230,118,0.8)]" style={{ width: `${target}%` }} />
+            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${100 - target}%` }} />
           </div>
           
           <input 
@@ -134,7 +134,7 @@ export default function DicePage() {
             <div className="text-white font-black text-xl">{multiplier.toFixed(2)}x</div>
           </div>
           <div className="text-center border-r border-[#2a2d3a]">
-            <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-widest mb-1">Roll Over</div>
+            <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-widest mb-1">Roll Under</div>
             <div className="text-accent-blue font-black text-xl">{target}</div>
           </div>
           <div className="text-center">
