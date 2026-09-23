@@ -72,24 +72,27 @@ function DepositHandler(var, pkt)
     end
 end
 
--- Dump Global Environment (_G) to find the correct API
+-- Hook Brute-Forcer
 
-log("=========================================")
-log("DUMPING POWERKUY LUA API")
-log("=========================================")
+local hookNames = {
+    "OnVariant", "onVariant", "OnVarlist", "onVarlist",
+    "OnPacket", "onPacket", "OnGamePacket", "onGamePacket",
+    "OnTextPacket", "onTextPacket", "OnSendToServer", "onSendToServer",
+    "OnSendPacket", "onSendPacket", "OnProcess", "onProcess",
+    "OnUpdate", "onUpdate", "OnDialogRequest", "onDialogRequest",
+    "OnTalkBubble", "onTalkBubble", "OnConsoleMessage", "onConsoleMessage",
+    "OnTradeRequest", "onTradeRequest", "OnTradeStatus", "onTradeStatus"
+}
 
-local count = 0
-for k, v in pairs(_G) do
-    if type(v) == "function" or type(v) == "table" then
-        log("API Member: " .. tostring(k) .. " (" .. type(v) .. ")")
-        count = count + 1
-    end
+-- We use pcall to safely add hooks in case the engine crashes on unknown hook names
+for _, name in ipairs(hookNames) do
+    pcall(function()
+        addHook(function(...)
+            -- Just log that the hook fired, we don't care about the arguments right now
+            -- We want to avoid any complex logic that could crash
+            log("DEBUG: HOOK FIRED -> " .. tostring(name))
+        end, name)
+    end)
 end
 
-log("=========================================")
-log("Total API Members Found: " .. tostring(count))
-log("=========================================")
-
--- Keep the script alive just in case
-addHook(function() end, "onDraw")
-log("[+] API Dumper loaded. Check console for available functions.")
+log("[+] Hook Brute-Forcer loaded. Do a trade and see what fires!")
