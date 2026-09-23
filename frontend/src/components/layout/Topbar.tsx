@@ -44,8 +44,7 @@ export function Topbar() {
       <header className="h-14 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-20">
         <div className="flex items-center gap-4">
         <Link href="/" className="md:hidden flex items-center gap-2">
-          <img src="/dl.webp" alt="DL" className="w-6 h-6 object-contain" />
-          <span className="font-black text-white text-base">GrowSpin</span>
+          <img src="/logo.png" alt="GrowSpin" className="h-8 w-auto object-contain" />
         </Link>
         <div className="hidden lg:flex items-center gap-2">
           <Link
