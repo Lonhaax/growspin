@@ -15,8 +15,17 @@ type LiveBet = {
   timestamp: Date;
 };
 
+import { useAuth } from "@/context/AuthContext";
+import { SoundManager } from "@/lib/audio";
+
 export function LiveBetsFeed() {
+  const { user: localUser } = useAuth();
+  const [activeTab, setActiveTab] = useState<"recent" | "highRollers" | "luckyWins">("recent");
+  
   const [bets, setBets] = useState<LiveBet[]>([]);
+  const [highRollers, setHighRollers] = useState<LiveBet[]>([]);
+  const [luckyWins, setLuckyWins] = useState<LiveBet[]>([]);
+  
   const socketRef = useRef<any>(null);
 
   useEffect(() => {
@@ -26,12 +35,15 @@ export function LiveBetsFeed() {
     fetch(`${backendUrl}/api/bets/live`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setBets(data.map(bet => ({
-            ...bet,
-            id: Math.random().toString(36).substring(7),
-            timestamp: new Date() // Fallback timestamp since it's not stored
-          })));
+        if (data && data.recent) {
+          const mapBets = (arr: any[]) => arr.map(bet => ({ ...bet, id: Math.random().toString(36).substring(7), timestamp: new Date() }));
+          setBets(mapBets(data.recent));
+          setHighRollers(mapBets(data.highRollers || []));
+          setLuckyWins(mapBets(data.luckyWins || []));
+        } else if (Array.isArray(data)) {
+          // Fallback if backend wasn't updated yet
+          const mapBets = (arr: any[]) => arr.map(bet => ({ ...bet, id: Math.random().toString(36).substring(7), timestamp: new Date() }));
+          setBets(mapBets(data));
         }
       })
       .catch(console.error);
@@ -45,9 +57,31 @@ export function LiveBetsFeed() {
         timestamp: new Date()
       };
       
+      // Play sound if the local user won something
+      const payoutAmount = newBet.betAmount + newBet.profit;
+      if (localUser && newBet.user === localUser.username && payoutAmount > 0) {
+        SoundManager.playWinChime();
+      }
+      
       setBets(prev => {
         const next = [newBet, ...prev];
-        return next.slice(0, 10); // Keep last 10 bets
+        return next.slice(0, 10);
+      });
+
+      setHighRollers(prev => {
+        if (payoutAmount > 0) {
+          const next = [...prev, { ...newBet, payoutAmount }];
+          return next.sort((a: any, b: any) => (b.payoutAmount || 0) - (a.payoutAmount || 0)).slice(0, 10);
+        }
+        return prev;
+      });
+
+      setLuckyWins(prev => {
+        if (newBet.multiplier >= 1) {
+          const next = [...prev, newBet];
+          return next.sort((a, b) => b.multiplier - a.multiplier).slice(0, 10);
+        }
+        return prev;
       });
     });
 
@@ -74,11 +108,37 @@ export function LiveBetsFeed() {
     );
   }
 
+  // Determine which list to show
+  const activeBets = activeTab === "recent" ? bets : activeTab === "highRollers" ? highRollers : luckyWins;
+
   return (
-    <div className="w-full mt-8 bg-[#15181f] border border-[#2a2d3a] rounded-xl overflow-hidden">
-      <div className="bg-[#1f222b] border-b border-[#2a2d3a] px-4 py-3 flex items-center gap-3">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-        <h3 className="font-bold text-white uppercase tracking-wider text-sm">Live Bets</h3>
+    <div className="w-full mt-8 bg-[#15181f] border border-[#2a2d3a] rounded-xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+      <div className="bg-[#1f222b] border-b border-[#2a2d3a] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+          <h3 className="font-bold text-white uppercase tracking-wider text-sm">Live Bets</h3>
+        </div>
+        
+        <div className="flex bg-[#15181f] p-1 rounded-lg border border-[#2a2d3a]">
+          <button 
+            onClick={() => setActiveTab("recent")}
+            className={`px-4 py-1 rounded text-xs font-bold transition-all ${activeTab === "recent" ? "bg-accent-blue/20 text-accent-blue" : "text-[#7a819c] hover:text-white"}`}
+          >
+            All Bets
+          </button>
+          <button 
+            onClick={() => setActiveTab("highRollers")}
+            className={`px-4 py-1 rounded text-xs font-bold transition-all ${activeTab === "highRollers" ? "bg-yellow-400/20 text-yellow-400" : "text-[#7a819c] hover:text-white"}`}
+          >
+            High Rollers
+          </button>
+          <button 
+            onClick={() => setActiveTab("luckyWins")}
+            className={`px-4 py-1 rounded text-xs font-bold transition-all ${activeTab === "luckyWins" ? "bg-green-400/20 text-green-400" : "text-[#7a819c] hover:text-white"}`}
+          >
+            Lucky Wins
+          </button>
+        </div>
       </div>
       
       <div className="overflow-x-auto">
@@ -94,7 +154,13 @@ export function LiveBetsFeed() {
           </thead>
           <tbody>
             <AnimatePresence initial={false}>
-              {bets.map((bet) => {
+              {activeBets.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-8 text-[#7a819c] font-medium text-sm">
+                    Waiting for bets...
+                  </td>
+                </tr>
+              ) : activeBets.map((bet) => {
                 const payoutAmount = bet.betAmount + bet.profit;
                 const hasPayout = payoutAmount > 0;
                 const isProfit = bet.profit > 0;

@@ -7,6 +7,7 @@ import { MessageSquare, Send, ChevronRight, ChevronLeft, Droplet } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 import io from "socket.io-client";
 import { useWallet } from "@/context/WalletContext";
+import { SoundManager } from "@/lib/audio";
 
 type ChatMsg = {
   id: number;
@@ -64,6 +65,7 @@ export function ChatSidebar() {
 
     socketRef.current.on('chat_message', (msg: ChatMsg) => {
       setMessages(prev => [...prev, msg].slice(-50));
+      SoundManager.playPop();
     });
 
     socketRef.current.on('rain_started', (data: { amount: number, endTime: number, joinedCount: number }) => {

@@ -34,10 +34,30 @@ const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || 'your_api_key_her
 const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || 'your_ipn_secret_here';
 
 const recentLiveBets: any[] = [];
+const highRollerBets: any[] = [];
+const luckyWins: any[] = [];
 
 function emitLiveBet(ioInstance: any, betData: any) {
+  // Recent bets
   recentLiveBets.unshift(betData);
   if (recentLiveBets.length > 10) recentLiveBets.pop();
+  
+  // High Rollers (Top 10 highest payout amounts)
+  const payoutAmount = betData.profit > 0 ? betData.betAmount + betData.profit : 0;
+  if (payoutAmount > 0) {
+    // Add if it beats the lowest or we don't have 10 yet
+    highRollerBets.push({ ...betData, payoutAmount });
+    highRollerBets.sort((a, b) => b.payoutAmount - a.payoutAmount);
+    if (highRollerBets.length > 10) highRollerBets.pop();
+  }
+
+  // Lucky Wins (Top 10 highest multipliers)
+  if (betData.multiplier >= 1) {
+    luckyWins.push(betData);
+    luckyWins.sort((a, b) => b.multiplier - a.multiplier);
+    if (luckyWins.length > 10) luckyWins.pop();
+  }
+
   ioInstance.emit('live_bet', betData);
 }
 
@@ -1092,7 +1112,11 @@ app.get('/api/leaderboard', async (req: Request, res: Response) => {
 // ─── GAME ROUTES (protected) ──────────────────────────────────────────────────
 
 app.get('/api/bets/live', (req: Request, res: Response) => {
-  res.json(recentLiveBets);
+  res.json({
+    recent: recentLiveBets,
+    highRollers: highRollerBets,
+    luckyWins: luckyWins
+  });
 });
 
 // POST /api/play/coinflip
@@ -4084,7 +4108,7 @@ setInterval(async () => {
     // 5% chance every minute to trigger rain (avg every 20 minutes)
     if (Math.random() > 0.05) return;
 
-    // Find users who chatted in the last 15 minutes
+    // Find users who chatted in the last 15 minutes to see if chat is active enough for rain
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
     const recentMessages = await prisma.chatMessage.findMany({
       where: { timestamp: { gte: fifteenMinsAgo } },
@@ -4094,29 +4118,15 @@ setInterval(async () => {
 
     if (recentMessages.length === 0) return;
 
-    const activeUserIds = recentMessages.map(m => m.userId);
     const totalRainAmount = 1000 * Math.floor(Math.random() * 5 + 1); // 1,000 to 5,000 cents (10 to 50 DLs)
-    const amountPerUser = Math.floor(totalRainAmount / activeUserIds.length);
-
-    await prisma.$transaction(async (tx) => {
-      // Add balance to users
-      await tx.user.updateMany({
-        where: { id: { in: activeUserIds } },
-        data: { mockBalance: { increment: amountPerUser } }
-      });
-      // Insert chat message from Rain Bot
-      const msg = await tx.chatMessage.create({
-        data: {
-          userId: 1, // Assumes Admin/System user is ID 1. Wait, let's just make it a raw string or create a system user if needed? Let's just create a mock system user ID 0 if possible, or omit it. Actually, Prisma requires valid foreign keys. So we will use a special bot user. If none exists, we can create one or just use user ID 1 (Admin).
-          content: `🌧️ Rain Bot just dropped ${totalRainAmount} DLs on ${activeUserIds.length} active chatters! (+${amountPerUser} DLs each)`
-        },
-        include: { user: { select: { username: true, totalWagered: true } } }
-      });
-      io.emit('chat_rain', { totalAmount: totalRainAmount, users: activeUserIds.length, amountPerUser });
-      io.emit('chat_message', msg);
-    });
-
-    console.log(`🌧️ Rain Bot dropped ${totalRainAmount} on ${activeUserIds.length} users`);
+    
+    // Trigger the automated rain drop via the bot system
+    try {
+      await triggerRain(totalRainAmount);
+      console.log(`🌧️ Rain Bot started a ${totalRainAmount} DL drop.`);
+    } catch (e) {
+      // Ignore if a rain drop is already active
+    }
   } catch (error) {
     console.error("Rain bot error:", error);
   }

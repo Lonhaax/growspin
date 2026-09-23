@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { Wallet, Bell, MessageSquare, ChevronDown, LogOut, Star, Gift, Crown, HandCoins } from "lucide-react";
+import { Wallet, Bell, MessageSquare, ChevronDown, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
@@ -9,12 +9,14 @@ import { apiFetch } from "@/lib/auth";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import DepositModal from "@/components/deposit/DepositModal";
 import RewardsModal from "@/components/rewards/RewardsModal";
+import { SoundManager } from "@/lib/audio";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [claiming, setClaiming] = useState(false);
 
   const handleClaimRakeback = async () => {
@@ -92,6 +94,16 @@ export function Topbar() {
             )}
 
             {/* Rewards Button */}
+            <button
+              onClick={() => {
+                const muted = SoundManager.toggleMute();
+                setIsMuted(muted);
+              }}
+              className="hidden sm:flex items-center gap-1.5 text-[#7a819c] hover:text-white bg-[#15181f] border border-[#2a2d3a] hover:border-[#3a3f58] rounded-lg px-2 h-9 transition-colors"
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+
             <button
               onClick={() => setRewardsOpen(true)}
               className="hidden sm:flex items-center gap-1.5 text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-3 h-9 transition-colors text-sm font-bold"

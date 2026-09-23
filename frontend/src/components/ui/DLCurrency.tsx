@@ -21,7 +21,7 @@ export function DLCurrency({
 }: DLCurrencyProps) {
   const value = isRaw ? amount : amount / 100;
 
-  const springValue = useSpring(value, { bounce: 0, duration: 800 });
+  const springValue = useSpring(value, { mass: 1, stiffness: 50, damping: 15 });
   
   useEffect(() => {
     springValue.set(value);
