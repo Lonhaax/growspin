@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
