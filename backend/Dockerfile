@@ -14,7 +14,7 @@ COPY . .
 RUN npx prisma generate
 
 # Compile the C++ bot
-RUN g++ -o bot/enet_bot/bot bot/enet_bot/main.cpp -lenet -lcurl
+RUN g++ -o bot/enet_bot/bot bot/enet_bot/main.cpp -l:libenet.a -lcurl
 
 EXPOSE 3001
 
