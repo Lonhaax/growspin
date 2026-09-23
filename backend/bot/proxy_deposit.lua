@@ -77,6 +77,8 @@ local lastObjects = {}
 -- Helper to check if an object is newly dropped
 local function detectNewDrops()
     -- This relies on GetObjects() being supported by the proxy
+    if type(GetObjects) ~= "function" then return end
+    
     local success, currentObjects = pcall(GetObjects)
     if not success or type(currentObjects) ~= "table" then return end
     
@@ -100,15 +102,17 @@ local function detectNewDrops()
                     
                     -- We don't know who dropped it purely from GetObjects, so we credit the nearest player
                     local dropper = "UNKNOWN"
-                    local pcallSuccess, players = pcall(GetPlayers)
-                    if pcallSuccess and type(players) == "table" then
-                        local minDist = 999999
-                        for _, p in pairs(players) do
-                            if p.name and p.x and p.y and obj.x and obj.y then
-                                local dist = (p.x - obj.x)^2 + (p.y - obj.y)^2
-                                if dist < minDist then
-                                    minDist = dist
-                                    dropper = p.name
+                    if type(GetPlayers) == "function" then
+                        local pcallSuccess, players = pcall(GetPlayers)
+                        if pcallSuccess and type(players) == "table" then
+                            local minDist = 999999
+                            for _, p in pairs(players) do
+                                if p.name and p.x and p.y and obj.x and obj.y then
+                                    local dist = (p.x - obj.x)^2 + (p.y - obj.y)^2
+                                    if dist < minDist then
+                                        minDist = dist
+                                        dropper = p.name
+                                    end
                                 end
                             end
                         end
