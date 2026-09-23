@@ -1575,11 +1575,11 @@ app.post('/api/play/mines/cashout', requireAuth, requireNotFrozen, async (req: A
           data: { status: 'cashed_out' }
         });
 
-        return { status: 'cashed_out', profit: game.profit, updatedUser, mineLocations };
+        return { status: 'cashed_out', profit: game.profit, updatedUser, mineLocations, betAmount: game.betAmount };
       });
     });
 
-    io.emit('live_bet', { user: result.updatedUser.username, game: 'Mines', betAmount: result.profit > 0 ? (result.profit / (result.profit > 0 ? result.profit : 1)) : 0, multiplier: result.profit > 0 ? 1 : 0, profit: result.profit }); // Simplified
+    io.emit('live_bet', { user: result.updatedUser.username, game: 'Mines', betAmount: result.betAmount, multiplier: result.profit > 0 ? 1 : 0, profit: result.profit });
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -2042,6 +2042,16 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
             };
           });
         });
+
+        if (!result.isDemo && !result.isBorrow) {
+          io.emit('live_bet', { 
+            user: result.updatedUser.username, 
+            game: `Case (${selectedCase.name})`, 
+            betAmount: selectedCase.price, 
+            multiplier: result.winningItem.value / selectedCase.price, 
+            profit: result.winningItem.value - selectedCase.price 
+          });
+        }
 
         res.json(result);
       } catch (txErr: any) {
@@ -2601,8 +2611,22 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         }
       }
 
-      return { battleId, rounds, winnerId, totalPotValue, mode: battle.mode, isTie, tiedPlayers };
+      return { battleId, rounds, winnerId, totalPotValue, mode: battle.mode, isTie, tiedPlayers, entryFee: battle.entryFee, numPlayers: battle.participants.length };
     });
+
+    if (!result.winnerId.startsWith('bot-')) {
+      const winnerUser = await prisma.user.findUnique({ where: { id: parseInt(result.winnerId) } });
+      if (winnerUser) {
+        io.emit('live_bet', { 
+          user: winnerUser.username, 
+          game: 'Case Battle', 
+          betAmount: result.entryFee, 
+          multiplier: result.totalPotValue / (result.entryFee || 1), 
+          profit: result.totalPotValue - result.entryFee 
+        });
+      }
+    }
+
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
