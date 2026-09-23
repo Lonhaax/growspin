@@ -57,6 +57,10 @@ const authLimiter = rateLimit({
 
 // app.use('/api/', apiLimiter);
 // app.use('/api/auth/', authLimiter);
+
+import vipRoutes from './routes/vip';
+app.use('/api/vip', vipRoutes);
+
 // ─── VIP Helpers & Tiers ──────────────────────────────────────────────────────
 const VIP_TIERS = [
   {
@@ -3005,6 +3009,51 @@ app.put('/api/admin/settings', requireAuth, requireAdmin, async (req: AuthReques
   }
 });
 
+// POST /api/admin/chat/rain - Manually trigger a rain drop
+app.post('/api/admin/chat/rain', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Valid amount is required' });
+    }
+
+    const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const recentMessages = await prisma.chatMessage.findMany({
+      where: { timestamp: { gte: fifteenMinsAgo } },
+      select: { userId: true },
+      distinct: ['userId']
+    });
+
+    if (recentMessages.length === 0) {
+      return res.status(400).json({ error: 'No active chatters to rain on.' });
+    }
+
+    const activeUserIds = recentMessages.map(m => m.userId);
+    const amountPerUser = Math.floor(amount / activeUserIds.length);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.updateMany({
+        where: { id: { in: activeUserIds } },
+        data: { mockBalance: { increment: amountPerUser } }
+      });
+      const msg = await tx.chatMessage.create({
+        data: {
+          userId: req.user!.id,
+          content: `🌧️ Admin just manually dropped ${amount} DLs on ${activeUserIds.length} active chatters! (+${amountPerUser} DLs each)`
+        },
+        include: { user: { select: { username: true, totalWagered: true } } }
+      });
+      io.emit('chat_rain', { totalAmount: amount, users: activeUserIds.length, amountPerUser });
+      io.emit('chat_message', msg);
+    });
+
+    res.json({ success: true, amount, users: activeUserIds.length });
+  } catch (error) {
+    console.error("Admin rain error:", error);
+    res.status(500).json({ error: "Failed to process manual rain drop" });
+  }
+});
+
 // GET /api/admin/users - List players with search & pagination
 app.get('/api/admin/users', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -3939,6 +3988,9 @@ setInterval(async () => {
 
 const HOST = process.env.HOST || '0.0.0.0';
 
+import { startChatBot } from './bot/chat_bot';
+import { startCryptoWatcher } from './services/crypto_watcher';
+
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
   
@@ -3946,6 +3998,9 @@ io.on('connection', (socket) => {
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });
+
+startChatBot(io);
+startCryptoWatcher();
 
 httpServer.listen(PORT, () => {
   console.log(`\n✅ Server running on http://0.0.0.0:${PORT}`);

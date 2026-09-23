@@ -22,6 +22,9 @@ model User {
   isFrozen        Boolean         @default(false)
   lastFaucetClaim DateTime?
   createdAt       DateTime        @default(now())
+  affiliateCode   String?         @unique
+  referredBy      String?
+  affiliateEarnings Int           @default(0)
   transactions    Transaction[]
   refreshTokens   RefreshToken[]
   inventory       UserItem[]

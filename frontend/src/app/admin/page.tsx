@@ -107,6 +107,31 @@ export default function AdminPage() {
     setLoading(false);
   };
 
+  const handleTriggerRain = async () => {
+    const amountStr = prompt("Enter amount of DLs to drop in Chat Rain:", "1000");
+    if (!amountStr) return;
+    const amount = parseInt(amountStr);
+    if (isNaN(amount) || amount <= 0) return alert("Invalid amount.");
+    
+    setLoading(true); setError(""); setSuccess("");
+    try {
+      const res = await apiFetch("/admin/chat/rain", {
+        method: "POST",
+        body: JSON.stringify({ amount })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSuccess(`Successfully dropped ${amount} DLs on ${data.users} active chatters!`);
+      } else {
+        const err = await res.json();
+        setError(err.error || "Failed to trigger rain");
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
   const handleWithdrawPot = async () => {
     setLoading(true); setError(""); setSuccess("");
     try {
@@ -386,6 +411,12 @@ export default function AdminPage() {
                   title="Refresh Players"
                 >
                   <RefreshCw size={14} className={usersLoading ? "animate-spin" : ""} />
+                </button>
+                <button
+                  onClick={handleTriggerRain}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white text-xs font-bold shadow-lg hover:shadow-cyan-500/20 transition-all"
+                >
+                  <AlertTriangle size={14} /> Drop Rain
                 </button>
               </div>
             </div>
