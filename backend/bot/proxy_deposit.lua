@@ -18,17 +18,22 @@ function DepositHandler(var, pkt)
         
         local itemID = tonumber(var.v3)
         local count = tonumber(var.v4) -- adjust index if needed
+        local netID = tonumber(var.v2)
         
         if itemID == TARGET_ITEM_ID then
             local currentWorld = GetWorldName()
             if currentWorld == "" then currentWorld = "UNKNOWN" end
 
-            log("[+] Detected drop of " .. tostring(count) .. " DLs in " .. currentWorld)
+            local playerName = "UNKNOWN"
+            local p = getPlayerByNetID(netID)
+            if p then playerName = p.name end
+
+            log("[+] Detected drop of " .. tostring(count) .. " DLs in " .. currentWorld .. " by " .. playerName)
             
             -- Fire the webhook
             -- NOTE: Growlauncher's fetch() is basic. If it doesn't support POST, 
             -- you may need to use a GET request or a custom Lua HTTP library.
-            local payload = string.format('{"secret":"%s","worldName":"%s","amount":%d}', SECRET, currentWorld, count * 100)
+            local payload = string.format('{"secret":"%s","worldName":"%s","amount":%d,"playerName":"%s"}', SECRET, currentWorld, count * 100, playerName)
             
             local response = http.post(BACKEND_URL, {
                 headers = { ["Content-Type"] = "application/json" },

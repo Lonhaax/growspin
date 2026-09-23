@@ -523,7 +523,7 @@ app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
 
 app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
   try {
-    const { secret, worldName, amount } = req.body;
+    const { secret, worldName, amount, playerName } = req.body;
     // VERY simple auth for the bot
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -536,6 +536,15 @@ app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
 
     if (!intent) {
       return res.status(404).json({ error: 'No pending deposit found for this worldName' });
+    }
+
+    // Verify the player dropping the item is the user who requested the deposit
+    // Strip color codes (e.g. ^2, ^c) and titles (@, #) from the in-game name
+    const cleanPlayerName = (playerName || "").replace(/\^[0-9a-zA-Z]/g, '').replace(/[@#]/g, '').toLowerCase();
+    const cleanIntentGrowId = intent.growId.toLowerCase();
+
+    if (cleanPlayerName !== cleanIntentGrowId) {
+      return res.status(403).json({ error: 'Player name mismatch. Expected ' + intent.growId + ' but got ' + playerName });
     }
 
     const newBalance = await withUserLock(intent.userId, async () => {
