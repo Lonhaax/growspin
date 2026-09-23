@@ -52,7 +52,7 @@ export function Sidebar() {
     {
       label: "Games",
       items: [
-        { name: "GrowSpin Originals", href: "/originals", icon: Gamepad2, badge: "8 GAMES", badgeColor: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" },
+        { name: "GrowSpin Originals", href: "/originals", icon: Gamepad2 },
         { name: "Slots", href: "/slots", icon: Sparkles, badge: "NEW", badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" },
         { name: "Jackpot", href: "/jackpot", icon: Flame, badge: "PVP", badgeColor: "bg-orange-500/20 text-orange-400 border border-orange-500/30" },
       ],
