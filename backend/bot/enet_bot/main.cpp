@@ -185,6 +185,9 @@ int GetVarListInt(unsigned char* data, size_t size, int index) {
 }
 
 int main() {
+    // Disable stdout buffering so Docker logs show immediately
+    setbuf(stdout, NULL);
+
     auto serverData = GetServerData();
     if (serverData.find("server") == serverData.end()) {
         std::cerr << "[-] Failed to fetch server data.\n";
