@@ -75,19 +75,19 @@ end
 -- Cleaned up basic hooks to prevent engine crash
 addHook(DepositHandler, "OnVariant")
 
-addHook(function(type, packet)
+addHook(function(pktType, packet)
     -- Log all incoming variant list packets
-    if type == 1 then
+    if pktType == 1 then
         log("DEBUG Type 1 (Variant List)")
     end
     -- Log all text packets
-    if type == 2 or type == 3 then
+    if pktType == 2 or pktType == 3 then
         if packet and string.find(string.lower(packet), "drop") then
             log("DEBUG Text Packet with 'drop': " .. tostring(packet))
         end
     end
     -- Log object additions (drops) if type 4
-    if type == 4 and type(packet) == "table" and packet.type == 14 then
+    if pktType == 4 and type(packet) == "table" and packet.type == 14 then
         log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
         local str = ""
         for k, v in pairs(packet) do
@@ -97,8 +97,8 @@ addHook(function(type, packet)
     end
 end, "OnPacket")
 
-addHook(function(type, packet)
-    if type == 2 or type == 3 then
+addHook(function(pktType, packet)
+    if pktType == 2 or pktType == 3 then
         if packet and string.find(string.lower(packet), "drop") then
             log("DEBUG Outgoing Text Packet with 'drop': " .. tostring(packet))
         end
