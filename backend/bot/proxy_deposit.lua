@@ -73,7 +73,7 @@ function DepositHandler(var, pkt)
 end
 
 -- Cleaned up basic hooks to prevent engine crash
-addHook(DepositHandler, "onVariant")
+addHook(DepositHandler, "OnVariant")
 
 addHook(function(type, packet)
     -- Log all incoming variant list packets
@@ -86,7 +86,16 @@ addHook(function(type, packet)
             log("DEBUG Text Packet with 'drop': " .. tostring(packet))
         end
     end
-end, "onPacket")
+    -- Log object additions (drops) if type 4
+    if type == 4 and type(packet) == "table" and packet.type == 14 then
+        log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
+        local str = ""
+        for k, v in pairs(packet) do
+            str = str .. k .. "=" .. tostring(v) .. " "
+        end
+        log("DEBUG TankPacket Data: " .. str)
+    end
+end, "OnPacket")
 
 addHook(function(type, packet)
     if type == 2 or type == 3 then
@@ -94,7 +103,7 @@ addHook(function(type, packet)
             log("DEBUG Outgoing Text Packet with 'drop': " .. tostring(packet))
         end
     end
-end, "onSendPacket")
+end, "OnSendPacket")
 
 log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
 
