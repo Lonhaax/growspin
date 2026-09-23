@@ -45,7 +45,6 @@ export function Sidebar() {
       label: "Platform",
       items: [
         { name: "Home", href: "/", icon: Home },
-        { name: "VIP Lounge", href: "/vip", icon: Crown, badge: "FREE", badgeColor: "bg-amber-500/20 text-amber-400 border border-amber-500/30" },
         { name: "My Inventory", href: "/inventory", icon: Package },
       ],
     },
@@ -54,7 +53,6 @@ export function Sidebar() {
       items: [
         { name: "GrowSpin Originals", href: "/originals", icon: Gamepad2 },
         { name: "Slots", href: "/slots", icon: Sparkles, badge: "NEW", badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" },
-        { name: "Jackpot", href: "/jackpot", icon: Flame, badge: "PVP", badgeColor: "bg-orange-500/20 text-orange-400 border border-orange-500/30" },
       ],
     },
     {
