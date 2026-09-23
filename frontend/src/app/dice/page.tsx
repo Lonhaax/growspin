@@ -37,7 +37,7 @@ export default function DicePage() {
     try {
       const res = await apiFetch("/play/dice", {
         method: "POST",
-        body: JSON.stringify({ amount: amountCents, target })
+        body: JSON.stringify({ amount: amountCents, winChance })
       });
       const data = await res.json();
       
