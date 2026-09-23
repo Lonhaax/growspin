@@ -13,6 +13,7 @@ export default function ItemManager() {
   const [newItemName, setNewItemName] = useState("");
   const [newItemValue, setNewItemValue] = useState("");
   const [newItemColor, setNewItemColor] = useState("#ffffff");
+  const [customImageUrl, setCustomImageUrl] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
@@ -40,13 +41,15 @@ export default function ItemManager() {
         body: JSON.stringify({
           name: newItemName,
           value: parseFloat(newItemValue),
-          color: newItemColor
+          color: newItemColor,
+          customImageUrl
         })
       });
 
       if (res.ok) {
         setNewItemName("");
         setNewItemValue("");
+        setCustomImageUrl("");
         fetchItems();
       } else {
         const data = await res.json();
@@ -82,10 +85,11 @@ export default function ItemManager() {
         </h2>
         
         <p className="text-sm text-gray-400 mb-6 font-bold">
-          Type the exact name of the item. The system will automatically fetch its transparent icon from the Growtopia Wiki and save it to your server.
+          Cloudflare has blocked automated API fetchers, so you must manually paste a direct link to the image. 
+          Right-click an image on Discord or Wiki and click "Copy Image Address", then paste it below. The server will download it for you.
         </p>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="flex-1">
             <label className="block text-xs font-bold text-[#7a819c] mb-2 uppercase tracking-wider">Exact Item Name</label>
             <input 
@@ -117,13 +121,26 @@ export default function ItemManager() {
               className="w-full h-[46px] rounded-xl cursor-pointer bg-transparent border-0"
             />
           </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-xs font-bold text-[#7a819c] mb-2 uppercase tracking-wider">Direct Image URL</label>
+            <input 
+              type="text" 
+              placeholder="Paste direct image link (e.g. from Discord or Wiki)"
+              value={customImageUrl}
+              onChange={(e) => setCustomImageUrl(e.target.value)}
+              className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+            />
+          </div>
           <div className="flex items-end">
             <button 
               onClick={handleAddItem}
-              disabled={isAdding || !newItemName || !newItemValue}
+              disabled={isAdding || !newItemName || !newItemValue || !customImageUrl}
               className="h-[46px] px-8 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:shadow-none flex items-center gap-2"
             >
-              {isAdding ? "Fetching..." : <><Plus size={18} /> Add</>}
+              {isAdding ? "Saving..." : <><Plus size={18} /> Add</>}
             </button>
           </div>
         </div>

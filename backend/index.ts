@@ -2677,16 +2677,11 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
     const existing = await prisma.adminItem.findUnique({ where: { name } });
     if (existing) return res.status(400).json({ error: 'Item already exists' });
 
-    // Fetch from Wiki
-    let imageUrl = '';
-    try {
-      imageUrl = await Wiki.getItemSprite(name);
-    } catch (e) {
-      console.error('Wiki fetch error:', e);
-    }
+    // Fetch Image
+    let imageUrl = req.body.customImageUrl || '';
 
     if (!imageUrl) {
-      return res.status(404).json({ error: 'Could not find image on Growtopia Wiki' });
+      return res.status(400).json({ error: 'Fandom API is blocked. You must provide a direct Image URL.' });
     }
 
     // Download image
