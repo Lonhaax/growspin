@@ -73,39 +73,33 @@ function DepositHandler(var, pkt)
 end
 
 -- Cleaned up basic hooks to prevent engine crash
-addHook(DepositHandler, "OnVariant")
+function VariantHook(var)
+    if var and var.v0 then
+        log("DEBUG VAR v0: " .. tostring(var.v0))
+    elseif var and var.v1 then
+        if var.v1 ~= "OnConsoleMessage" and var.v1 ~= "OnTalkBubble" then
+            log("DEBUG VAR v1: " .. tostring(var.v1))
+        end
+    end
+end
+addHook(VariantHook, "OnVariant")
+addHook(VariantHook, "onVariant")
 
 addHook(function(pktType, packet)
-    -- Log all incoming variant list packets
-    if pktType == 1 then
-        log("DEBUG Type 1 (Variant List)")
+    if pktType == 4 then
+        log("DEBUG Raw Type 4 Packet Received")
     end
-    -- Log all text packets
     if pktType == 2 or pktType == 3 then
-        if packet and string.find(string.lower(packet), "drop") then
-            log("DEBUG Text Packet with 'drop': " .. tostring(packet))
-        end
-    end
-    -- Log object additions (drops) if type 4
-    if pktType == 4 and type(packet) == "table" and packet.type == 14 then
-        log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
-        local str = ""
-        for k, v in pairs(packet) do
-            str = str .. k .. "=" .. tostring(v) .. " "
-        end
-        log("DEBUG TankPacket Data: " .. str)
+        log("DEBUG Text/GameMessage: " .. tostring(packet))
     end
 end, "OnPacket")
-
 addHook(function(pktType, packet)
-    if pktType == 2 or pktType == 3 then
-        if packet and string.find(string.lower(packet), "drop") then
-            log("DEBUG Outgoing Text Packet with 'drop': " .. tostring(packet))
-        end
+    if pktType == 4 then
+        log("DEBUG Raw Type 4 Packet Received (lower)")
     end
-end, "OnSendPacket")
+end, "onPacket")
 
-log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
+log("[+] Growlauncher Deposit Script loaded. Noisy debug active...")
 
 local lastWorldUpdate = 0
 local lastWorld = ""
