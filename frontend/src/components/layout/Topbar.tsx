@@ -70,14 +70,7 @@ export function Topbar() {
       <div className="flex items-center gap-4">
         {user ? (
           <>
-            {/* Level Badge */}
-            <button 
-              onClick={() => setRewardsOpen(true)}
-              className="hidden md:flex items-center justify-center w-9 h-9 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg shadow-[0_0_10px_rgba(250,204,21,0.2)] text-black font-black text-sm transition-transform hover:scale-105"
-              title="View Rewards Hub"
-            >
-              {user.level}
-            </button>
+
 
             {/* Active Case Loan Badge */}
             {user.debt !== undefined && user.debt > 0 && (
@@ -127,12 +120,17 @@ export function Topbar() {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-blue p-[2px]">
-                  <div className="w-full h-full bg-[#15181f] rounded-[10px] flex items-center justify-center overflow-hidden">
-                    <span className="text-white font-bold">{user.username.charAt(0).toUpperCase()}</span>
+                <div className="relative">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-purple to-accent-blue p-[2px]">
+                    <div className="w-full h-full bg-[#15181f] rounded-[10px] flex items-center justify-center overflow-hidden">
+                      <span className="text-white font-bold">{user.username.charAt(0).toUpperCase()}</span>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-md flex items-center justify-center text-[9px] font-black text-black shadow-lg border border-[#15181f]">
+                    {user.level}
                   </div>
                 </div>
-                <ChevronDown size={16} className="text-[#7a819c]" />
+                <ChevronDown size={14} className="text-[#7a819c] hidden sm:block" />
               </button>
 
               <AnimatePresence>
