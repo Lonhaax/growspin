@@ -65,20 +65,25 @@ end
 addHook(DepositHandler, "onVariant")
 log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
 
-runThread(function()
-    local STATUS_URL = BACKEND_URL:gsub("/credit", "/status")
-    local lastWorld = ""
-    while true do
+local lastWorldUpdate = 0
+local lastWorld = ""
+
+addHook(function()
+    local now = os.time()
+    if now - lastWorldUpdate >= 5 then
+        lastWorldUpdate = now
         local currentWorld = GetWorldName()
         if currentWorld and currentWorld ~= "" and currentWorld ~= lastWorld then
             lastWorld = currentWorld
             
-            local url = string.format("%s?secret=%s&worldName=%s",
-                STATUS_URL, SECRET, urlencode(currentWorld))
-            
-            local res, err = fetch(url)
-            log("[+] Updated backend with active deposit world: " .. currentWorld)
+            runThread(function()
+                local STATUS_URL = BACKEND_URL:gsub("/credit", "/status")
+                local url = string.format("%s?secret=%s&worldName=%s",
+                    STATUS_URL, SECRET, urlencode(currentWorld))
+                
+                local res, err = fetch(url)
+                log("[+] Updated backend with active deposit world: " .. currentWorld)
+            end)
         end
-        sleep(5000)
     end
-end)
+end, "onDraw")
