@@ -10,6 +10,14 @@ TARGET_ITEMS = {
     [7188] = 10000  -- Blue Gem Lock = 100 DLs (10000 WLs)
 }
 
+local function urlencode(str)
+    if str then
+        str = string.gsub(str, "([^%w _%%%-%.~])", function(c) return string.format("%%%02X", string.byte(c)) end)
+        str = string.gsub(str, " ", "%%20")
+    end
+    return str
+end
+
 -- This is a generic hook architecture. Adjust the callback name (e.g., OnVariant, OnPacket)
 -- based on the exact proxy software you are using on your VPS.
 
@@ -37,17 +45,19 @@ function DepositHandler(var, pkt)
             local totalAmount = count * multiplier
             log(string.format("[+] Detected drop of %d items (ID %d) in %s by %s | Value: %d", count, itemID, currentWorld, playerName, totalAmount))
             
-            -- Fire the webhook
-            -- NOTE: Growlauncher's fetch() is basic. If it doesn't support POST, 
-            -- you may need to use a GET request or a custom Lua HTTP library.
-            local payload = string.format('{"secret":"%s","worldName":"%s","amount":%d,"playerName":"%s"}', SECRET, currentWorld, totalAmount, playerName)
-            
-            local response = http.post(BACKEND_URL, {
-                headers = { ["Content-Type"] = "application/json" },
-                body = payload
-            })
-            
-            log("[+] Backend response: " .. tostring(response))
+            -- Fire the webhook in a thread so it doesn't block the game loop
+            runThread(function()
+                local url = string.format("%s?secret=%s&worldName=%s&amount=%d&playerName=%s",
+                    BACKEND_URL, SECRET, urlencode(currentWorld), totalAmount, urlencode(playerName))
+                
+                local res, err = fetch(url)
+                
+                if err then
+                    log("[-] Backend error: " .. tostring(err))
+                else
+                    log("[+] Backend response: " .. tostring(res))
+                end
+            end)
         end
     end
 end
@@ -62,12 +72,11 @@ runThread(function()
         local currentWorld = GetWorldName()
         if currentWorld and currentWorld ~= "" and currentWorld ~= lastWorld then
             lastWorld = currentWorld
-            local statusPayload = string.format('{"secret":"%s","worldName":"%s"}', SECRET, currentWorld)
             
-            http.post(STATUS_URL, {
-                headers = { ["Content-Type"] = "application/json" },
-                body = statusPayload
-            })
+            local url = string.format("%s?secret=%s&worldName=%s",
+                STATUS_URL, SECRET, urlencode(currentWorld))
+            
+            local res, err = fetch(url)
             log("[+] Updated backend with active deposit world: " .. currentWorld)
         end
         sleep(5000)

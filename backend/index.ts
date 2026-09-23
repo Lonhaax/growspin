@@ -480,9 +480,11 @@ app.post('/api/auth/logout', async (req: Request, res: Response) => {
 
 let activeDepositWorld = "UNKNOWN";
 
-app.post('/api/internal/bot/status', async (req: Request, res: Response) => {
+app.get('/api/internal/bot/status', async (req: Request, res: Response) => {
   try {
-    const { secret, worldName } = req.body;
+    const secret = req.query.secret as string;
+    const worldName = req.query.worldName as string;
+    
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') return res.status(401).json({ error: 'Unauthorized' });
     if (worldName && worldName !== "") {
       activeDepositWorld = worldName;
@@ -538,9 +540,12 @@ app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
+app.get('/api/internal/bot/credit', async (req: Request, res: Response) => {
   try {
-    const { secret, worldName, amount, playerName } = req.body;
+    const secret = req.query.secret as string;
+    const worldName = req.query.worldName as string;
+    const amount = parseInt(req.query.amount as string || "0");
+    const playerName = req.query.playerName as string;
     // VERY simple auth for the bot
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
       return res.status(401).json({ error: 'Unauthorized' });
