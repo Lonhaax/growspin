@@ -16,16 +16,18 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: stretch;
+    align-items: center; /* Center vertically instead of stretch */
     padding: 24px;
     gap: 24px;
-    overflow: hidden;
+    overflow-y: auto; /* Allow scrolling if screen is too small */
+    overflow-x: hidden;
 }
 
 /* Crash Sidebar */
 .crash-game .crash-sidebar {
     width: 320px;
     min-width: 320px;
+    max-height: calc(100vh - 100px);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -35,6 +37,7 @@
     gap: 16px;
     overflow-y: auto;
     scrollbar-width: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .crash-game .crash-sidebar::-webkit-scrollbar {
@@ -291,8 +294,10 @@
 /* Game Display */
 .crash-game .game-display {
     flex: none;
-    width: 500px;
-    height: 800px; /* Portrait aspect ratio */
+    width: 100%;
+    max-width: 440px;
+    height: 720px; /* Sensible portrait height for laptops */
+    max-height: calc(100vh - 100px);
     display: flex;
     flex-direction: column;
     background: url('/crash-bg.png') no-repeat center center;
@@ -419,6 +424,7 @@
     align-items: center;
     justify-content: center;
     margin-top: 50px;
+    min-height: 250px; /* Prevent chart from squishing to nothing */
 }
 
 .crash-game .chart-container-antd .crash-canvas {
