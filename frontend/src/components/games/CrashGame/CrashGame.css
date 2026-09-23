@@ -14,33 +14,23 @@
 
 .crash-game .game-container {
     display: flex;
-    flex-direction: column-reverse; /* Sidebar at bottom */
     flex: 1;
-    align-items: center;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     gap: 0;
-    padding: 16px;
 }
 
 /* Crash Sidebar */
 .crash-game .crash-sidebar {
-    width: 100%;
-    min-width: 0;
-    max-height: 250px;
+    width: 320px;
+    min-width: 320px;
     background: var(--bg-secondary);
-    border: none;
-    border-top: 1px solid var(--border-color);
-    border-radius: 0;
-    padding: 16px;
+    border-right: 1px solid var(--border-color);
+    padding: 16px 16px 0 16px;
     display: flex;
-    flex-direction: row; /* Horizontal layout for bottom bar */
-    justify-content: center;
-    align-items: flex-start;
-    gap: 24px;
+    flex-direction: column;
+    gap: 16px;
     overflow-y: auto;
     scrollbar-width: none;
-    box-shadow: none;
 }
 
 .crash-game .crash-sidebar::-webkit-scrollbar {
@@ -50,12 +40,8 @@
 /* Betting Panel 3D styled */
 .crash-game .betting-panel-3d {
     display: flex;
-    flex-direction: row;
-    gap: 24px;
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* 3D Tabs */
@@ -105,18 +91,13 @@
 
 .crash-game .betting-panel-3d .bet-form {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-end;
+    flex-direction: column;
     gap: 16px;
-    flex: 1;
 }
 
 .crash-game .betting-panel-3d .form-group {
     position: relative;
-    margin-bottom: 0;
-    flex: 1;
-    min-width: 200px;
+    margin-bottom: 16px;
 }
 
 .crash-game .betting-panel-3d .form-header {
@@ -247,10 +228,8 @@
 
 /* 3D Bet Button */
 .crash-game .betting-panel-3d .bet-button {
-    flex: 1;
-    min-width: 200px;
-    height: 48px;
-    padding: 0 16px;
+    width: 100%;
+    padding: 16px;
     background: var(--primary);
     border: none;
     border-radius: 8px;
@@ -264,8 +243,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-4px);
-    box-shadow: 0 4px 0 var(--primary-active), 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-6px);
+    box-shadow: 0 6px 0 var(--primary-active), 0 6px 10px rgba(0, 0, 0, 0.3);
+    margin-top: 4px;
 }
 
 .crash-game .betting-panel-3d .bet-button:hover:not(:disabled) {
@@ -305,20 +285,14 @@
 
 /* Game Display */
 .crash-game .game-display {
-    flex: none;
-    width: 100%;
-    max-width: 1200px;
-    aspect-ratio: 16/9;
-    height: auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     background: url('/crash-bg.png') no-repeat center center;
-    background-size: cover;
+    background-size: contain; /* PREVENTS CROPPING */
+    background-color: var(--bg-game);
     position: relative;
     overflow: hidden;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* Game History Bar - Full Width Scrollable */
