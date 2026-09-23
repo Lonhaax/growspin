@@ -2712,7 +2712,7 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
     imgStream.data.pipe(writer);
 
     await new Promise((resolve, reject) => {
-      writer.on('finish', resolve);
+      writer.on('finish', () => resolve(true));
       writer.on('error', reject);
     });
 
@@ -2736,7 +2736,7 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
 app.delete('/api/admin/items/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const item = await prisma.adminItem.delete({
-      where: { id: parseInt(req.params.id) }
+      where: { id: parseInt(req.params.id as string) }
     });
     // Try to delete image
     try {
