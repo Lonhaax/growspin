@@ -2678,22 +2678,29 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
 
     // Fetch from Wiki
     let imageUrl = '';
-    const wikiTitle = `File:${name.replace(/ /g, '_')}.png`;
-    const apiUrl = `https://growtopia.fandom.com/api.php?action=query&format=json&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(wikiTitle)}`;
+    const wikiTitles = [
+      `File:Item_sprite_${name.replace(/ /g, '_')}.png`,
+      `File:${name.replace(/ /g, '_')}.png`,
+      `File:${name.replace(/ /g, '_')}_Sprite.png`
+    ];
     
-    try {
-      const wikiRes = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-      const pages = wikiRes.data.query?.pages;
-      if (pages) {
-        for (const pageId in pages) {
-          if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
-            imageUrl = pages[pageId].imageinfo[0].url;
-            break;
+    for (const wikiTitle of wikiTitles) {
+      if (imageUrl) break;
+      const apiUrl = `https://growtopia.fandom.com/api.php?action=query&format=json&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(wikiTitle)}`;
+      try {
+        const wikiRes = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const pages = wikiRes.data.query?.pages;
+        if (pages) {
+          for (const pageId in pages) {
+            if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
+              imageUrl = pages[pageId].imageinfo[0].url;
+              break;
+            }
           }
         }
+      } catch (e) {
+        console.error('Wiki fetch error:', e);
       }
-    } catch (e) {
-      console.error('Wiki fetch error:', e);
     }
 
     if (!imageUrl) {
