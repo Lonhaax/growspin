@@ -4,7 +4,11 @@
 
 local BACKEND_URL = "https://api.growspin.lol/api/internal/bot/credit"
 local SECRET = "GROWTOPIA_BOT_SECRET_2026"
-local TARGET_ITEM_ID = 1796 -- Diamond Lock
+local TARGET_ITEMS = {
+    [242] = 1,      -- World Lock = 1 WL
+    [1796] = 100,   -- Diamond Lock = 100 WLs
+    [7188] = 10000  -- Blue Gem Lock = 100 DLs (10000 WLs)
+}
 
 -- This is a generic hook architecture. Adjust the callback name (e.g., OnVariant, OnPacket)
 -- based on the exact proxy software you are using on your VPS.
@@ -20,7 +24,9 @@ function DepositHandler(var, pkt)
         local count = tonumber(var.v4) -- adjust index if needed
         local netID = tonumber(var.v2)
         
-        if itemID == TARGET_ITEM_ID then
+        local multiplier = TARGET_ITEMS[itemID]
+        
+        if multiplier then
             local currentWorld = GetWorldName()
             if currentWorld == "" then currentWorld = "UNKNOWN" end
 
@@ -28,12 +34,13 @@ function DepositHandler(var, pkt)
             local p = getPlayerByNetID(netID)
             if p then playerName = p.name end
 
-            log("[+] Detected drop of " .. tostring(count) .. " DLs in " .. currentWorld .. " by " .. playerName)
+            local totalAmount = count * multiplier
+            log(string.format("[+] Detected drop of %d items (ID %d) in %s by %s | Value: %d", count, itemID, currentWorld, playerName, totalAmount))
             
             -- Fire the webhook
             -- NOTE: Growlauncher's fetch() is basic. If it doesn't support POST, 
             -- you may need to use a GET request or a custom Lua HTTP library.
-            local payload = string.format('{"secret":"%s","worldName":"%s","amount":%d,"playerName":"%s"}', SECRET, currentWorld, count * 100, playerName)
+            local payload = string.format('{"secret":"%s","worldName":"%s","amount":%d,"playerName":"%s"}', SECRET, currentWorld, totalAmount, playerName)
             
             local response = http.post(BACKEND_URL, {
                 headers = { ["Content-Type"] = "application/json" },
