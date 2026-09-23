@@ -95,10 +95,12 @@ export default function DicePage() {
               className={`absolute top-0 -translate-x-1/2 flex flex-col items-center z-20 ${result.win ? 'text-accent-green' : 'text-red-500'}`}
               style={{ left: `${result.roll}%` }}
             >
-              <div className={`px-3 py-1 rounded-lg font-black text-lg ${result.win ? 'bg-accent-green text-black shadow-[0_0_15px_rgba(0,230,118,0.5)]' : 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
+              <div className={`px-3 py-1 rounded-lg font-black text-lg z-10 ${result.win ? 'bg-accent-green text-black shadow-[0_0_15px_rgba(0,230,118,0.5)]' : 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
                 {result.roll.toFixed(2)}
               </div>
-              <div className={`w-1 h-8 ${result.win ? 'bg-accent-green' : 'bg-red-500'} mt-1`}></div>
+              <div className={`mt-1 -mb-2 z-0 ${result.win ? 'text-accent-green drop-shadow-[0_0_10px_rgba(0,230,118,0.8)]' : 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`}>
+                <Dices size={28} />
+              </div>
             </motion.div>
           )}
 
