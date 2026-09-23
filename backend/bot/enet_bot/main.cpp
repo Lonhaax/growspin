@@ -204,7 +204,6 @@ int main() {
     atexit(enet_deinitialize);
 
     ENetHost* client = enet_host_create(NULL, 1, 2, 0, 0);
-    client->usingNewPacket = true;
     client->checksum = enet_crc32;
     enet_host_compress_with_range_coder(client);
 
