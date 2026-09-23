@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Gift,
+  Gamepad2,
   HelpCircle,
   LifeBuoy,
   Trophy,
@@ -49,23 +50,11 @@ export function Sidebar() {
       ],
     },
     {
-      label: "Case Battles & Unboxing",
+      label: "Games",
       items: [
-        { name: "Unbox Cases", href: "/cases", icon: Gift },
-        { name: "Case Battles", href: "/battles", icon: Swords, badge: "HOT", badgeColor: "bg-red-500/20 text-red-400 border border-red-500/30" },
-        { name: "Jackpot", href: "/jackpot", icon: Flame, badge: "PVP", badgeColor: "bg-orange-500/20 text-orange-400 border border-orange-500/30" },
-      ],
-    },
-    {
-      label: "Casino Originals",
-      items: [
+        { name: "GrowSpin Originals", href: "/originals", icon: Gamepad2, badge: "8 GAMES", badgeColor: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" },
         { name: "Slots", href: "/slots", icon: Sparkles, badge: "NEW", badgeColor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" },
-        { name: "Coinflip", href: "/coinflip", icon: Coins },
-        { name: "Mines", href: "/mines", icon: Bomb },
-        { name: "Roulette", href: "/roulette", icon: CircleDot },
-        { name: "Crash", href: "/crash", icon: Activity },
-        { name: "Plinko", href: "/plinko", icon: ArrowDown },
-        { name: "Dice", href: "/dice", icon: Dices },
+        { name: "Jackpot", href: "/jackpot", icon: Flame, badge: "PVP", badgeColor: "bg-orange-500/20 text-orange-400 border border-orange-500/30" },
       ],
     },
     {

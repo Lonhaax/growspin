@@ -54,16 +54,10 @@ export function Topbar() {
             🎰 Slots
           </Link>
           <Link
-            href="/cases"
+            href="/originals"
             className="text-xs font-bold text-[#878eab] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#161a24] transition-colors"
           >
-            Cases
-          </Link>
-          <Link
-            href="/battles"
-            className="text-xs font-bold text-[#878eab] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#161a24] transition-colors"
-          >
-            Battles
+            Originals
           </Link>
         </div>
       </div>
