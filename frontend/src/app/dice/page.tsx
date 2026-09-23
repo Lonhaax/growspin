@@ -104,26 +104,30 @@ export default function DicePage() {
             </motion.div>
           )}
 
-          {/* Slider background (green = win, red = lose based on target) */}
-          <div className="h-4 rounded-full flex overflow-hidden shadow-inner bg-[#1f222b] relative">
-            <div className="h-full bg-accent-green transition-all duration-300 shadow-[0_0_15px_rgba(0,230,118,0.8)]" style={{ width: `${target}%` }} />
-            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${100 - target}%` }} />
-          </div>
-          
-          <input 
-            type="range" 
-            min="2" max="98" 
-            value={target}
-            onChange={(e) => setTarget(parseInt(e.target.value))}
-            className="w-full absolute top-[60px] left-0 h-4 opacity-0 cursor-pointer z-30"
-          />
-          
-          {/* Custom thumb */}
-          <div 
-            className="w-8 h-8 bg-white rounded-lg shadow-xl absolute top-[52px] -translate-x-1/2 pointer-events-none flex items-center justify-center border-2 border-[#15181f]"
-            style={{ left: `${target}%` }}
-          >
-            <div className="w-1 h-4 bg-gray-300 rounded-full" />
+          {/* Seamless Slider Container */}
+          <div className="relative h-12 flex items-center w-full">
+            {/* Visual Track */}
+            <div className="absolute inset-x-0 h-4 rounded-full flex overflow-hidden shadow-inner bg-[#1f222b] pointer-events-none">
+              <div className="h-full bg-accent-green shadow-[0_0_15px_rgba(0,230,118,0.8)]" style={{ width: `${target}%` }} />
+              <div className="h-full bg-red-500" style={{ width: `${100 - target}%` }} />
+            </div>
+            
+            {/* Custom Thumb */}
+            <div 
+              className="w-8 h-8 bg-white rounded-lg shadow-xl absolute pointer-events-none flex items-center justify-center border-2 border-[#15181f] z-20 -translate-x-1/2"
+              style={{ left: `${target}%` }}
+            >
+              <div className="w-1 h-4 bg-gray-300 rounded-full" />
+            </div>
+
+            {/* Invisible Native Input */}
+            <input 
+              type="range" 
+              min="2" max="98" step="0.01"
+              value={target}
+              onChange={(e) => setTarget(parseFloat(e.target.value))}
+              className="w-full absolute inset-0 h-full opacity-0 cursor-pointer z-30"
+            />
           </div>
         </div>
 
@@ -135,7 +139,7 @@ export default function DicePage() {
           </div>
           <div className="text-center border-r border-[#2a2d3a]">
             <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-widest mb-1">Roll Under</div>
-            <div className="text-accent-blue font-black text-xl">{target}</div>
+            <div className="text-accent-blue font-black text-xl">{target.toFixed(2)}</div>
           </div>
           <div className="text-center">
             <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-widest mb-1">Win Chance</div>
