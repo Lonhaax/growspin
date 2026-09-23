@@ -199,7 +199,7 @@ export function ChatSidebar() {
             </AnimatePresence>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {messages.length === 0 ? (
                 <div className="text-center text-[#7a819c] text-sm mt-10">No messages yet.</div>
               ) : (
@@ -232,7 +232,7 @@ export function ChatSidebar() {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-[#2a2d3a] bg-[#1f222b]">
+            <div className="p-3 border-t border-[#2a2d3a] bg-[#1f222b]">
               <form onSubmit={handleSend} className="relative">
                 <input
                   type="text"
@@ -240,7 +240,7 @@ export function ChatSidebar() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={!user || isSending}
-                  className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-lg pl-4 pr-10 py-3 text-sm text-white focus:outline-none focus:border-accent-blue disabled:opacity-50 transition-colors"
+                  className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-lg pl-3 pr-10 py-2 text-sm text-white focus:outline-none focus:border-accent-blue disabled:opacity-50 transition-colors"
                 />
                 <button 
                   type="submit"

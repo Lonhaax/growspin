@@ -210,31 +210,17 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
           className="relative w-full max-w-lg bg-[#11141d] rounded-3xl shadow-2xl overflow-hidden border border-white/5"
         >
           {/* Header */}
-          <div className="relative h-32 bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-[#11141d] flex flex-col justify-end p-6 border-b border-white/5 overflow-hidden">
-            <div className="absolute top-0 right-0 p-4">
-              <button
-                onClick={onClose}
-                className="p-2 bg-black/20 hover:bg-black/40 rounded-full text-white/60 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0 bg-[#161a24]">
+            <div className="flex items-center gap-3">
+              <Wallet className="text-emerald-400" size={18} />
+              <h2 className="text-base font-bold text-white">Deposit & Withdraw</h2>
             </div>
-            
-            {/* Background decorative elements */}
-            <div className="absolute top-[-50%] left-[-10%] w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <Wallet className="text-white" size={24} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight">Deposit Funds</h2>
-                <p className="text-sm text-indigo-200/60 font-medium">Add balance to your account</p>
-              </div>
-            </div>
+            <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg text-[#7a819c] hover:text-white transition-colors">
+              <X size={18} />
+            </button>
           </div>
 
-          <div className="p-6">
+          <div className="p-5">
             {successMsg ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -257,7 +243,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
             ) : (
               <>
                 {/* Tabs */}
-                <div className="flex bg-[#0c0e14] rounded-xl p-1.5 mb-8 border border-white/5 relative">
+                <div className="flex bg-[#0c0e14] rounded-xl p-1 mb-5 border border-white/5 relative">
                   <button
                     onClick={() => setTab('growtopia')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all relative z-10 ${tab === 'growtopia' ? 'text-white' : 'text-[#7a819c] hover:text-white'}`}

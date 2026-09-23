@@ -39,7 +39,7 @@ export function Topbar() {
 
   return (
     <>
-      <header className="h-16 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-20">
+      <header className="h-14 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-20">
         <div className="flex items-center gap-4">
         <Link href="/" className="md:hidden flex items-center gap-2">
           <img src="/dl.webp" alt="DL" className="w-6 h-6 object-contain" />
@@ -118,22 +118,22 @@ export function Topbar() {
             {/* Rewards Button */}
             <button
               onClick={() => setRewardsOpen(true)}
-              className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 border border-yellow-500/30 rounded-xl px-4 h-10 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.1)]"
+              className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 hover:from-yellow-500/20 hover:to-amber-500/20 border border-yellow-500/30 rounded-lg px-3 h-9 transition-colors shadow-[0_0_10px_rgba(234,179,8,0.1)]"
             >
-              <Gift size={16} className="text-yellow-400" />
-              <span className="font-bold text-yellow-500">Rewards</span>
+              <Gift size={14} className="text-yellow-400" />
+              <span className="font-bold text-yellow-500 text-sm">Rewards</span>
             </button>
 
             {/* Wallet Button */}
-            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-xl p-1 h-10">
-              <div className="px-3 flex items-center gap-2">
+            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-0.5 h-9">
+              <div className="px-2 flex items-center gap-2">
                 <DLCurrency amount={user.mockBalance} size="sm" className="text-white" />
               </div>
               <button 
                 onClick={() => setDepositOpen(true)}
-                className="bg-accent-green hover:bg-emerald-400 text-black px-4 h-full rounded-lg transition-colors flex items-center justify-center gap-2 font-bold shadow-[0_0_10px_rgba(0,230,118,0.4)]"
+                className="bg-accent-green hover:bg-emerald-400 text-black px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold shadow-[0_0_10px_rgba(0,230,118,0.4)] text-sm"
               >
-                <Wallet size={16} />
+                <Wallet size={14} />
                 <span>Deposit</span>
               </button>
             </div>
@@ -166,13 +166,12 @@ export function Topbar() {
                       <p className="text-xs text-[#7a819c] truncate">Level {user.level}</p>
                     </div>
 
-                    <Link
-                      href="/vip"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-amber-400 hover:bg-[#2a2d3a] transition-colors border-b border-[#2a2d3a]"
+                    <button
+                      onClick={() => { setDropdownOpen(false); setRewardsOpen(true); }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-[#2a2d3a] transition-colors border-b border-[#2a2d3a] text-left"
                     >
-                      <Crown size={14} /> VIP Club & Daily Cases
-                    </Link>
+                      <Crown size={14} /> Rewards Hub
+                    </button>
 
                     <div className="p-3 border-b border-[#2a2d3a] flex flex-col gap-2">
                       <div className="flex items-center justify-between">

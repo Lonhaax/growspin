@@ -121,27 +121,17 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
           className="relative w-full max-w-2xl bg-[#11141d] rounded-3xl shadow-2xl overflow-hidden border border-white/5 max-h-[90vh] flex flex-col"
         >
           {/* Header */}
-          <div className="relative h-32 bg-gradient-to-br from-yellow-600/30 via-orange-600/20 to-[#11141d] flex flex-col justify-end p-6 border-b border-white/5 shrink-0">
-            <div className="absolute top-0 right-0 p-4">
-              <button onClick={onClose} className="p-2 bg-black/20 hover:bg-black/40 rounded-full text-white/60 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0 bg-[#161a24]">
+            <div className="flex items-center gap-3">
+              <Crown className="text-yellow-500" size={18} />
+              <h2 className="text-base font-bold text-white">Rewards Hub</h2>
             </div>
-            
-            <div className="absolute top-[-50%] left-[-10%] w-64 h-64 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/30">
-                <Crown className="text-white" size={24} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight">VIP & Rewards</h2>
-                <p className="text-sm text-yellow-200/60 font-medium">Claim cases, rakeback, and affiliate earnings</p>
-              </div>
-            </div>
+            <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg text-[#7a819c] hover:text-white transition-colors">
+              <X size={18} />
+            </button>
           </div>
 
-          <div className="p-6 overflow-y-auto">
+          <div className="p-5 overflow-y-auto">
             {/* Tabs */}
             <div className="flex bg-[#0c0e14] rounded-xl p-1.5 mb-6 border border-white/5 relative shrink-0">
               <button
@@ -285,9 +275,9 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
                       <button 
                         onClick={handleClaimRakeback}
                         disabled={status.rakebackBalance <= 0 || actionLoading}
-                        className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-emerald-500 to-[#00c566] hover:from-[#00c566] hover:to-emerald-400 disabled:opacity-50 text-black font-black rounded-xl transition-all shadow-[0_0_20px_rgba(0,230,118,0.2)]"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-[#00c566] hover:from-[#00c566] hover:to-emerald-400 disabled:opacity-50 text-black font-bold text-sm rounded-lg transition-all shadow-[0_0_15px_rgba(0,230,118,0.2)]"
                       >
-                        {actionLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Claim to Wallet'}
+                        {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Claim to Wallet'}
                       </button>
                     </div>
                   </motion.div>

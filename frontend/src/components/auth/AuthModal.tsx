@@ -62,7 +62,7 @@ export function AuthModal() {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="w-full max-w-md bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-8 shadow-2xl relative overflow-hidden z-10"
+          className="w-full max-w-sm bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-2xl relative overflow-hidden z-10"
         >
           {/* Close button */}
           <button 
@@ -76,34 +76,34 @@ export function AuthModal() {
           <div className={`absolute top-0 right-0 w-64 h-64 ${isLogin ? 'bg-accent-blue/10' : 'bg-accent-green/10'} rounded-full blur-3xl pointer-events-none transition-colors duration-500`} />
           <div className={`absolute bottom-0 left-0 w-64 h-64 ${isLogin ? 'bg-accent-purple/10' : 'bg-accent-blue/10'} rounded-full blur-3xl pointer-events-none transition-colors duration-500`} />
 
-          <div className="relative z-10 text-center mb-8">
-            <div className={`w-16 h-16 mx-auto bg-gradient-to-br ${isLogin ? 'from-accent-blue to-accent-purple' : 'from-accent-green to-accent-blue'} rounded-2xl flex items-center justify-center shadow-lg mb-6 transition-colors duration-500`}>
-              {isLogin ? <LogIn size={32} className="text-white" /> : <UserPlus size={32} className="text-black" />}
+          <div className="relative z-10 text-center mb-6">
+            <div className={`w-12 h-12 mx-auto bg-gradient-to-br ${isLogin ? 'from-accent-blue to-accent-purple' : 'from-accent-green to-accent-blue'} rounded-xl flex items-center justify-center shadow-lg mb-4 transition-colors duration-500`}>
+              {isLogin ? <LogIn size={24} className="text-white" /> : <UserPlus size={24} className="text-black" />}
             </div>
-            <h1 className="text-3xl font-black text-white mb-2">{isLogin ? "Welcome Back" : "Create Account"}</h1>
-            <p className="text-[#7a819c]">{isLogin ? "Sign in to continue gambling" : "Join the ultimate crypto casino"}</p>
+            <h1 className="text-2xl font-black text-white mb-1">{isLogin ? "Welcome Back" : "Create Account"}</h1>
+            <p className="text-sm text-[#7a819c]">{isLogin ? "Sign in to continue gambling" : "Join the ultimate crypto casino"}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="relative z-10 space-y-4">
+          <form onSubmit={handleSubmit} className="relative z-10 space-y-3">
             <div>
-              <label className="block text-sm font-bold text-[#7a819c] mb-2 uppercase tracking-wide">Username</label>
+              <label className="block text-xs font-bold text-[#7a819c] mb-1.5 uppercase tracking-wide">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className={`w-full px-4 py-3 rounded-xl bg-[#15181f] border border-[#2a2d3a] text-white focus:outline-none focus:ring-1 transition-all ${isLogin ? 'focus:border-accent-blue focus:ring-accent-blue' : 'focus:border-accent-green focus:ring-accent-green'}`}
+                className={`w-full px-3 py-2 text-sm rounded-lg bg-[#15181f] border border-[#2a2d3a] text-white focus:outline-none focus:ring-1 transition-all ${isLogin ? 'focus:border-accent-blue focus:ring-accent-blue' : 'focus:border-accent-green focus:ring-accent-green'}`}
                 placeholder={isLogin ? "Enter your username" : "Choose a username"}
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-[#7a819c] mb-2 uppercase tracking-wide">Password</label>
+              <label className="block text-xs font-bold text-[#7a819c] mb-1.5 uppercase tracking-wide">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className={`w-full px-4 py-3 rounded-xl bg-[#15181f] border border-[#2a2d3a] text-white focus:outline-none focus:ring-1 transition-all ${isLogin ? 'focus:border-accent-blue focus:ring-accent-blue' : 'focus:border-accent-green focus:ring-accent-green'}`}
+                className={`w-full px-3 py-2 text-sm rounded-lg bg-[#15181f] border border-[#2a2d3a] text-white focus:outline-none focus:ring-1 transition-all ${isLogin ? 'focus:border-accent-blue focus:ring-accent-blue' : 'focus:border-accent-green focus:ring-accent-green'}`}
                 placeholder={isLogin ? "Enter your password" : "Create a strong password"}
               />
             </div>
