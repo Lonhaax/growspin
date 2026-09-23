@@ -15,6 +15,66 @@ export default function ItemManager() {
   const [newItemColor, setNewItemColor] = useState("#ffffff");
   const [customImageUrl, setCustomImageUrl] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [isFetchingWiki, setIsFetchingWiki] = useState(false);
+
+  const fetchFromWiki = () => {
+    if (!newItemName) return;
+    setIsFetchingWiki(true);
+    
+    // JSONP request to bypass CORS
+    const callbackName = 'wikiCallback_' + Math.round(100000 * Math.random());
+    const wikiTitles = [
+      `File:Item_sprite_${newItemName.replace(/ /g, '_')}.png`,
+      `File:${newItemName.replace(/ /g, '_')}.png`,
+      `File:${newItemName.replace(/ /g, '_')}_Sprite.png`
+    ];
+
+    let currentIdx = 0;
+    
+    // Create global callback
+    (window as any)[callbackName] = (data: any) => {
+      const pages = data?.query?.pages;
+      let foundUrl = '';
+      if (pages) {
+        for (const pageId in pages) {
+          if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
+            foundUrl = pages[pageId].imageinfo[0].url;
+            break;
+          }
+        }
+      }
+      
+      if (foundUrl) {
+        setCustomImageUrl(foundUrl);
+        setIsFetchingWiki(false);
+        delete (window as any)[callbackName];
+      } else {
+        // Try next format
+        currentIdx++;
+        if (currentIdx < wikiTitles.length) {
+          injectScript(wikiTitles[currentIdx]);
+        } else {
+          alert("Could not find image on Wiki automatically. Please paste the direct URL.");
+          setIsFetchingWiki(false);
+          delete (window as any)[callbackName];
+        }
+      }
+    };
+
+    const injectScript = (title: string) => {
+      const script = document.createElement('script');
+      script.src = `https://growtopia.fandom.com/api.php?action=query&format=json&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(title)}&callback=${callbackName}`;
+      script.onload = () => document.body.removeChild(script);
+      script.onerror = () => {
+        setIsFetchingWiki(false);
+        delete (window as any)[callbackName];
+      };
+      document.body.appendChild(script);
+    };
+
+    // Start fetching the first format
+    injectScript(wikiTitles[0]);
+  };
 
   useEffect(() => {
     fetchItems();
@@ -125,7 +185,16 @@ export default function ItemManager() {
 
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <label className="block text-xs font-bold text-[#7a819c] mb-2 uppercase tracking-wider">Direct Image URL</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-[#7a819c] uppercase tracking-wider">Direct Image URL</label>
+              <button 
+                onClick={fetchFromWiki}
+                disabled={isFetchingWiki || !newItemName}
+                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:text-gray-600 uppercase"
+              >
+                {isFetchingWiki ? "Searching Wiki..." : "Auto-Fetch from Wiki"}
+              </button>
+            </div>
             <input 
               type="text" 
               placeholder="Paste direct image link (e.g. from Discord or Wiki)"
