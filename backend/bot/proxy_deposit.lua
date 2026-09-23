@@ -22,6 +22,11 @@ end
 -- based on the exact proxy software you are using on your VPS.
 
 function DepositHandler(var, pkt)
+    -- DEBUG: Print every variant (excluding chat/console spam) to see the exact OnDrop structure
+    if var.v1 and var.v1 ~= "OnConsoleMessage" and var.v1 ~= "OnTalkBubble" then
+        log("DEBUG Variant: v1=" .. tostring(var.v1) .. " | v2=" .. tostring(var.v2) .. " | v3=" .. tostring(var.v3) .. " | v4=" .. tostring(var.v4))
+    end
+
     if var.v1 == "OnDrop" then
         -- Example structure for OnDrop:
         -- var.v2 = NetID (who dropped it)
