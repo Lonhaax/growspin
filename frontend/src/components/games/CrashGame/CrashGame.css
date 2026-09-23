@@ -289,7 +289,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--bg-game); /* Sky blue for Growtopia theme */
+    background: url('/crash-bg.png') no-repeat bottom center;
+    background-size: cover;
     position: relative;
     overflow: hidden;
 }
