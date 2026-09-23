@@ -83,11 +83,33 @@ addHook(function(type, packet)
     end
 end, "onSendPacket")
 
--- DEBUG: Log incoming packets that mention "drop"
+-- DEBUG: Log incoming text packets that mention "drop"
 addHook(function(type, packet)
     if type == 3 or type == 2 then
         if packet and packet:lower():find("drop") then
             log("DEBUG Incoming Text Packet: " .. tostring(packet))
+        end
+    end
+end, "onPacket")
+
+-- DEBUG: Log EVERY packet to see what happens when dropping
+local captureDrops = false
+addHook(function(type, packet)
+    -- Just print the type to see what fires (will be spammy, but necessary for a few seconds)
+    -- log("DEBUG Packet Type: " .. tostring(type))
+    if type == 4 then
+        -- GamePacket / TankPacket
+        -- Often represented as a table in proxy engines
+        if type(packet) == "table" then
+            if packet.type == 14 then
+                log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
+                -- Print all fields of the table
+                local str = ""
+                for k, v in pairs(packet) do
+                    str = str .. k .. "=" .. tostring(v) .. " "
+                end
+                log("DEBUG TankPacket Data: " .. str)
+            end
         end
     end
 end, "onPacket")
