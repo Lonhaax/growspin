@@ -31,7 +31,12 @@ const CRYPTO_OPTIONS = [
 ];
 
 export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [tab, setTab] = useState<'growtopia' | 'crypto'>('growtopia');
+  const [tab, setTab] = useState<'growtopia' | 'crypto' | 'withdraw'>('growtopia');
+
+  // Withdraw State
+  const [withdrawAmount, setWithdrawAmount] = useState<number>(50);
+  const [withdrawMethod, setWithdrawMethod] = useState<'crypto'|'growtopia'>('crypto');
+  const [withdrawAddress, setWithdrawAddress] = useState('');
 
   // Growtopia State
   const [growId, setGrowId] = useState('');
@@ -152,6 +157,29 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
     setLoading(false);
   };
 
+  const handleWithdrawRequest = async () => {
+    setError(''); setSuccessMsg(''); setLoading(true);
+    try {
+      const res = await apiFetch('/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: withdrawAmount * 100, // to cents
+          method: withdrawMethod,
+          address: withdrawAddress
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg(`Withdrawal requested for ${withdrawAmount} DLs!`);
+      } else {
+        setError(data.error || 'Withdrawal failed');
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -241,11 +269,21 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     <Coins size={16} />
                     Crypto
                   </button>
+                  <button
+                    onClick={() => setTab('withdraw')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all relative z-10 ${tab === 'withdraw' ? 'text-white' : 'text-[#7a819c] hover:text-white'}`}
+                  >
+                    <ArrowRight size={16} />
+                    Withdraw
+                  </button>
                   
                   {/* Tab Highlight Indicator */}
                   <div 
-                    className="absolute inset-y-1.5 w-[calc(50%-0.375rem)] bg-[#1e2333] rounded-lg shadow-sm border border-white/5 transition-transform duration-300 ease-out z-0"
-                    style={{ transform: `translateX(${tab === 'growtopia' ? '0%' : '100%'})`, left: tab === 'crypto' ? '0.375rem' : '0.375rem' }} 
+                    className="absolute inset-y-1.5 w-[calc(33.333%-0.375rem)] bg-[#1e2333] rounded-lg shadow-sm border border-white/5 transition-transform duration-300 ease-out z-0"
+                    style={{ 
+                      transform: `translateX(${tab === 'growtopia' ? '0%' : tab === 'crypto' ? '100%' : '200%'})`, 
+                      left: tab === 'crypto' ? '0.375rem' : tab === 'withdraw' ? '0.75rem' : '0.375rem' 
+                    }} 
                   />
                 </div>
 
@@ -423,6 +461,70 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                         </button>
                       </div>
                     )}
+                  </motion.div>
+                )}
+
+                {/* Withdraw Tab */}
+                {tab === 'withdraw' && (
+                  <motion.div
+                    key="withdraw"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="space-y-6"
+                  >
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#7a819c] ml-1">Withdrawal Method</label>
+                      <div className="flex bg-[#0c0e14] rounded-xl p-1.5 border border-white/5 relative">
+                        <button
+                          onClick={() => setWithdrawMethod('crypto')}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${withdrawMethod === 'crypto' ? 'bg-[#1e2333] text-white' : 'text-[#7a819c] hover:text-white'}`}
+                        >
+                          Crypto
+                        </button>
+                        <button
+                          onClick={() => setWithdrawMethod('growtopia')}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${withdrawMethod === 'growtopia' ? 'bg-[#1e2333] text-white' : 'text-[#7a819c] hover:text-white'}`}
+                        >
+                          Growtopia In-Game
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#7a819c] ml-1">Amount (DLs)</label>
+                      <input 
+                        type="number" 
+                        value={withdrawAmount || ''}
+                        onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                        min="50"
+                        className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-red-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-bold text-lg"
+                        placeholder="Min 50"
+                      />
+                      <p className="text-[10px] text-[#7a819c] ml-1 uppercase font-bold tracking-wider">Minimum withdrawal: 50 DLs</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#7a819c] ml-1">
+                        {withdrawMethod === 'crypto' ? 'Litecoin (LTC) Address' : 'GrowID & World Name'}
+                      </label>
+                      <input 
+                        type="text" 
+                        value={withdrawAddress}
+                        onChange={(e) => setWithdrawAddress(e.target.value)}
+                        className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-red-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
+                        placeholder={withdrawMethod === 'crypto' ? 'Enter LTC address...' : 'e.g. JohnDoe123 | BUYGEMS'}
+                      />
+                    </div>
+
+                    <button 
+                      onClick={handleWithdrawRequest}
+                      disabled={withdrawAmount < 50 || !withdrawAddress || loading}
+                      className="w-full py-4 bg-gradient-to-r from-red-500 to-[#e11d48] hover:from-[#e11d48] hover:to-red-400 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:shadow-[0_0_30px_rgba(225,29,72,0.5)] active:scale-[0.98]"
+                    >
+                      {loading ? <Loader2 className="animate-spin" size={20} /> : 'Request Withdrawal'}
+                      {!loading && <ArrowRight size={20} />}
+                    </button>
                   </motion.div>
                 )}
               </>

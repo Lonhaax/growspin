@@ -713,6 +713,50 @@ app.get('/api/deposit/status', requireAuth, async (req: AuthRequest, res: Respon
   }
 });
 
+app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+  try {
+    const { amount, method, address } = req.body;
+
+    if (!amount || typeof amount !== 'number' || amount < 5000) {
+      return res.status(400).json({ error: "Minimum withdrawal is 50 DLs ($50.00)" });
+    }
+    if (!method || !['crypto', 'growtopia'].includes(method)) {
+      return res.status(400).json({ error: "Invalid withdrawal method" });
+    }
+    if (!address || typeof address !== 'string' || address.trim().length < 3) {
+      return res.status(400).json({ error: "Valid destination address or world name is required" });
+    }
+
+    // Wrap in transaction to deduct balance and create request safely
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: req.userId! } });
+      if (!user) throw new Error("User not found");
+      if (user.mockBalance < amount) throw new Error("Insufficient balance");
+
+      const updatedUser = await tx.user.update({
+        where: { id: user.id },
+        data: { mockBalance: { decrement: amount } }
+      });
+
+      const request = await tx.withdrawalRequest.create({
+        data: {
+          userId: user.id,
+          amount,
+          method,
+          address: address.trim(),
+          status: "pending"
+        }
+      });
+
+      return { user: updatedUser, request };
+    });
+
+    res.json({ success: true, request: result.request, balance: result.user.mockBalance });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.get('/api/user/me', requireAuth, async (req: AuthRequest, res: Response) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -3121,6 +3165,90 @@ app.delete('/api/admin/users/:id', requireAuth, requireAdmin, async (req: AuthRe
     res.json({ message: 'User deleted successfully' });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/users/:id/freeze - Toggle user freeze (ban) status
+app.post('/api/admin/users/:id/freeze', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = parseInt(String(req.params.id));
+    if (req.userId === userId) {
+      return res.status(400).json({ error: "Cannot freeze your own admin account!" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { isFrozen: !user.isFrozen }
+    });
+
+    res.json({ message: updated.isFrozen ? 'User frozen successfully' : 'User unfrozen successfully', isFrozen: updated.isFrozen });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// GET /api/admin/withdrawals - Fetch pending withdrawals
+app.get('/api/admin/withdrawals', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const requests = await prisma.withdrawalRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { id: true, username: true } }
+      }
+    });
+    res.json(requests);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/withdrawals/:id/approve - Approve withdrawal
+app.post('/api/admin/withdrawals/:id/approve', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const reqId = parseInt(String(req.params.id));
+    const request = await prisma.withdrawalRequest.findUnique({ where: { id: reqId } });
+    
+    if (!request) return res.status(404).json({ error: "Withdrawal not found" });
+    if (request.status !== "pending") return res.status(400).json({ error: "Request is not pending" });
+
+    const updated = await prisma.withdrawalRequest.update({
+      where: { id: reqId },
+      data: { status: "approved" }
+    });
+
+    res.json({ message: "Withdrawal approved", request: updated });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/withdrawals/:id/reject - Reject withdrawal and refund
+app.post('/api/admin/withdrawals/:id/reject', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const reqId = parseInt(String(req.params.id));
+    const request = await prisma.withdrawalRequest.findUnique({ where: { id: reqId } });
+    
+    if (!request) return res.status(404).json({ error: "Withdrawal not found" });
+    if (request.status !== "pending") return res.status(400).json({ error: "Request is not pending" });
+
+    // Transaction to reject and refund
+    await prisma.$transaction([
+      prisma.withdrawalRequest.update({
+        where: { id: reqId },
+        data: { status: "rejected" }
+      }),
+      prisma.user.update({
+        where: { id: request.userId },
+        data: { mockBalance: { increment: request.amount } }
+      })
+    ]);
+
+    res.json({ message: "Withdrawal rejected and refunded" });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -34,6 +34,7 @@ model User {
   dailyClaims     DailyClaim[]
   depositIntents  DepositIntent[]
   cryptoInvoices  CryptoInvoice[]
+  withdrawalRequests WithdrawalRequest[]
 }
 
 model Transaction {
@@ -242,4 +243,17 @@ model AdminItem {
   color     String   @default("#ffffff")
   imageUrl  String   @db.Text
   createdAt DateTime @default(now())
+}
+
+model WithdrawalRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  amount    Int
+  method    String   @default("crypto") // "crypto", "growtopia"
+  address   String   @db.Text
+  status    String   @default("pending") // "pending", "approved", "rejected"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }

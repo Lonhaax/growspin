@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
@@ -11,7 +11,7 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,6 +22,10 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState("");
   const [editingUser, setEditingUser] = useState<any>(null);
   const [usersLoading, setUsersLoading] = useState(false);
+
+  // Withdrawals state
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
 
   const [cases, setCases] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,6 +44,15 @@ export default function AdminPage() {
     setUsersLoading(false);
   };
 
+  const fetchWithdrawals = async () => {
+    setWithdrawalsLoading(true);
+    try {
+      const res = await apiFetch('/admin/withdrawals');
+      if (res.ok) setWithdrawals(await res.json());
+    } catch (e) {}
+    setWithdrawalsLoading(false);
+  };
+
   const fetchSettings = async () => {
     try {
       const res = await apiFetch("/admin/settings");
@@ -53,6 +66,7 @@ export default function AdminPage() {
     if (user?.role === 'admin') {
       fetchSettings();
       fetchUsers();
+      fetchWithdrawals();
     }
   }, [user]);
 
@@ -104,6 +118,50 @@ export default function AdminPage() {
     } catch (e: any) {
       setError(e.message);
     }
+    setLoading(false);
+  };
+
+  const handleFreezeUser = async (id: number, username: string, isFrozen: boolean) => {
+    const action = isFrozen ? "unfreeze" : "freeze";
+    if (!confirm(`Are you sure you want to ${action} player "${username}"?`)) return;
+    setLoading(true);
+    try {
+      const res = await apiFetch(`/admin/users/${id}/freeze`, { method: "POST" });
+      if (res.ok) {
+        setSuccess(`Player ${username} ${action}d.`);
+        fetchUsers(userSearch);
+      } else {
+        throw new Error((await res.json()).error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
+  };
+
+  const handleApproveWithdrawal = async (id: number) => {
+    if (!confirm("Confirm payout was sent manually?")) return;
+    setLoading(true);
+    try {
+      const res = await apiFetch(`/admin/withdrawals/${id}/approve`, { method: "POST" });
+      if (res.ok) {
+        setSuccess("Withdrawal approved!");
+        fetchWithdrawals();
+      } else throw new Error((await res.json()).error);
+    } catch (e: any) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const handleRejectWithdrawal = async (id: number) => {
+    if (!confirm("Reject and refund DLs to player?")) return;
+    setLoading(true);
+    try {
+      const res = await apiFetch(`/admin/withdrawals/${id}/reject`, { method: "POST" });
+      if (res.ok) {
+        setSuccess("Withdrawal rejected and refunded!");
+        fetchWithdrawals();
+      } else throw new Error((await res.json()).error);
+    } catch (e: any) { setError(e.message); }
     setLoading(false);
   };
 
@@ -368,6 +426,17 @@ export default function AdminPage() {
             <Activity size={15} />
             <span>Analytics</span>
           </button>
+          <button
+            onClick={() => setActiveTab("withdrawals")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "withdrawals"
+                ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <ArrowDownToLine size={15} />
+            <span>Withdrawals</span>
+          </button>
         </div>
       </div>
 
@@ -447,6 +516,11 @@ export default function AdminPage() {
                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
                           {u.role}
                         </span>
+                        {u.isFrozen && (
+                          <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                            FROZEN
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4">
                         <DLCurrency amount={u.mockBalance} size="xs" className="text-white" />
@@ -479,13 +553,26 @@ export default function AdminPage() {
                             <Edit size={12} /> Edit
                           </button>
                           {user?.id !== u.id && (
-                            <button
-                              onClick={() => handleDeleteUser(u.id, u.username)}
-                              className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
-                              title="Purge Player"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleFreezeUser(u.id, u.username, u.isFrozen)}
+                                className={`p-1.5 border rounded-lg transition-colors ${
+                                  u.isFrozen 
+                                    ? 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border-orange-500/20' 
+                                    : 'bg-slate-500/10 hover:bg-orange-500/20 text-slate-400 hover:text-orange-400 border-slate-500/20 hover:border-orange-500/20'
+                                }`}
+                                title={u.isFrozen ? "Unfreeze Player" : "Freeze Player"}
+                              >
+                                {u.isFrozen ? <Unlock size={13} /> : <Lock size={13} />}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(u.id, u.username)}
+                                className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+                                title="Purge Player"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -631,6 +718,97 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB: WITHDRAWALS */}
+      {activeTab === "withdrawals" && (
+        <div className="space-y-6">
+          <div className="bg-[#131620] border border-[#222738] rounded-3xl p-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-black text-white flex items-center gap-2">
+                  <ArrowDownToLine className="text-emerald-400" size={20} /> Withdrawal Queue
+                </h2>
+                <p className="text-xs text-[#7f86a2] font-medium mt-0.5">
+                  Approve or reject manual withdrawal requests. Balances are already held in escrow.
+                </p>
+              </div>
+              <button
+                onClick={fetchWithdrawals}
+                className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
+              >
+                <RefreshCw size={14} className={withdrawalsLoading ? "animate-spin" : ""} />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-[#1f2433]">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#0c0e14] border-b border-[#1f2433] text-[#6b7391] uppercase tracking-wider font-black text-[10px]">
+                    <th className="py-3.5 px-4">Date</th>
+                    <th className="py-3.5 px-4">Player</th>
+                    <th className="py-3.5 px-4">Method</th>
+                    <th className="py-3.5 px-4">Address / Info</th>
+                    <th className="py-3.5 px-4">Amount</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1b202e]">
+                  {withdrawals.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-[#7f86a2] font-bold">No withdrawals found.</td>
+                    </tr>
+                  )}
+                  {withdrawals.map((w) => (
+                    <tr key={w.id} className="hover:bg-[#181c28] transition-colors">
+                      <td className="py-3.5 px-4 text-[#7f86a2] font-semibold">{new Date(w.createdAt).toLocaleString()}</td>
+                      <td className="py-3.5 px-4 font-black text-white">{w.user?.username || `User #${w.userId}`}</td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${w.method === 'crypto' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'} border`}>
+                          {w.method}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-[#a0a8c0] font-mono text-[10px]">{w.address}</td>
+                      <td className="py-3.5 px-4">
+                        <DLCurrency amount={w.amount} size="xs" className="text-white" />
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                          w.status === 'pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                          w.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                          'bg-red-500/20 text-red-400 border-red-500/30'
+                        } border`}>
+                          {w.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        {w.status === 'pending' && (
+                          <div className="inline-flex gap-2">
+                            <button
+                              onClick={() => handleApproveWithdrawal(w.id)}
+                              className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors"
+                              title="Mark Approved"
+                            >
+                              <Check size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleRejectWithdrawal(w.id)}
+                              className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+                              title="Reject & Refund"
+                            >
+                              <XCircle size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
