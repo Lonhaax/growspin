@@ -23,6 +23,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { ChatSidebar } from "@/components/layout/ChatSidebar";
+import { Footer } from "@/components/layout/Footer";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,8 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Sidebar />
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               <Topbar />
-              <main className="flex-1 overflow-y-auto bg-bg-primary p-4">
-                {children}
+              <main className="flex-1 overflow-y-auto bg-bg-primary p-4 flex flex-col min-h-0">
+                <div className="flex-1">
+                  {children}
+                </div>
+                <Footer />
               </main>
             </div>
             <AuthModal />
