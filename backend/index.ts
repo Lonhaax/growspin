@@ -474,16 +474,33 @@ app.post('/api/auth/logout', async (req: Request, res: Response) => {
 
 // GET /api/user/me
 // ==========================================
+// ==========================================
 // GROWTOPIA DEPOSIT ENDPOINTS
 // ==========================================
+
+let activeDepositWorld = "UNKNOWN";
+
+app.post('/api/internal/bot/status', async (req: Request, res: Response) => {
+  try {
+    const { secret, worldName } = req.body;
+    if (secret !== 'GROWTOPIA_BOT_SECRET_2026') return res.status(401).json({ error: 'Unauthorized' });
+    if (worldName && worldName !== "") {
+      activeDepositWorld = worldName;
+      console.log('Bot updated active deposit world to:', activeDepositWorld);
+    }
+    res.json({ success: true, activeDepositWorld });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
     const { growId } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
-    const worldName = `GROWBET${Math.floor(Math.random() * 900) + 100}`;
-    const botName = `BetBot${Math.floor(Math.random() * 9) + 1}`;
+    const worldName = activeDepositWorld !== "UNKNOWN" ? activeDepositWorld : `GROWBET${Math.floor(Math.random() * 900) + 100}`;
+    const botName = activeDepositWorld !== "UNKNOWN" ? 'PowerKuy Bot' : `BetBot${Math.floor(Math.random() * 9) + 1}`;
 
     const intent = await prisma.depositIntent.create({
       data: {
@@ -529,22 +546,17 @@ app.post('/api/internal/bot/credit', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const intent = await prisma.depositIntent.findFirst({
+    const cleanPlayerName = (playerName || "").replace(/\^[0-9a-zA-Z]/g, '').replace(/[@#]/g, '').toLowerCase();
+
+    const pendingIntents = await prisma.depositIntent.findMany({
       where: { worldName, status: 'PENDING' },
       orderBy: { createdAt: 'desc' }
     });
 
+    const intent = pendingIntents.find(i => i.growId.toLowerCase() === cleanPlayerName);
+
     if (!intent) {
-      return res.status(404).json({ error: 'No pending deposit found for this worldName' });
-    }
-
-    // Verify the player dropping the item is the user who requested the deposit
-    // Strip color codes (e.g. ^2, ^c) and titles (@, #) from the in-game name
-    const cleanPlayerName = (playerName || "").replace(/\^[0-9a-zA-Z]/g, '').replace(/[@#]/g, '').toLowerCase();
-    const cleanIntentGrowId = intent.growId.toLowerCase();
-
-    if (cleanPlayerName !== cleanIntentGrowId) {
-      return res.status(403).json({ error: 'Player name mismatch. Expected ' + intent.growId + ' but got ' + playerName });
+      return res.status(404).json({ error: 'No pending deposit found for player ' + cleanPlayerName + ' in this world' });
     }
 
     const newBalance = await withUserLock(intent.userId, async () => {

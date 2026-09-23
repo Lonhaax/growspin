@@ -53,4 +53,23 @@ function DepositHandler(var, pkt)
 end
 
 addHook(DepositHandler, "onVariant")
-log("[+] Growlauncher Deposit Script loaded. Listening for DL drops...")
+log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
+
+runThread(function()
+    local STATUS_URL = BACKEND_URL:gsub("/credit", "/status")
+    local lastWorld = ""
+    while true do
+        local currentWorld = GetWorldName()
+        if currentWorld and currentWorld ~= "" and currentWorld ~= lastWorld then
+            lastWorld = currentWorld
+            local statusPayload = string.format('{"secret":"%s","worldName":"%s"}', SECRET, currentWorld)
+            
+            http.post(STATUS_URL, {
+                headers = { ["Content-Type"] = "application/json" },
+                body = statusPayload
+            })
+            log("[+] Updated backend with active deposit world: " .. currentWorld)
+        end
+        sleep(5000)
+    end
+end)
