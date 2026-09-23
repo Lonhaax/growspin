@@ -73,37 +73,36 @@ function DepositHandler(var, pkt)
 end
 
 addHook(DepositHandler, "onVariant")
+addHook(DepositHandler, "OnVariant")
 
--- DEBUG: Log outgoing packets that mention "drop"
-addHook(function(type, packet)
+local function OutgoingHook(type, packet)
     if type == 3 or type == 2 then
         if packet and packet:lower():find("drop") then
             log("DEBUG Outgoing Text Packet: " .. tostring(packet))
         end
     end
-end, "onSendPacket")
+end
+addHook(OutgoingHook, "onSendPacket")
+addHook(OutgoingHook, "OnSendPacket")
 
--- DEBUG: Log incoming text packets that mention "drop"
-addHook(function(type, packet)
+local function IncomingTextHook(type, packet)
     if type == 3 or type == 2 then
         if packet and packet:lower():find("drop") then
             log("DEBUG Incoming Text Packet: " .. tostring(packet))
         end
     end
-end, "onPacket")
+end
+addHook(IncomingTextHook, "onPacket")
+addHook(IncomingTextHook, "OnPacket")
+addHook(IncomingTextHook, "OnGamePacket")
 
 -- DEBUG: Log EVERY packet to see what happens when dropping
 local captureDrops = false
-addHook(function(type, packet)
-    -- Just print the type to see what fires (will be spammy, but necessary for a few seconds)
-    -- log("DEBUG Packet Type: " .. tostring(type))
+local function IncomingTankHook(type, packet)
     if type == 4 then
-        -- GamePacket / TankPacket
-        -- Often represented as a table in proxy engines
         if type(packet) == "table" then
             if packet.type == 14 then
                 log("DEBUG Object Add (Type 14): itemID=" .. tostring(packet.int3) .. " netID=" .. tostring(packet.netid))
-                -- Print all fields of the table
                 local str = ""
                 for k, v in pairs(packet) do
                     str = str .. k .. "=" .. tostring(v) .. " "
@@ -112,7 +111,10 @@ addHook(function(type, packet)
             end
         end
     end
-end, "onPacket")
+end
+addHook(IncomingTankHook, "onPacket")
+addHook(IncomingTankHook, "OnPacket")
+addHook(IncomingTankHook, "OnGamePacket")
 
 log("[+] Growlauncher Deposit Script loaded. Listening for drops...")
 
