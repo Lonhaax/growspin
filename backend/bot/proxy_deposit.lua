@@ -1,14 +1,27 @@
 -- language: Lua, file: proxy_deposit.lua
--- *Bare metal execution test for PowerKuy Android*
+-- *Android Hook Brute-Forcer*
 
-LogToConsole("[+] SCRIPT EXECUTION STARTED")
+local hookNames = {
+    "OnVariant", "onVariant", "OnVarlist", "onVarlist",
+    "OnPacket", "onPacket", "OnGamePacket", "onGamePacket",
+    "OnTextPacket", "onTextPacket", "OnSendToServer", "onSendToServer",
+    "OnDialogRequest", "onDialogRequest", "OnProcess", "onProcess",
+    "OnTalkBubble", "onTalkBubble", "OnConsoleMessage", "onConsoleMessage",
+    "OnEvent", "onEvent", "OnMessage", "onMessage"
+}
 
-AddHook("OnVariant", "test_hook_1", function(varlist)
-    LogToConsole("DEBUG: OnVariant fired")
-end)
+LogToConsole("=========================================")
+LogToConsole("STARTING ANDROID HOOK BRUTE-FORCE")
+LogToConsole("=========================================")
 
-AddHook("OnPacket", "test_hook_2", function(type, packet)
-    LogToConsole("DEBUG: OnPacket fired")
-end)
+for i, name in ipairs(hookNames) do
+    local hookId = "brute_" .. tostring(i)
+    -- Wrap in pcall just in case AddHook crashes on invalid names
+    pcall(function()
+        AddHook(name, hookId, function(...)
+            LogToConsole("DEBUG: HOOK FIRED -> " .. tostring(name))
+        end)
+    end)
+end
 
-LogToConsole("[+] HOOKS REGISTERED")
+LogToConsole("[+] Android Hook Brute-Forcer loaded. Do a trade/drop and see what fires!")
