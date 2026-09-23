@@ -35,19 +35,6 @@ services:
     depends_on:
       - db
 
-  deposit_bot:
-    build: 
-      context: ./backend
-    container_name: gambling_deposit_bot
-    restart: always
-    command: ./bot/enet_bot/bot
-    environment:
-      - BACKEND_URL=http://backend:3001
-      - GROWTOPIA_BOT_USERNAME=GrowSpinBot
-      - GROWTOPIA_BOT_PASSWORD=growspinpass
-      - GROWTOPIA_BOT_SECRET=GROWTOPIA_BOT_SECRET_2026
-    depends_on:
-      - backend
 
   frontend:
     build: 
