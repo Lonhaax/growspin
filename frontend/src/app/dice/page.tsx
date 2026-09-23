@@ -86,7 +86,7 @@ export default function DicePage() {
       <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-8 shadow-2xl">
         
         {/* Slider Area */}
-        <div className="mb-12 relative px-4 pt-12">
+        <div className="mb-12 relative pt-12">
           {/* Result marker (if any) */}
           {result && !isRolling && (
             <motion.div
