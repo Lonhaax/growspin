@@ -70,6 +70,8 @@ function DepositHandler(var, pkt)
             end)
         end
     end
+end
+
 -- Cleaned up basic hooks to prevent engine crash
 addHook(DepositHandler, "onVariant")
 
