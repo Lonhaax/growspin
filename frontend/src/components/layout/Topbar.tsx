@@ -45,7 +45,7 @@ export function Topbar() {
         <div className="flex items-center gap-4">
         <Link href="/" className="md:hidden flex items-center gap-2">
           <img src="/dl.webp" alt="DL" className="w-6 h-6 object-contain" />
-          <span className="font-black text-white text-base">GrowBet</span>
+          <span className="font-black text-white text-base">GrowSpin</span>
         </Link>
         <div className="hidden lg:flex items-center gap-2">
           <Link

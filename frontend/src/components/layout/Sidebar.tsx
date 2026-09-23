@@ -84,18 +84,9 @@ export function Sidebar() {
     <aside className="w-64 flex-shrink-0 border-r border-[#1f222b] bg-[#0d0f14] h-full flex flex-col pt-5 overflow-y-auto hidden md:flex z-10 relative shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
       {/* Brand Header */}
       <div className="px-5 mb-6">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-accent-green to-emerald-500 flex items-center justify-center p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.3)] group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-[#0d0f14] rounded-[10px] flex items-center justify-center">
-              <img src="/dl.webp" alt="DL" className="w-6 h-6 object-contain drop-shadow" />
-            </div>
-          </div>
-          <div>
-            <div className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-              <span>GrowBet</span>
-              <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">DL</span>
-            </div>
-            <p className="text-[11px] font-semibold text-[#616882]">Diamond Lock Gaming</p>
+        <Link href="/" className="block group">
+          <div className="w-full flex justify-center py-2 transition-transform duration-300 group-hover:scale-105 group-hover:brightness-110">
+            <img src="/logo.png" alt="GrowSpin" className="w-full h-auto object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]" />
           </div>
         </Link>
       </div>

@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-3">
           <h2 className="text-white font-bold text-xl">4. Third-Party Sharing</h2>
           <p>
-            We do not sell, trade, or otherwise transfer your information to outside parties. Your data remains entirely within the MockBet database.
+            We do not sell, trade, or otherwise transfer your information to outside parties. Your data remains entirely within the GrowSpin database.
           </p>
         </section>
 

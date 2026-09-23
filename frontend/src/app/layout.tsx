@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MockBet — Virtual Casino",
+  title: "GrowSpin — Virtual Casino",
   description: "A provably fair virtual casino simulator. No real money involved.",
 };
 

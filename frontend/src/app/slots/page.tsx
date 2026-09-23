@@ -112,7 +112,7 @@ export default function SlotsPage() {
             Real Vegas Slots with <span className="text-emerald-400">Diamond Locks</span>
           </h1>
           <p className="text-sm text-[#878eab] leading-relaxed mb-6">
-            Play iconic high-RTP slots directly on GrowBet. Bets and winnings seamlessly settle into your Diamond Lock balance in real-time.
+            Play iconic high-RTP slots directly on GrowSpin. Bets and winnings seamlessly settle into your Diamond Lock balance in real-time.
           </p>
           <div className="flex items-center gap-4 text-xs font-bold text-[#7a819c]">
             <div className="flex items-center gap-1.5 text-emerald-400">

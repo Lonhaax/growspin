@@ -11,7 +11,7 @@ export default function TermsOfService() {
           </div>
           
           <p className="text-[#8e95ad] leading-relaxed text-lg">
-            By using MockBet, you agree to these terms. Read them carefully before proceeding.
+            By using GrowSpin, you agree to these terms. Read them carefully before proceeding.
           </p>
         </div>
       </div>
@@ -21,14 +21,14 @@ export default function TermsOfService() {
         <section className="space-y-3">
           <h2 className="text-white font-bold text-xl">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using MockBet, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
+            By accessing or using GrowSpin, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.
           </p>
         </section>
 
         <section className="space-y-3">
           <h2 className="text-white font-bold text-xl">2. Virtual Currency</h2>
           <p>
-            The currencies used on this site (e.g., "DLs", "Diamond Locks", "WLS") are strictly virtual. They hold <span className="text-white font-bold">zero real-world value</span> and cannot be exchanged for fiat currency or other cryptocurrencies. MockBet is a simulator, not a real-money gambling platform.
+            The currencies used on this site (e.g., "DLs", "Diamond Locks", "WLS") are strictly virtual. They hold <span className="text-white font-bold">zero real-world value</span> and cannot be exchanged for fiat currency or other cryptocurrencies. GrowSpin is a simulator, not a real-money gambling platform.
           </p>
         </section>
 
@@ -44,7 +44,7 @@ export default function TermsOfService() {
         <section className="space-y-3">
           <h2 className="text-white font-bold text-xl">4. Disclaimer of Liability</h2>
           <p>
-            MockBet is provided on an "as is" and "as available" basis. We are not responsible for any virtual losses, account resets, or server downtimes. We reserve the right to modify, suspend, or terminate the service at any time without prior notice.
+            GrowSpin is provided on an "as is" and "as available" basis. We are not responsible for any virtual losses, account resets, or server downtimes. We reserve the right to modify, suspend, or terminate the service at any time without prior notice.
           </p>
         </section>
 
