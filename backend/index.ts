@@ -13,6 +13,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import fs from 'fs';
 import path from 'path';
+const { Wiki } = require('@ncd0/growtopia');
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
@@ -2678,29 +2679,10 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
 
     // Fetch from Wiki
     let imageUrl = '';
-    const wikiTitles = [
-      `File:Item_sprite_${name.replace(/ /g, '_')}.png`,
-      `File:${name.replace(/ /g, '_')}.png`,
-      `File:${name.replace(/ /g, '_')}_Sprite.png`
-    ];
-    
-    for (const wikiTitle of wikiTitles) {
-      if (imageUrl) break;
-      const apiUrl = `https://growtopia.fandom.com/api.php?action=query&format=json&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(wikiTitle)}`;
-      try {
-        const wikiRes = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-        const pages = wikiRes.data.query?.pages;
-        if (pages) {
-          for (const pageId in pages) {
-            if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
-              imageUrl = pages[pageId].imageinfo[0].url;
-              break;
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Wiki fetch error:', e);
-      }
+    try {
+      imageUrl = await Wiki.getItemSprite(name);
+    } catch (e) {
+      console.error('Wiki fetch error:', e);
     }
 
     if (!imageUrl) {
