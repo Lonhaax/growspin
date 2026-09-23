@@ -107,13 +107,7 @@ export default function Home() {
                 <span>Create Battle</span>
                 <Swords size={18} />
               </Link>
-              <Link
-                href="/vip"
-                className="px-6 py-3.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-black rounded-xl transition-all flex items-center gap-2"
-              >
-                <Crown size={18} />
-                <span>Claim Free Cases</span>
-              </Link>
+
             </div>
           </div>
 
