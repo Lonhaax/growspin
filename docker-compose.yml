@@ -20,7 +20,7 @@ services:
       context: ./backend
     container_name: gambling_backend
     restart: always
-    command: sh -c "npx prisma db push && npm start"
+    command: sh -c "npx prisma db push --accept-data-loss && npm start"
     expose:
       - "3001"
     environment:
