@@ -7,11 +7,10 @@ import axios from 'axios';
 const BOT_USERNAME = process.env.GROWTOPIA_BOT_USERNAME || 'GrowSpinDeposit';
 const BOT_PASSWORD = process.env.GROWTOPIA_BOT_PASSWORD || 'password123';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
-const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026'; // Must match backend/index.ts
+const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026';
 
-// The bot connects to Growtopia
 const bot = new Client({
-  mac: '00:00:00:00:00:00', // Spoofed mac
+  mac: '00:00:00:00:00:00',
   tankIDName: BOT_USERNAME,
   tankIDPass: BOT_PASSWORD
 });
@@ -25,69 +24,76 @@ async function startWorldLoop() {
   
   while (true) {
     try {
-      // Fetch pending intents from backend
       const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
         headers: { Authorization: BOT_SECRET }
       });
       const intents = res.data.intents;
       
-      if (intents.length === 0) {
-        // No pending deposits, wait 5 seconds before checking again
+      if (intents && intents.length > 0) {
+        for (const intent of intents) {
+          console.log(`[BOT] Joining deposit world: ${intent.worldName}`);
+          currentWorld = intent.worldName;
+          
+          bot.send('action|join_request\nname|' + intent.worldName, 3);
+          
+          // Wait 15 seconds for user to drop items
+          await new Promise(r => setTimeout(r, 15000));
+          currentWorld = '';
+        }
+      } else {
         await new Promise(r => setTimeout(r, 5000));
-        continue;
       }
-      
-      for (const intent of intents) {
-        console.log(`[BOT] Joining deposit world: ${intent.worldName}`);
-        currentWorld = intent.worldName;
-        
-        // Tell bot to join the world
-        bot.send('action|join_request\nname|' + intent.worldName, 3);
-        
-        // Wait 15 seconds in this world to allow user to drop
-        await new Promise(r => setTimeout(r, 15000));
-        
-        currentWorld = '';
-      }
-      
     } catch (err) {
-      console.error('[BOT] Error in world loop:', err?.response?.data || err.message);
+      console.error('[BOT] Loop error:', err?.message);
       await new Promise(r => setTimeout(r, 10000));
     }
   }
 }
 
 bot.on('ready', () => {
-  console.log(`✅ [BOT] Connected as ${bot.name}`);
+  console.log(`✅ [BOT] Connected and authenticated as ${bot.name}`);
   startWorldLoop();
 });
 
-// Listen for items dropped (Diamond Locks = item ID 1796)
-bot.on('onDrop', async (data) => {
-  console.log(`[BOT] Item Dropped: ID ${data.itemID}, Count ${data.count}`);
-  
-  if (data.itemID === 1796 && currentWorld) {
-    const dlCount = data.count;
-    // 1 DL = 100 subunits in the casino balance system
-    const amountToCredit = dlCount * 100;
-    
-    console.log(`[BOT] Detected ${dlCount} DL drop in ${currentWorld}. Sending credit to backend...`);
-    
-    try {
-      const res = await axios.post(`${BACKEND_URL}/api/internal/bot/credit`, {
-        secret: BOT_SECRET,
-        worldName: currentWorld, 
-        amount: amountToCredit
-      });
-      
-      console.log(`✅ [BOT] Successfully credited user for world ${currentWorld}. New balance: ${res.data.newBalance}`);
-      
-      // Optionally collect the DL (requires pathfinding)
-      // bot.collect(data.netID);
-    } catch (err) {
-      console.error(`❌ [BOT] Failed to credit user:`, err?.response?.data || err.message);
-    }
-  }
+bot.on('disconnect', () => {
+  console.log('❌ [BOT] Disconnected! Reconnecting in 5s...');
+  isLooping = false;
+  setTimeout(() => bot.connect(), 5000);
 });
 
+// growtopia.js emits 'variant' for variant lists (OnConsoleMessage, OnDialogRequest, etc.)
+bot.on('variant', (varlist) => {
+    if (!varlist || !varlist[0]) return;
+    const v0 = varlist[0];
+    
+    // Ignore spam
+    if (v0 !== 'OnTalkBubble' && v0 !== 'OnConsoleMessage' && v0 !== 'OnSetBux') {
+        console.log(`[BOT] Variant Received:`, varlist);
+    }
+    
+    if (v0 === 'OnConsoleMessage') {
+        const msg = varlist[1].toLowerCase();
+        if (msg.includes('drop') || msg.includes('trade')) {
+            console.log(`[BOT] Chat: ${varlist[1]}`);
+        }
+    }
+});
+
+// growtopia.js emits 'raw' for TankPackets (where object additions/drops happen)
+bot.on('raw', (packet) => {
+    // Type 4 = TankPacket, type 14 = Object Add
+    if (packet.type === 4 && packet.data && packet.data.type === 14) {
+        const itemID = packet.data.int3; // Typical for itemID
+        const netID = packet.data.netID;
+        console.log(`[BOT] Raw Drop Detected: ItemID=${itemID}, NetID=${netID}`);
+        
+        if (itemID === 1796 && currentWorld) {
+            console.log(`[BOT] Found Diamond Lock drop! Crediting...`);
+            // Credit logic would go here
+            // axios.post(...)
+        }
+    }
+});
+
+console.log("[BOT] Starting headless client...");
 bot.connect();
