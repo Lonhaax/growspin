@@ -137,6 +137,9 @@ local function detectNewDrops()
     lastObjects = currentObjMap
 end
 
+local lastWorldUpdate = 0
+local lastWorld = ""
+
 addHook(function()
     detectNewDrops()
     
