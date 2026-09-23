@@ -72,35 +72,24 @@ function DepositHandler(var, pkt)
     end
 end
 
--- Trade Deposit Logger
+-- Dump Global Environment (_G) to find the correct API
 
-local function logTradePackets(pktType, packet)
-    -- Log outgoing trade packets (Type 2/3)
-    if pktType == 2 or pktType == 3 then
-        if packet and (packet:lower():find("trade") or packet:lower():find("dialog")) then
-            log("DEBUG TRADE PKT: " .. tostring(packet))
-        end
+log("=========================================")
+log("DUMPING POWERKUY LUA API")
+log("=========================================")
+
+local count = 0
+for k, v in pairs(_G) do
+    if type(v) == "function" or type(v) == "table" then
+        log("API Member: " .. tostring(k) .. " (" .. type(v) .. ")")
+        count = count + 1
     end
 end
-addHook(logTradePackets, "OnSendPacket")
 
-local function logTradeVariants(var)
-    if not var or not var.v0 then return end
-    
-    local v0 = tostring(var.v0)
-    
-    -- Filter out pure movement and visual spam, log everything else to catch the trade sequence
-    if v0 == "OnConsoleMessage" or v0 == "OnTalkBubble" then
-        if var.v1 and var.v1:lower():find("trade") then
-            log("DEBUG TRADE CHAT: " .. tostring(var.v1))
-        end
-    elseif string.find(v0:lower(), "trade") or v0 == "OnDialogRequest" then
-        log("DEBUG TRADE VAR: " .. v0)
-        if var.v1 then log("  v1=" .. tostring(var.v1)) end
-        if var.v2 then log("  v2=" .. tostring(var.v2)) end
-        if var.v3 then log("  v3=" .. tostring(var.v3)) end
-    end
-end
-addHook(logTradeVariants, "OnVariant")
+log("=========================================")
+log("Total API Members Found: " .. tostring(count))
+log("=========================================")
 
-log("[+] Growlauncher Trade-Logger Script loaded. Trade the bot and accept!")
+-- Keep the script alive just in case
+addHook(function() end, "onDraw")
+log("[+] API Dumper loaded. Check console for available functions.")
