@@ -40,7 +40,7 @@ services:
       context: ./backend
     container_name: gambling_deposit_bot
     restart: always
-    command: node bot/deposit_bot.mjs
+    command: ./bot/enet_bot/bot
     environment:
       - BACKEND_URL=http://backend:3001
       - GROWTOPIA_BOT_USERNAME=GrowSpinBot

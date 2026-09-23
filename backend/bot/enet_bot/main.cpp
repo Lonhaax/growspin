@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <map>
+#include <cstring>
 #include <enet/enet.h>
 #include <curl/curl.h>
 
@@ -27,7 +29,7 @@ struct TankPacket {
 };
 #pragma pack(pop)
 
-// Fire webhook to backend
+// Utility function to fire the webhook
 void FireCreditWebhook(const std::string& worldName, int dlCount) {
     CURL* curl;
     CURLcode res;
@@ -38,7 +40,7 @@ void FireCreditWebhook(const std::string& worldName, int dlCount) {
         struct curl_slist* headers = NULL;
         headers = curl_slist_append(headers, "Content-Type: application/json");
         
-        curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3001/api/internal/bot/credit");
+        curl_easy_setopt(curl, CURLOPT_URL, "http://backend:3001/api/internal/bot/credit");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
         
@@ -53,91 +55,199 @@ void FireCreditWebhook(const std::string& worldName, int dlCount) {
     }
 }
 
-// Extract string from variant list packet
+struct MemoryStruct {
+    char *memory;
+    size_t size;
+};
+
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+    char *ptr = (char*)realloc(mem->memory, mem->size + realsize + 1);
+    if (!ptr) return 0;
+    mem->memory = ptr;
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+    return realsize;
+}
+
+std::map<std::string, std::string> GetServerData() {
+    std::map<std::string, std::string> serverData;
+    CURL *curl_handle;
+    CURLcode res;
+    struct MemoryStruct chunk;
+    chunk.memory = (char*)malloc(1);
+    chunk.size = 0;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl_handle = curl_easy_init();
+    std::string postData = "version=4.62&platform=0&protocol=208"; 
+    
+    curl_easy_setopt(curl_handle, CURLOPT_URL, "https://www.growtopia1.com/growtopia/server_data.php");
+    curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, postData.c_str());
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "UbiServices_SDK_2022.Release.9_PC64_unicode_static");
+
+    res = curl_easy_perform(curl_handle);
+
+    if (res == CURLE_OK) {
+        std::string response(chunk.memory);
+        size_t pos = 0;
+        std::string token;
+        while ((pos = response.find('\n')) != std::string::npos) {
+            token = response.substr(0, pos);
+            size_t delim = token.find('|');
+            if (delim != std::string::npos) {
+                serverData[token.substr(0, delim)] = token.substr(delim + 1);
+            }
+            response.erase(0, pos + 1);
+        }
+    }
+    curl_easy_cleanup(curl_handle);
+    free(chunk.memory);
+    curl_global_cleanup();
+    return serverData;
+}
+
+std::string BuildLogonPacket(const std::string& meta) {
+    std::string packet = "action|logon\n";
+    packet += "requestedName|GrowSpinBot\n";
+    packet += "tankIDName|GrowSpinBot\n";
+    packet += "tankIDPass|growspinpass\n";
+    packet += "f|1\n";
+    packet += "protocol|208\n";
+    packet += "game_version|4.62\n";
+    packet += "fz|54316160\n";
+    packet += "lmode|0\n";
+    packet += "cbits|0\n";
+    packet += "player_age|25\n";
+    packet += "GDPR|1\n";
+    packet += "hash2|641177651\n";
+    packet += "meta|" + meta + "\n";
+    packet += "fhash|-716973604\n";
+    packet += "platformID|0\n";
+    packet += "deviceVersion|0\n";
+    packet += "country|us\n";
+    packet += "hash|47366115\n";
+    packet += "mac|00:00:00:00:00:00\n";
+    return packet;
+}
+
+ENetPacket* CreatePacket(int type, const std::string& text) {
+    ENetPacket* packet = enet_packet_create(NULL, text.length() + 5, ENET_PACKET_FLAG_RELIABLE);
+    *(int*)packet->data = type;
+    memcpy(packet->data + 4, text.c_str(), text.length());
+    packet->data[packet->dataLength - 1] = 0;
+    return packet;
+}
+
 std::string GetVarListString(unsigned char* data, size_t size, int index) {
-    // Note: You must derive the variant list offsets for the live build.
-    // Variant list packets start with a count of elements, then byte identifiers for types (1=float, 2=string, etc).
-    // This is a stub for the architecture. 
-    return "OnDrop";
+    if (size < 1) return "";
+    int numElements = data[0];
+    if (index >= numElements) return "";
+    int offset = 1;
+    for (int i = 0; i <= index; ++i) {
+        if (offset >= size) return "";
+        int type = data[offset++];
+        if (type == 1) offset += 4;
+        else if (type == 2) {
+            int strLen = *(int*)(data + offset);
+            offset += 4;
+            if (i == index) return std::string((char*)(data + offset), strLen);
+            offset += strLen;
+        }
+        else if (type == 5 || type == 9) offset += 4;
+    }
+    return "";
+}
+
+int GetVarListInt(unsigned char* data, size_t size, int index) {
+    if (size < 1) return 0;
+    int numElements = data[0];
+    if (index >= numElements) return 0;
+    int offset = 1;
+    for (int i = 0; i <= index; ++i) {
+        if (offset >= size) return 0;
+        int type = data[offset++];
+        if (type == 1) offset += 4;
+        else if (type == 2) {
+            int strLen = *(int*)(data + offset);
+            offset += 4;
+            offset += strLen;
+        }
+        else if (type == 5 || type == 9) {
+            if (i == index) return *(int*)(data + offset);
+            offset += 4;
+        }
+    }
+    return 0;
 }
 
 int main() {
-    if (enet_initialize() != 0) {
-        std::cerr << "Failed to initialize ENet\n";
+    auto serverData = GetServerData();
+    if (serverData.find("server") == serverData.end()) {
+        std::cerr << "[-] Failed to fetch server data.\n";
         return EXIT_FAILURE;
     }
+
+    std::string ip = serverData["server"];
+    int port = std::stoi(serverData["port"]);
+    std::string meta = serverData["meta"];
+    
+    std::cout << "[+] Target IP: " << ip << ":" << port << " | Meta: " << meta.substr(0, 5) << "...\n";
+
+    if (enet_initialize() != 0) return EXIT_FAILURE;
     atexit(enet_deinitialize);
 
     ENetHost* client = enet_host_create(NULL, 1, 2, 0, 0);
-    if (!client) {
-        std::cerr << "Failed to create ENet client\n";
-        return EXIT_FAILURE;
-    }
-
+    client->usingNewPacket = true;
     client->checksum = enet_crc32;
+    enet_host_compress_with_range_coder(client);
 
     ENetAddress address;
-    // Note: Live builds require hitting the login API first to get the dynamic IP and meta token.
-    enet_address_set_host(&address, "213.179.209.168"); // Example server IP
-    address.port = 17191; // Example port
+    enet_address_set_host(&address, ip.c_str());
+    address.port = port;
 
     ENetPeer* peer = enet_host_connect(client, &address, 2, 0);
-    if (!peer) {
-        std::cerr << "No available peers for initiating an ENet connection\n";
-        return EXIT_FAILURE;
-    }
 
     ENetEvent event;
-    std::string currentWorld = "GROWBET123"; // Would be dynamic based on intent polling
-
-    std::cout << "[+] ENet client started. Listening for events...\n";
+    std::string currentWorld = "GROWBET123";
 
     while (true) {
-        while (enet_host_service(client, &event, 1000) > 0) {
-            switch (event.type) {
-                case ENET_EVENT_TYPE_CONNECT:
-                    std::cout << "[+] Connected to Growtopia server.\n";
-                    // Send logon packet here (type 2)
-                    break;
-                    
-                case ENET_EVENT_TYPE_RECEIVE: {
-                    int packetType = *(int*)event.packet->data;
-                    
-                    if (packetType == 4) { // TankPacket
-                        TankPacket* tank = (TankPacket*)(event.packet->data + 4);
-                        
-                        // Type 1 is VariantList (Game Messages / Visual Events)
-                        if (tank->type == 1 && tank->dataLength > 0) {
-                            unsigned char* extData = event.packet->data + 4 + sizeof(TankPacket);
-                            
-                            // Check if it's an item drop packet
-                            std::string functionCall = GetVarListString(extData, tank->dataLength, 0);
-                            
-                            if (functionCall == "OnDrop") {
-                                // Extract item ID and count from variant list
-                                // Item 1796 = DL
-                                int itemID = 1796; 
-                                int count = 5;     
-                                
-                                if (itemID == 1796) {
-                                    std::cout << "[+] Detected " << count << " DL drop. Firing webhook...\n";
-                                    FireCreditWebhook(currentWorld, count);
-                                }
-                            }
+        while (enet_host_service(client, &event, 5) > 0) {
+            if (event.type == ENET_EVENT_TYPE_CONNECT) {
+                std::cout << "[+] Connected. Sending logon...\n";
+                ENetPacket* logonPacket = CreatePacket(2, BuildLogonPacket(meta));
+                enet_peer_send(peer, 0, logonPacket);
+            }
+            else if (event.type == ENET_EVENT_TYPE_RECEIVE) {
+                int packetType = *(int*)event.packet->data;
+                if (packetType == 3) {
+                    std::string msg((char*)event.packet->data + 4, event.packet->dataLength - 4);
+                    if (msg.find("action|logon_fail") != std::string::npos) {
+                        std::cout << "[-] Logon Failed! Hash/Version outdated.\n";
+                    }
+                }
+                if (packetType == 4) {
+                    TankPacket* tank = (TankPacket*)(event.packet->data + 4);
+                    if (tank->type == 1 && tank->dataLength > 0) {
+                        unsigned char* extData = event.packet->data + 4 + sizeof(TankPacket);
+                        std::string functionCall = GetVarListString(extData, tank->dataLength, 0);
+                        if (functionCall == "OnDrop") {
+                            int itemID = GetVarListInt(extData, tank->dataLength, 1);
+                            int count = GetVarListInt(extData, tank->dataLength, 3);
+                            if (itemID == 1796) FireCreditWebhook(currentWorld, count);
                         }
                     }
-                    enet_packet_destroy(event.packet);
-                    break;
                 }
-                case ENET_EVENT_TYPE_DISCONNECT:
-                    std::cout << "[-] Disconnected from server.\n";
-                    break;
-                default:
-                    break;
+                enet_packet_destroy(event.packet);
+            }
+            else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
+                std::cout << "[-] Disconnected.\n";
             }
         }
     }
-
     enet_host_destroy(client);
     return EXIT_SUCCESS;
 }
