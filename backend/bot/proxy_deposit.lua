@@ -2,9 +2,9 @@
 -- *Deposit script for PowerKuy / EnetProxy on Windows VPS*
 -- *Listens for Diamond Lock drops and fires HTTP requests to the backend.*
 
-local BACKEND_URL = "https://api.growspin.lol/api/internal/bot/credit"
-local SECRET = "GROWTOPIA_BOT_SECRET_2026"
-local TARGET_ITEMS = {
+BACKEND_URL = "https://api.growspin.lol/api/internal/bot/credit"
+SECRET = "GROWTOPIA_BOT_SECRET_2026"
+TARGET_ITEMS = {
     [242] = 1,      -- World Lock = 1 WL
     [1796] = 100,   -- Diamond Lock = 100 WLs
     [7188] = 10000  -- Blue Gem Lock = 100 DLs (10000 WLs)
