@@ -58,7 +58,7 @@ export default function DicePage() {
 
   const winChance = target;
   const multiplier = 99 / winChance;
-  const potentialWin = parseFloat(betAmount) * multiplier;
+  const potentialProfit = (parseFloat(betAmount) * multiplier) - parseFloat(betAmount);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-32">
@@ -163,9 +163,9 @@ export default function DicePage() {
           </div>
 
           <div className="w-full md:w-1/2">
-            <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-2 tracking-widest">Payout on Win</label>
+            <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-2 tracking-widest">Profit on Win</label>
             <div className="w-full bg-[#1f222b] border-2 border-[#2a2d3a] rounded-xl px-4 py-3 text-accent-green font-black flex items-center gap-2">
-              <DLCurrency amount={isNaN(potentialWin) ? 0 : potentialWin} isRaw={true} size="md" className="text-accent-green" />
+              <DLCurrency amount={isNaN(potentialProfit) ? 0 : potentialProfit} isRaw={true} size="md" className="text-accent-green" />
             </div>
           </div>
         </div>
