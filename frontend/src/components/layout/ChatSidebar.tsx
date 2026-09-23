@@ -25,9 +25,24 @@ export function ChatSidebar() {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [rainEvent, setRainEvent] = useState<{ amount: number; users: number } | null>(null);
+  const [activeRain, setActiveRain] = useState<{ amount: number, endTime: number, joinedCount: number, hasJoined: boolean } | null>(null);
+  const [rainTimeLeft, setRainTimeLeft] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    let interval: any;
+    if (activeRain) {
+      interval = setInterval(() => {
+        const left = Math.max(0, Math.floor((activeRain.endTime - Date.now()) / 1000));
+        setRainTimeLeft(left);
+        if (left === 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [activeRain]);
 
   useEffect(() => {
     // Initial fetch
@@ -51,10 +66,22 @@ export function ChatSidebar() {
       setMessages(prev => [...prev, msg].slice(-50));
     });
 
-    socketRef.current.on('chat_rain', (data: { totalAmount: number; users: number; amountPerUser: number }) => {
-      setRainEvent({ amount: data.totalAmount, users: data.users });
-      fetchBalance(); // Refresh balance just in case they were one of the lucky users
-      setTimeout(() => setRainEvent(null), 5000); // Clear rain animation after 5s
+    socketRef.current.on('rain_started', (data: { amount: number, endTime: number, joinedCount: number }) => {
+      setActiveRain({ ...data, hasJoined: false });
+      setRainTimeLeft(Math.max(0, Math.floor((data.endTime - Date.now()) / 1000)));
+    });
+
+    socketRef.current.on('rain_update', (data: { joinedCount: number }) => {
+      setActiveRain(prev => prev ? { ...prev, joinedCount: data.joinedCount } : null);
+    });
+
+    socketRef.current.on('rain_ended', () => {
+      setActiveRain(null);
+    });
+
+    socketRef.current.on('balanceUpdate', (data: { userId: number }) => {
+      // Re-fetch balance if the event matches current user, or blindly fetch since it's just a UI sync
+      fetchBalance();
     });
 
     return () => {
@@ -132,16 +159,39 @@ export function ChatSidebar() {
 
               {/* Rain Animation Overlay */}
               <AnimatePresence>
-                {rainEvent && (
+                {activeRain && (
                   <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-blue-500/20 flex items-center justify-center pointer-events-none"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="absolute top-16 left-0 right-0 z-20 bg-gradient-to-r from-blue-600/90 to-blue-400/90 border-b border-blue-400/50 shadow-[0_10px_20px_rgba(59,130,246,0.3)] backdrop-blur-md overflow-hidden"
                   >
-                    <div className="flex items-center gap-1 text-blue-400 font-bold drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]">
-                      <Droplet size={16} className="animate-bounce" />
-                      RAIN! {(rainEvent.amount / 100).toFixed(2)} DLs to {rainEvent.users} users
+                    <div className="p-3 flex flex-col items-center justify-center gap-2">
+                      <div className="flex items-center gap-2 text-white font-bold text-sm">
+                        <Droplet size={18} className="animate-bounce text-blue-200" />
+                        RAIN DROP: {(activeRain.amount / 100).toFixed(2)} DLs
+                      </div>
+                      <div className="flex w-full items-center justify-between text-xs font-semibold text-blue-100 px-2">
+                        <span>{activeRain.joinedCount} Joined</span>
+                        <span>{rainTimeLeft}s Left</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (!user) return openAuthModal("login");
+                          if (!activeRain.hasJoined) {
+                            socketRef.current.emit("join_rain", { userId: user.id });
+                            setActiveRain({ ...activeRain, hasJoined: true });
+                          }
+                        }}
+                        disabled={activeRain.hasJoined}
+                        className={`w-full py-2 rounded font-bold text-xs shadow-lg transition-all ${
+                          activeRain.hasJoined 
+                            ? "bg-black/40 text-blue-200 cursor-not-allowed" 
+                            : "bg-white text-blue-600 hover:bg-blue-50"
+                        }`}
+                      >
+                        {activeRain.hasJoined ? "JOINED" : "JOIN RAIN"}
+                      </button>
                     </div>
                   </motion.div>
                 )}

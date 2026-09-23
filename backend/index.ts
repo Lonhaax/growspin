@@ -3017,40 +3017,12 @@ app.post('/api/admin/chat/rain', requireAuth, requireAdmin, async (req: AuthRequ
       return res.status(400).json({ error: 'Valid amount is required' });
     }
 
-    const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
-    const recentMessages = await prisma.chatMessage.findMany({
-      where: { timestamp: { gte: fifteenMinsAgo } },
-      select: { userId: true },
-      distinct: ['userId']
-    });
+    await triggerRain(amount);
 
-    if (recentMessages.length === 0) {
-      return res.status(400).json({ error: 'No active chatters to rain on.' });
-    }
-
-    const activeUserIds = recentMessages.map(m => m.userId);
-    const amountPerUser = Math.floor(amount / activeUserIds.length);
-
-    await prisma.$transaction(async (tx) => {
-      await tx.user.updateMany({
-        where: { id: { in: activeUserIds } },
-        data: { mockBalance: { increment: amountPerUser } }
-      });
-      const msg = await tx.chatMessage.create({
-        data: {
-          userId: req.userId!,
-          content: `🌧️ Admin just manually dropped ${amount} DLs on ${activeUserIds.length} active chatters! (+${amountPerUser} DLs each)`
-        },
-        include: { user: { select: { username: true, totalWagered: true } } }
-      });
-      io.emit('chat_rain', { totalAmount: amount, users: activeUserIds.length, amountPerUser });
-      io.emit('chat_message', msg);
-    });
-
-    res.json({ success: true, amount, users: activeUserIds.length });
-  } catch (error) {
+    res.json({ success: true, message: 'Rain initialized!' });
+  } catch (error: any) {
     console.error("Admin rain error:", error);
-    res.status(500).json({ error: "Failed to process manual rain drop" });
+    res.status(500).json({ error: error.message || "Failed to process manual rain drop" });
   }
 });
 
@@ -3988,7 +3960,7 @@ setInterval(async () => {
 
 const HOST = process.env.HOST || '0.0.0.0';
 
-import { startChatBot } from './bot/chat_bot';
+import { startChatBot, triggerRain, setIoInstance } from './bot/chat_bot';
 import { startCryptoWatcher } from './services/crypto_watcher';
 
 io.on('connection', (socket) => {
@@ -3999,6 +3971,7 @@ io.on('connection', (socket) => {
   });
 });
 
+setIoInstance(io);
 startChatBot(io);
 startCryptoWatcher();
 
