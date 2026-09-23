@@ -359,8 +359,9 @@ export default function AdminPage() {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-1.5 bg-[#0c0e14] p-1 rounded-2xl border border-[#202535]">
-          <button
+        <div className="overflow-x-auto pb-2 scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1.5 bg-[#0c0e14] p-1 rounded-2xl border border-[#202535] min-w-max">
+            <button
             onClick={() => setActiveTab("players")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "players"
@@ -439,6 +440,7 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+      </div>
 
       {(error || success) && (
         <div className={`p-4 rounded-xl border font-bold text-xs text-center ${error ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-accent-green/10 border-accent-green/20 text-accent-green'}`}>
@@ -449,7 +451,7 @@ export default function AdminPage() {
       {/* TAB 1: PLAYER MANAGEMENT */}
       {activeTab === "players" && (
         <div className="space-y-6">
-          <div className="bg-[#131620] border border-[#222738] rounded-3xl p-6 shadow-xl">
+          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-5 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
@@ -586,7 +588,7 @@ export default function AdminPage() {
           {/* EDIT PLAYER MODAL / PANEL */}
           {editingUser && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-              <div className="bg-[#131620] border border-[#262c3f] rounded-3xl p-8 w-full max-w-xl shadow-2xl space-y-6">
+              <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-[#202535]">
                   <div>
                     <h3 className="text-xl font-black text-white flex items-center gap-2">
@@ -724,7 +726,7 @@ export default function AdminPage() {
       {/* TAB: WITHDRAWALS */}
       {activeTab === "withdrawals" && (
         <div className="space-y-6">
-          <div className="bg-[#131620] border border-[#222738] rounded-3xl p-6 shadow-xl">
+          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-5 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
