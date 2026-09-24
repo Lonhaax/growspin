@@ -528,6 +528,9 @@ app.get('/api/internal/bot/status', async (req: Request, res: Response) => {
   }
 });
 
+let globalNextIntentId = 1;
+const globalInMemoryIntents: any[] = [];
+
 app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
     const { growId, amount } = req.body;
@@ -536,16 +539,18 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     const worldName = "longtbl";
     const botName = "tflold";
 
-    const intent = await prisma.depositIntent.create({
-      data: {
-        userId: req.userId!,
-        growId,
-        amount: amount || 0,
-        worldName,
-        botName,
-        status: 'PENDING'
-      }
-    });
+    const intent = {
+      id: globalNextIntentId++,
+      userId: req.userId!,
+      growId,
+      amount: amount || 0,
+      worldName,
+      botName,
+      status: 'PENDING',
+      createdAt: new Date()
+    };
+    
+    globalInMemoryIntents.push(intent);
 
     res.json({ success: true, intent });
   } catch (err: any) {
@@ -561,9 +566,7 @@ app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const intents = await prisma.depositIntent.findMany({
-      where: { status: 'PENDING' }
-    });
+    const intents = globalInMemoryIntents.filter(i => i.status === 'PENDING');
 
     res.json({ intents });
   } catch (err) {
@@ -585,10 +588,9 @@ app.get('/api/internal/bot/credit', async (req: Request, res: Response) => {
 
     const cleanPlayerName = (playerName || "").replace(/\^[0-9a-zA-Z]/g, '').replace(/[@#]/g, '').toLowerCase();
 
-    const pendingIntents = await prisma.depositIntent.findMany({
-      where: { worldName, status: 'PENDING' },
-      orderBy: { createdAt: 'desc' }
-    });
+    const pendingIntents = globalInMemoryIntents
+      .filter(i => i.worldName === worldName && i.status === 'PENDING')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     const intent = pendingIntents.find(i => i.growId.toLowerCase() === cleanPlayerName);
 
@@ -597,23 +599,18 @@ app.get('/api/internal/bot/credit', async (req: Request, res: Response) => {
     }
 
     const newBalance = await withUserLock(intent.userId, async () => {
-      // Re-fetch intent to ensure it wasn't processed by another concurrent request
-      const freshIntent = await prisma.depositIntent.findUnique({ where: { id: intent.id } });
+      const freshIntent = globalInMemoryIntents.find(i => i.id === intent.id);
       if (!freshIntent || freshIntent.status !== 'PENDING') {
         throw new Error('Intent already processed');
       }
 
-      // Update user balance (amount in subunits: 1 DL = 100 cents)
       const updatedUser = await prisma.user.update({
         where: { id: freshIntent.userId },
         data: { mockBalance: { increment: amount } }
       });
 
-      // Mark intent as complete
-      await prisma.depositIntent.update({
-        where: { id: freshIntent.id },
-        data: { status: 'COMPLETED', amount }
-      });
+      freshIntent.status = 'COMPLETED';
+      freshIntent.amount = amount;
 
       return updatedUser.mockBalance;
     });
@@ -731,10 +728,9 @@ app.get('/api/deposit/crypto/status', requireAuth, async (req: AuthRequest, res:
 
 app.get('/api/deposit/status', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const intent = await prisma.depositIntent.findFirst({
-      where: { userId: req.userId! },
-      orderBy: { createdAt: 'desc' }
-    });
+    const intent = globalInMemoryIntents
+      .filter(i => i.userId === req.userId!)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0] || null;
     res.json({ intent });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -743,16 +739,13 @@ app.get('/api/deposit/status', requireAuth, async (req: AuthRequest, res: Respon
 
 app.post('/api/deposit/cancel', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const intent = await prisma.depositIntent.findFirst({
-      where: { userId: req.userId!, status: 'PENDING' },
-      orderBy: { createdAt: 'desc' }
-    });
+    const intent = globalInMemoryIntents
+      .filter(i => i.userId === req.userId! && i.status === 'PENDING')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+      
     if (!intent) return res.status(404).json({ error: 'No pending deposit found' });
     
-    await prisma.depositIntent.update({
-      where: { id: intent.id },
-      data: { status: 'CANCELLED' }
-    });
+    intent.status = 'CANCELLED';
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
