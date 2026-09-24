@@ -583,7 +583,9 @@ app.post('/api/internal/bot/assign', async (req: Request, res: Response) => {
     }
 
     const { intentId, botName } = req.body;
-    const intent = globalInMemoryIntents.find(i => i.id === intentId || i.userId === intentId);
+    const intent = globalInMemoryIntents
+      .filter(i => i.id === intentId || (i.userId === intentId && i.status === 'PENDING'))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
     
     if (intent) {
       intent.botName = botName;
