@@ -596,11 +596,12 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
         for i = 1, #players do
             local player = players[i]
             -- Strip all color codes (` followed by anything) and special characters
-            local playername = player.name:gsub("`.", ""):gsub("[^a-zA-Z0-9]", "")
+            local cleanPlayer = player.name:gsub("`.", ""):gsub("[^a-zA-Z0-9]", "")
             local cleanTarget = targetGrowID:gsub("`.", ""):gsub("[^a-zA-Z0-9]", "")
-            if playername:lower() == cleanTarget:lower() then
+            if cleanPlayer:lower() == cleanTarget:lower() then
                 bot:getConsole():clear()
-                bot:say("/trade " .. playername)
+                local tradeName = player.name:gsub("`.", ""):gsub("^Dr%.", "")
+                bot:say("/trade " .. tradeName)
                 sleep(1000)
                 local tradesuccess = consoleFind("trading with", os.time() + 5)
                 if tradesuccess then
