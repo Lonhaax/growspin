@@ -422,7 +422,11 @@ local function safeVaultProcess(targetDL)
     end
     if not bot:isInTile(checkx, checky) then
         bot:findPath(checkx, checky)
-        sleep(750)
+        local walkWait = 0
+        while not bot:isInTile(checkx, checky) and walkWait < 20 do
+            sleep(500)
+            walkWait = walkWait + 1
+        end
     end
     getDialog():clear()
     local waitAttempts = 0
