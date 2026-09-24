@@ -499,7 +499,7 @@ local function safeVaultProcess(targetDL)
                     shouldconvert = true
                 else
                     local absNum = math.abs(missingdl)
-                    if absNum > 100 then
+                    if absNum >= 100 then
                         absNum = absNum % 100
                     end
                     if currentdl < absNum then
@@ -538,7 +538,7 @@ local function safeVaultProcess(targetDL)
     end
     if shouldconvert then
         shouldconvert = false
-        convertBGL(vaultworld, vaultworldid)
+        convertBGL(depoworld, "NONE")
     end
     if failedvault then
         sleep(2000)
