@@ -561,8 +561,7 @@ app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
     }
 
     const intents = await prisma.depositIntent.findMany({
-      where: { status: 'PENDING' },
-      select: { worldName: true, growId: true }
+      where: { status: 'PENDING' }
     });
 
     res.json({ intents });

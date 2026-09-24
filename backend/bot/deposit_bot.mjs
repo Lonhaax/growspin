@@ -1,99 +1,116 @@
-import { Client } from 'growtopia.js';
+import fs from 'fs/promises';
+import path from 'path';
 import axios from 'axios';
 
 // ==========================================
 // CONFIGURATION
 // ==========================================
 const BOT_USERNAME = process.env.GROWTOPIA_BOT_USERNAME || 'GrowSpinDeposit';
-const BOT_PASSWORD = process.env.GROWTOPIA_BOT_PASSWORD || 'password123';
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://growspin.lol';
 const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026';
 
-const bot = new Client({
-  mac: '00:00:00:00:00:00',
-  tankIDName: BOT_USERNAME,
-  tankIDPass: BOT_PASSWORD
-});
+// The path where the Lua script expects the JSON files
+const BOTS_DIR = '/Users/jake/Desktop/depo trade/httpserver/bots';
+const TARGET_PATH = path.join(BOTS_DIR, `${BOT_USERNAME}.json`);
+const STATUS_PATH = path.join(BOTS_DIR, `${BOT_USERNAME}_status.json`);
 
-let isLooping = false;
-let currentWorld = '';
+let isProcessing = false;
 
-async function startWorldLoop() {
-  if (isLooping) return;
-  isLooping = true;
+async function checkIntents() {
+  if (isProcessing) return;
+  isProcessing = true;
   
-  while (true) {
-    try {
-      const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
-        headers: { Authorization: BOT_SECRET }
-      });
-      const intents = res.data.intents;
+  try {
+    const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
+      headers: { Authorization: BOT_SECRET }
+    });
+    const intents = res.data.intents;
+    
+    if (intents && intents.length > 0) {
+      // Pick the first intent to process
+      const intent = intents[0];
       
-      if (intents && intents.length > 0) {
-        for (const intent of intents) {
-          console.log(`[BOT] Joining deposit world: ${intent.worldName}`);
-          currentWorld = intent.worldName;
-          
-          bot.send('action|join_request\nname|' + intent.worldName, 3);
-          
-          // Wait 15 seconds for user to drop items
-          await new Promise(r => setTimeout(r, 15000));
-          currentWorld = '';
+      console.log(`[BRIDGE] Found intent for user ${intent.userId || intent.userid || intent.id} (${intent.growId || intent.growid}), Amount: ${intent.amount}`);
+      
+      // Construct the JSON payload the Lua script expects
+      const payload = {
+        active_bot: { name: BOT_USERNAME },
+        details: {
+          mode: intent.mode || "addbalance", 
+          growid: intent.growId || intent.growid,
+          amount: intent.amount,
+          userid: intent.userId || intent.userid || intent.id,
+          start_time: Math.floor(Date.now() / 1000)
+        }
+      };
+      
+      // Write the job file for the Lua script
+      await fs.writeFile(TARGET_PATH, JSON.stringify(payload, null, 2));
+      console.log(`[BRIDGE] Job written to ${TARGET_PATH}. Waiting for Lucifer to process...`);
+      
+      // Wait for the Lua script to write the status file
+      let statusData = null;
+      let waitTime = 0;
+      const MAX_WAIT = 600; // 10 minutes timeout
+      
+      while (waitTime < MAX_WAIT) {
+        try {
+          const content = await fs.readFile(STATUS_PATH, 'utf-8');
+          statusData = JSON.parse(content);
+          break; // Status file found and parsed
+        } catch (e) {
+          // File doesn't exist yet or is currently being written
+          await new Promise(r => setTimeout(r, 1000));
+          waitTime++;
+        }
+      }
+      
+      if (statusData) {
+        console.log(`[BRIDGE] Lucifer finished with status: ${statusData.status}`);
+        
+        if (statusData.status === 'SUCCESS') {
+          console.log(`[BRIDGE] Crediting user ${intent.growId}...`);
+          try {
+            await axios.get(`${BACKEND_URL}/api/internal/bot/credit`, {
+              params: {
+                secret: BOT_SECRET,
+                worldName: intent.worldName,
+                amount: payload.details.amount || 0, // Fallback if amount isn't known until trade
+                playerName: intent.growId || intent.growid
+              }
+            });
+            console.log(`[BRIDGE] User credited successfully!`);
+          } catch (creditErr) {
+            console.error(`[BRIDGE] Error crediting user:`, creditErr.message);
+          }
+        } else {
+          console.log(`[BRIDGE] Trade expired or failed.`);
+          // You could optionally notify your backend about expiration here
         }
       } else {
-        await new Promise(r => setTimeout(r, 5000));
+         console.log(`[BRIDGE] Timeout waiting for Lucifer to process job.`);
       }
-    } catch (err) {
-      console.error('[BOT] Loop error:', err?.message);
-      await new Promise(r => setTimeout(r, 10000));
+      
+      // Cleanup files so Lua script goes back to sleep
+      console.log(`[BRIDGE] Cleaning up job files...`);
+      try { await fs.unlink(TARGET_PATH); } catch (e) {}
+      
+      // Give Lucifer a moment to acknowledge deletion, then clean up status
+      await new Promise(r => setTimeout(r, 1500));
+      try { await fs.unlink(STATUS_PATH); } catch (e) {}
+      
+    }
+  } catch (err) {
+    console.error('[BRIDGE] Loop error:', err?.message);
+    if (err.response) {
+      console.error('[BRIDGE] Server Response:', err.response.data);
     }
   }
+  
+  isProcessing = false;
 }
 
-bot.on('ready', () => {
-  console.log(`✅ [BOT] Connected and authenticated as ${bot.name}`);
-  startWorldLoop();
-});
-
-bot.on('disconnect', () => {
-  console.log('❌ [BOT] Disconnected! Reconnecting in 5s...');
-  isLooping = false;
-  setTimeout(() => bot.connect(), 5000);
-});
-
-// growtopia.js emits 'variant' for variant lists (OnConsoleMessage, OnDialogRequest, etc.)
-bot.on('variant', (varlist) => {
-    if (!varlist || !varlist[0]) return;
-    const v0 = varlist[0];
-    
-    // Ignore spam
-    if (v0 !== 'OnTalkBubble' && v0 !== 'OnConsoleMessage' && v0 !== 'OnSetBux') {
-        console.log(`[BOT] Variant Received:`, varlist);
-    }
-    
-    if (v0 === 'OnConsoleMessage') {
-        const msg = varlist[1].toLowerCase();
-        if (msg.includes('drop') || msg.includes('trade')) {
-            console.log(`[BOT] Chat: ${varlist[1]}`);
-        }
-    }
-});
-
-// growtopia.js emits 'raw' for TankPackets (where object additions/drops happen)
-bot.on('raw', (packet) => {
-    // Type 4 = TankPacket, type 14 = Object Add
-    if (packet.type === 4 && packet.data && packet.data.type === 14) {
-        const itemID = packet.data.int3; // Typical for itemID
-        const netID = packet.data.netID;
-        console.log(`[BOT] Raw Drop Detected: ItemID=${itemID}, NetID=${netID}`);
-        
-        if (itemID === 1796 && currentWorld) {
-            console.log(`[BOT] Found Diamond Lock drop! Crediting...`);
-            // Credit logic would go here
-            // axios.post(...)
-        }
-    }
-});
-
-console.log("[BOT] Starting headless client...");
-bot.connect();
+console.log("[BRIDGE] Starting HTTP-to-Lucifer bridge...");
+// Run the check every 5 seconds
+setInterval(checkIntents, 5000);
+checkIntents();
