@@ -20,13 +20,16 @@ export default function RoulettePage() {
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const [wheelOffset, setWheelOffset] = useState(0);
+  const [currentTargetIndex, setCurrentTargetIndex] = useState(15); // Start slightly offset
 
-  // Hardcode 15 items in a sequence (0 green, 1-7 red, 8-14 black)
+  // Hardcode 500 items in a realistic alternating sequence
   const TILE_WIDTH = 80;
   const generateStrip = () => {
     const strip = [];
-    for (let i = 0; i < 100; i++) {
-      const num = i % 15;
+    // Alternating pattern: Green, Red, Black, Red, Black... (1-7 Red, 8-14 Black)
+    const pattern = [0, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8];
+    for (let i = 0; i < 1000; i++) {
+      const num = pattern[i % 15];
       let color = 'bg-red-500';
       if (num === 0) color = 'bg-accent-green text-black';
       else if (num >= 8) color = 'bg-[#1f222b]';
@@ -59,21 +62,22 @@ export default function RoulettePage() {
       
       if (!res.ok) throw new Error(data.error);
 
-      // Find the target number in the latter half of the strip
+      // Spin forward by at least ~45-60 tiles (3-4 full revolutions)
       const targetNum = data.roll;
-      let targetIndex = 0;
-      for (let i = 70; i < 90; i++) {
-        if (strip[i].num === targetNum) {
-          targetIndex = i;
-          break;
-        }
+      let nextIndex = currentTargetIndex + 45 + Math.floor(Math.random() * 15);
+      
+      // Keep going forward until we hit the exact targetNum
+      while (strip[nextIndex].num !== targetNum) {
+        nextIndex++;
       }
+      
+      setCurrentTargetIndex(nextIndex);
 
       // Calculate translation
       const containerWidth = wheelRef.current ? wheelRef.current.clientWidth : 800;
       const centerOffset = (containerWidth / 2) - (TILE_WIDTH / 2);
-      const randomJitter = Math.random() * 40 - 20; 
-      const finalTranslate = -(targetIndex * TILE_WIDTH) + centerOffset + randomJitter;
+      const randomJitter = Math.random() * 60 - 30; // Randomize landing spot slightly within the tile
+      const finalTranslate = -(nextIndex * TILE_WIDTH) + centerOffset + randomJitter;
 
       setWheelOffset(finalTranslate);
 
