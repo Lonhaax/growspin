@@ -17,6 +17,7 @@ export default function DicePage() {
   
   const [isRolling, setIsRolling] = useState(false);
   const [result, setResult] = useState<{ roll: number, win: boolean, profit: number } | null>(null);
+  const [visualResult, setVisualResult] = useState<{ roll: number, win: boolean | null } | null>(null);
   const [error, setError] = useState("");
 
   const handleRoll = async () => {
@@ -33,8 +34,13 @@ export default function DicePage() {
 
     setIsRolling(true);
     setResult(null);
+    let interval: NodeJS.Timeout;
 
     try {
+      interval = setInterval(() => {
+        setVisualResult({ roll: Math.random() * 100, win: null });
+      }, 100);
+
       const res = await apiFetch("/play/dice", {
         method: "POST",
         body: JSON.stringify({ amount: amountCents, winChance })
@@ -43,14 +49,18 @@ export default function DicePage() {
       
       if (!res.ok) throw new Error(data.error);
 
-      // Simulate a quick rolling animation
+      // Suspenseful wait before final reveal
       setTimeout(() => {
+        clearInterval(interval);
+        setVisualResult(data);
         setResult(data);
         setIsRolling(false);
         refreshUser();
-      }, 500);
+      }, 1500);
 
     } catch (err: any) {
+      clearInterval(interval!);
+      setVisualResult(null);
       setError(err.message || "Failed to roll");
       setIsRolling(false);
     }
@@ -87,18 +97,28 @@ export default function DicePage() {
         
         {/* Slider Area */}
         <div className="mb-12 relative pt-12">
-          {/* Result marker (if any) */}
-          {result && !isRolling && (
+          {/* Result marker */}
+          {visualResult && (
             <motion.div
               initial={{ scale: 0, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className={`absolute top-0 -translate-x-1/2 flex flex-col items-center z-20 ${result.win ? 'text-accent-green' : 'text-red-500'}`}
-              style={{ left: `${result.roll}%` }}
+              animate={{ scale: 1, y: 0, left: `${visualResult.roll}%` }}
+              transition={{ type: "spring", stiffness: isRolling ? 300 : 100, damping: isRolling ? 30 : 15 }}
+              className={`absolute top-0 -translate-x-1/2 flex flex-col items-center z-20 ${
+                visualResult.win === null ? 'text-yellow-500' : (visualResult.win ? 'text-accent-green' : 'text-red-500')
+              }`}
             >
-              <div className={`px-3 py-1 rounded-lg font-black text-lg z-10 ${result.win ? 'bg-accent-green text-black shadow-[0_0_15px_rgba(0,230,118,0.5)]' : 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]'}`}>
-                {result.roll.toFixed(2)}
+              <div className={`px-3 py-1 rounded-lg font-black text-lg z-10 ${
+                visualResult.win === null 
+                  ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]' 
+                  : (visualResult.win ? 'bg-accent-green text-black shadow-[0_0_15px_rgba(0,230,118,0.5)]' : 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]')
+              }`}>
+                {visualResult.roll.toFixed(2)}
               </div>
-              <div className={`mt-1 -mb-2 z-0 ${result.win ? 'text-accent-green drop-shadow-[0_0_10px_rgba(0,230,118,0.8)]' : 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`}>
+              <div className={`mt-1 -mb-2 z-0 ${
+                visualResult.win === null
+                  ? 'text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.8)]'
+                  : (visualResult.win ? 'text-accent-green drop-shadow-[0_0_10px_rgba(0,230,118,0.8)]' : 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]')
+              }`}>
                 <Dices size={28} />
               </div>
             </motion.div>
