@@ -82,11 +82,12 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
             setSuccessMsg(`Successfully deposited ${data.intent.amount / 100} DLs!`);
             clearInterval(interval);
           } else if (data.intent && data.intent.status === 'PENDING') {
+            setIntent(data.intent);
             const expiresAt = new Date(data.intent.createdAt).getTime() + 5 * 60 * 1000;
             const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
             setTimeLeft(remaining);
             if (remaining === 0) {
-              setIntent({ ...intent, status: 'EXPIRED' });
+              setIntent({ ...data.intent, status: 'EXPIRED' });
               setError('Deposit window expired.');
               clearInterval(interval);
             }
