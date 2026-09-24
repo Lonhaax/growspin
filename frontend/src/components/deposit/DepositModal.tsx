@@ -42,6 +42,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
 
   // Growtopia State
   const [growId, setGrowId] = useState('');
+  const [growAmount, setGrowAmount] = useState<number>(50);
   const [intent, setIntent] = useState<DepositIntent | null>(null);
 
   // Crypto State
@@ -128,7 +129,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
     try {
       const res = await apiFetch('/deposit/request', {
         method: 'POST',
-        body: JSON.stringify({ growId })
+        body: JSON.stringify({ growId, amount: growAmount })
       });
       const data = await res.json();
       if (data.success) {
@@ -376,6 +377,18 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                             onChange={(e) => setGrowId(e.target.value)}
                             className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
                             placeholder="e.g. JohnDoe123"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-bold text-[#7a819c] ml-1">Deposit Amount (DLs)</label>
+                          <input 
+                            type="number" 
+                            value={growAmount || ''}
+                            onChange={(e) => setGrowAmount(Number(e.target.value))}
+                            min="1"
+                            className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
+                            placeholder="e.g. 50"
                           />
                         </div>
                         

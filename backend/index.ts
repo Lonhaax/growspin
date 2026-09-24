@@ -530,7 +530,7 @@ app.get('/api/internal/bot/status', async (req: Request, res: Response) => {
 
 app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
-    const { growId } = req.body;
+    const { growId, amount } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
     const worldName = "longtbl";
@@ -540,6 +540,7 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
       data: {
         userId: req.userId!,
         growId,
+        amount: amount || 0,
         worldName,
         botName,
         status: 'PENDING'
