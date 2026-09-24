@@ -335,7 +335,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                         </div>
                         
                         <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5">
-                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">Step 2: Drop DLs for</p>
+                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">Step 2: Trade DLs to</p>
                           <div className="flex items-center justify-between bg-[#0c0e14] p-4 rounded-xl border border-white/5">
                             <span className="text-xl font-bold text-white font-mono">{intent.botName}</span>
                             <button onClick={() => copyToClipboard(intent.botName)} className="text-[#7a819c] hover:text-white transition-colors">
@@ -348,7 +348,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                           {intent.status === 'PENDING' ? (
                             <>
                               <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-3" />
-                              <p className="text-indigo-300 font-medium text-sm">Listening for Diamond Lock drops...</p>
+                              <p className="text-indigo-300 font-medium text-sm">Waiting for you to trade the bot...</p>
                               <div className="mt-4 flex items-center justify-center w-full gap-2">
                                 <div className="text-xl font-mono font-bold text-indigo-300">
                                   {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
