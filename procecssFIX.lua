@@ -400,7 +400,7 @@ local function safePut(dataid, datacount, datatarget)
 end
 
 local function safeVaultProcess(targetDL)
-    local worldempty completed = false, false
+    local worldempty, completed = false, false
     ::retrytake::
     local dialogText, failedvault = nil, false
     if expirytime ~= 0 and os.time() > expirytime then expired = true return end
@@ -513,6 +513,7 @@ local function safeVaultProcess(targetDL)
                             local datatarget = currentdl - absNum
                             if not safePut(DL, absNum, datatarget) then
                                 failedvault = true
+                                customPrint("DEBUG: safePut(DL) failed! absNum="..absNum.." datatarget="..datatarget.." current="..inventory:getItemCount(DL))
                             else
                                 missingdl = missingdl + absNum
                             end
@@ -523,6 +524,7 @@ local function safeVaultProcess(targetDL)
                                 datatarget = currentbgl - targetput
                                 if not safePut(BGL, targetput, datatarget) then
                                     failedvault = true
+                                    customPrint("DEBUG: safePut(BGL) failed! targetput="..targetput.." datatarget="..datatarget.." current="..inventory:getItemCount(BGL))
                                 else
                                     missingdl = missingdl + (targetput * 100)
                                 end
