@@ -676,8 +676,28 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
                     if dialogText then
                         local tradedbgl, tradeddl = 0, 0
                         local foreignitem, tradehappened = false, false
-                        for qty, name in dialogText:gmatch("add_label_with_icon|small|%(`w(%d+)``%) ([^|]+)|") do
-                            local quantity = tonumber(qty)   
+                        for rawlabel in dialogText:gmatch("add_label_with_icon|small|([^|]+)|") do
+                            local quantity = 1
+                            local name = rawlabel
+                            
+                            local q1, n1 = rawlabel:match("%(`w(%d+)``%) (.*)")
+                            if q1 then
+                                quantity = tonumber(q1)
+                                name = n1
+                            else
+                                local q2, n2 = rawlabel:match("^(%d+) (.*)")
+                                if q2 then
+                                    quantity = tonumber(q2)
+                                    name = n2
+                                else
+                                    local q3, n3 = rawlabel:match("^`w(%d+)`` (.*)")
+                                    if q3 then
+                                        quantity = tonumber(q3)
+                                        name = n3
+                                    end
+                                end
+                            end
+
                             if name == "Blue Gem Lock" then
                                 tradedbgl = quantity
                             elseif name == "Diamond Lock" then
