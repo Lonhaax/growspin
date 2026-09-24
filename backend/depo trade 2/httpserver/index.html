@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Growtopia Control Center</title>
+    <style>
+        :root { 
+            --bg: #090c10; 
+            --card: #161b22; 
+            --border: #30363d;
+            --blue: #58a6ff; 
+            --blue-glow: rgba(88, 166, 255, 0.4);
+            --green: #238636; 
+            --light-green: #4ade80; 
+            --cyan: #22d3ee; 
+            --gold: #f1e05a;
+            --red: #da3633; 
+            --orange: #d29922; 
+            --text: #c9d1d9; 
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            padding-top: 60px; 
+            margin: 0; 
+        }
+
+        .app { 
+            width: 400px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 24px; 
+        }
+
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            padding: 28px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+            transition: transform 0.2s;
+        }
+
+        .user-info { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 20px; 
+            margin-bottom: 20px; 
+        }
+
+        /* --- BAKİYE KISMI --- */
+        .balance-group {
+            text-align: right;
+        }
+        
+        .balance-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            gap: 0; 
+        }
+
+        .balance { 
+            font-size: 34px; 
+            color: #fff; 
+            font-weight: 800; 
+            text-shadow: 0 0 10px var(--blue-glow);
+            z-index: 2; 
+            position: relative;
+        }
+
+        /* --- ANA İKON --- */
+        .dl-icon { 
+            width: 50px;   
+            height: 45px; 
+            object-fit: contain; 
+            transform: scale(2.0); 
+            margin-left: -5px;  
+            margin-right: -15px; 
+            margin-top: 2px;    
+            filter: drop-shadow(0 0 12px var(--blue-glow));
+            transition: transform 0.3s;
+            position: relative;
+            z-index: 0; 
+        }
+        
+        .dl-icon:hover { 
+            transform: scale(2.2) rotate(5deg); 
+        }
+
+        /* --- TRANSACTION DETAY İKONU --- */
+        .dl-icon-small {
+            width: 30px;   
+            height: 25px;
+            object-fit: contain;
+            transform: scale(2.0); 
+            margin-left: -3px;   
+            margin-right: -10px; 
+            margin-bottom: -2px;
+            filter: drop-shadow(0 0 8px var(--blue-glow));
+            vertical-align: middle;
+            position: relative;
+            z-index: 0;
+        }
+
+        /* --- INPUT ALANLARI --- */
+        .input-group { display: flex; flex-direction: column; gap: 15px; }
+        
+        input { 
+            background: #0d1117; 
+            border: 1px solid var(--border); 
+            color: #fff; 
+            padding: 14px; 
+            border-radius: 10px; 
+            outline: none; 
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus { 
+            border-color: var(--blue); 
+            box-shadow: 0 0 10px var(--blue-glow); 
+            transform: translateY(-2px);
+        }
+
+        /* --- BUTONLAR --- */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        
+        button { 
+            padding: 14px; 
+            border-radius: 10px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 700; 
+            color: white; 
+            font-size: 14px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-add { background: var(--green); box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4); }
+        .btn-withdraw { background: #8957e5; box-shadow: 0 4px 12px rgba(137, 87, 229, 0.4); }
+
+        /* --- MONITOR KARTI (DÜZELTİLDİ: Sol kalınlık silindi, her yer eşit) --- */
+        .monitor { 
+            /* Sadece her köşesi eşit ince yeşil çerçeve */
+            border: 1px solid var(--light-green); 
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+        }
+        
+        /* SOL TARAFTAKİ KALINLIK YAPAN KOD SİLİNDİ */
+
+        .timer { 
+            font-size: 48px; 
+            text-align: center; 
+            margin: 15px 0; 
+            font-family: 'Consolas', monospace; 
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .status-msg { 
+            color: var(--orange); 
+            text-align: center; 
+            font-size: 13px; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+            display: block; 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+        }
+
+        .success-text { 
+            font-size: 22px; 
+            font-weight: 800; 
+            text-align: center; 
+            margin: 20px 0; 
+            display: block; 
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .details { background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px dashed #30363d; }
+        .detail-item:last-child { border-bottom: none; margin-bottom: 0; }
+        
+        .process-value { 
+            color: var(--light-green);
+            font-weight: bold; 
+            text-transform: uppercase; 
+            animation: pulse 1.5s infinite; 
+        }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .connection-status { 
+            position: fixed; top: 15px; right: 15px; 
+            padding: 8px 16px; border-radius: 20px; 
+            font-size: 11px; font-weight: 800; 
+            letter-spacing: 0.5px;
+            z-index: 100;
+        }
+        .connected { background: rgba(35, 134, 54, 0.2); color: #3fb950; border: 1px solid #238636; }
+        .disconnected { background: rgba(218, 54, 51, 0.2); color: #f85149; border: 1px solid #da3633; }
+
+    </style>
+</head>
+<body>
+
+<div class="connection-status disconnected" id="connection_status">● CONNECTING...</div>
+
+<div class="app">
+    <div class="card">
+        <div class="user-info">
+            <div>
+                <div style="color: #8b949e; font-size: 12px; font-weight: 600;">USER ID</div>
+                <div style="color: #fff; font-size: 14px; font-weight: bold;">12345</div>
+                
+                <div style="color: #8b949e; font-size: 12px; font-weight: 600; margin-top: 8px;">ACTIVE GROWID</div>
+                <div id="growid_display" style="font-weight: bold; font-size: 16px; color: #fff;">Syncing...</div>
+            </div>
+            
+            <div class="balance-group">
+                <div style="color: #8b949e; font-size: 12px; font-weight: 600; margin-bottom: 4px;">BALANCE</div>
+                <div class="balance-container">
+                    <div class="balance" id="balance_display">0</div>
+                    <img src="https://i.postimg.cc/jLsgHDrr/IMG-0283.png" class="dl-icon" alt="DL">
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="in_growid" placeholder="In-game GrowID" 
+                   oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
+            
+            <input type="text" id="in_amount" placeholder="Amount (DLs Only)" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                   
+            <div class="btn-group">
+                <button class="btn-add" id="btn_deposit" onclick="handleAction('addbalance')">Deposit</button>
+                <button class="btn-withdraw" id="btn_withdraw" onclick="handleAction('withdraw')">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bot_card" class="card monitor" style="display:none">
+        
+        <div id="status_display_area">
+            <div class="timer" id="timer">05:00</div>
+            <span class="status-msg">TRANSACTION IN PROGRESS</span>
+        </div>
+
+        <div class="details">
+            <div class="detail-item">
+                <span style="color:#8b949e">STATUS</span> 
+                <span id="det_process" class="process-value">WAITING...</span>
+            </div>
+
+            <div class="detail-item">
+                <span style="color:#8b949e">BOT NAME</span> 
+                <span id="det_botname" style="color:#fff; text-transform: uppercase; font-weight:bold;"></span>
+            </div>
+
+            <div class="detail-item">
+                <span style="color:#8b949e">WORLD</span> 
+                <span id="det_world" style="color:#fff; text-transform: uppercase; font-weight:bold;"></span>
+            </div>
+
+            <div class="detail-item">
+                <span style="color:#8b949e">AMOUNT</span> 
+                <div style="display: flex; align-items: center;">
+                    <span id="det_amt" style="color:#fff; font-weight:bold; font-size: 16px;"></span> 
+                    <img src="https://i.postimg.cc/jLsgHDrr/IMG-0283.png" class="dl-icon-small" alt="DL">
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span style="color:#8b949e">MODE</span> 
+                <span id="det_mode" style="color:#fff; text-transform: uppercase; font-weight:bold;"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://193.106.196.34"; 
+    const KEY = "f47ac30b58cc4572a567e13b92552332";
+    
+    const MINIMUM_DL = 1; 
+
+    let isConnected = false;
+    let isSyncLocked = false;
+    let myAssignedBot = null; 
+
+    function formatNumber(num) {
+        return parseInt(num).toLocaleString('tr-TR'); 
+    }
+
+    function updateConnectionStatus(status) {
+        const el = document.getElementById('connection_status');
+        isConnected = status;
+        if(status) {
+            el.innerText = "● SYSTEM ONLINE"; el.className = "connection-status connected";
+        } else {
+            el.innerText = "● DISCONNECTED"; el.className = "connection-status disconnected";
+        }
+        document.getElementById('btn_deposit').disabled = !status;
+        document.getElementById('btn_withdraw').disabled = !status;
+    }
+    
+    async function handleAction(mode) {
+        const gid = document.getElementById('in_growid').value;
+        const amt = document.getElementById('in_amount').value;
+        
+        if(!gid || !amt) return alert("Please fill all fields!");
+
+        if(parseInt(amt) < MINIMUM_DL) {
+            alert(`Minimum transaction amount is ${MINIMUM_DL} DL!`);
+            return;
+        }
+    
+        const params = new URLSearchParams({
+            userid: "12345", growid: gid.trim(), amount: amt.trim(), mode: mode, key: KEY.trim()
+        });
+    
+        try {
+            const response = await fetch(`${API_URL}/bot/action?${params.toString()}`);
+            const result = await response.text();
+            if(result.startsWith("SUCCESS:")) {
+                myAssignedBot = result.split(":")[1];
+                document.getElementById('in_growid').value = "";
+                document.getElementById('in_amount').value = "";
+            } else { alert(result); }
+        } catch(e) { alert("Server Connection Error!"); }
+    }
+    
+    async function sync() {
+        if(isSyncLocked) return;
+
+        try {
+            const res = await fetch(`${API_URL}/get_data?key=${KEY.trim()}`);
+            if(res.status === 403) { updateConnectionStatus(false); return; }
+            
+            const data = await res.json();
+            updateConnectionStatus(true);
+            
+            if(data.user_info) {
+                document.getElementById('balance_display').innerText = formatNumber(data.user_info.balance);
+                document.getElementById('growid_display').innerText = data.user_info.growid;
+            }
+
+            if (!myAssignedBot) {
+                for (const [key, val] of Object.entries(data)) {
+                    if (val && val.details && val.details.userid === "12345") {
+                        myAssignedBot = key;
+                        break;
+                    }
+                }
+            }
+            
+            const botData = myAssignedBot ? data[myAssignedBot] : null;
+            
+            if(botData && botData.details) {
+                document.getElementById('bot_card').style.display = "block";
+                
+                const serverTime = data.server_time || Math.floor(Date.now() / 1000);
+                const diff = 300 - (serverTime - botData.details.start_time);
+                const currentStatus = botData.active_bot.status || "";
+                
+                if (botData.completed === true) {
+                    isSyncLocked = true;
+                    document.getElementById('status_display_area').innerHTML = '<span class="success-text" style="color:var(--green)">SUCCESSFUL!</span>';
+                    setTimeout(finishSession, 4000);
+                    return;
+                }
+                
+                if (currentStatus.includes("EXPIRED")) {
+                    isSyncLocked = true;
+                    document.getElementById('status_display_area').innerHTML = '<span class="success-text" style="color:var(--red)">EXPIRED!</span>';
+                    setTimeout(finishSession, 4000);
+                    return;
+                }
+
+                document.getElementById('det_process').innerText = currentStatus; 
+                document.getElementById('det_botname').innerText = botData.active_bot.name; 
+                document.getElementById('det_world').innerText = botData.details.depo_world; 
+                document.getElementById('det_amt').innerText = formatNumber(botData.details.amount); 
+                document.getElementById('det_mode').innerText = botData.details.mode; 
+
+                let displayDiff = diff > 0 ? diff : 0;
+                const m = Math.floor(displayDiff/60).toString().padStart(2,'0');
+                const s = Math.floor(displayDiff%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+                
+            } else {
+                document.getElementById('bot_card').style.display = "none";
+            }
+        } catch(e) { console.error(e); updateConnectionStatus(false); }
+    }
+    
+    async function finishSession() {
+        if(myAssignedBot) {
+            await fetch(`${API_URL}/bot/complete?key=${KEY.trim()}&bot_name=${myAssignedBot}`);
+            myAssignedBot = null;
+        }
+        window.location.reload();
+    }
+
+    setInterval(sync, 1000);
+    sync();
+</script>
+</body>
+</html>

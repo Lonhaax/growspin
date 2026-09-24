@@ -67,6 +67,8 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
   }, [isOpen]);
 
   // Poll for Growtopia status
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (intent && intent.status === 'PENDING') {
@@ -78,9 +80,18 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
             setIntent(data.intent);
             setSuccessMsg(`Successfully deposited ${data.intent.amount / 100} DLs!`);
             clearInterval(interval);
+          } else if (data.intent && data.intent.status === 'PENDING') {
+            const expiresAt = new Date(data.intent.createdAt).getTime() + 5 * 60 * 1000;
+            const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+            setTimeLeft(remaining);
+            if (remaining === 0) {
+              setIntent({ ...intent, status: 'EXPIRED' });
+              setError('Deposit window expired.');
+              clearInterval(interval);
+            }
           }
         } catch (e) {}
-      }, 3000);
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [intent]);
@@ -122,6 +133,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
       const data = await res.json();
       if (data.success) {
         setIntent(data.intent);
+        setTimeLeft(300); // 5 minutes
       } else {
         setError(data.error || 'Failed to create request');
       }
@@ -129,6 +141,15 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
       setError('Network error');
     }
     setLoading(false);
+  };
+
+  const handleCancelDeposit = async () => {
+    if (!intent) return;
+    try {
+      await apiFetch('/deposit/cancel', { method: 'POST' });
+      setIntent(null);
+      setError('Deposit cancelled.');
+    } catch (e) {}
   };
 
   const handleCryptoRequest = async () => {
@@ -321,10 +342,28 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center p-6 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
-                          <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-3" />
-                          <p className="text-indigo-300 font-medium text-sm">Listening for Diamond Lock drops...</p>
-                          <p className="text-[#7a819c] text-xs mt-1 text-center">Do not close this window until the deposit completes.</p>
+                        <div className="flex flex-col items-center justify-center p-6 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 relative overflow-hidden">
+                          {intent.status === 'PENDING' ? (
+                            <>
+                              <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-3" />
+                              <p className="text-indigo-300 font-medium text-sm">Listening for Diamond Lock drops...</p>
+                              <div className="mt-4 flex items-center justify-center w-full gap-2">
+                                <div className="text-xl font-mono font-bold text-indigo-300">
+                                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                                </div>
+                                <span className="text-[#7a819c] text-xs">remaining</span>
+                              </div>
+                              <button 
+                                onClick={handleCancelDeposit}
+                                className="mt-4 px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-lg transition-colors border border-red-500/20"
+                              >
+                                Cancel Deposit
+                              </button>
+                            </>
+                          ) : (
+                            <p className="text-indigo-300 font-medium text-sm">Deposit processed.</p>
+                          )}
+                          <p className="text-[#7a819c] text-xs mt-3 text-center">Do not close this window until the deposit completes.</p>
                         </div>
                       </div>
                     ) : (

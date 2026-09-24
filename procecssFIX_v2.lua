@@ -1,10 +1,10 @@
 --=== MAIN SETTINGS ===--
-Target_Path = "\\\\Mac\\Home\\Desktop\\depo trade\\httpserver\\bots\\"..getBot().name..".json"
+Target_Path = "C:\\Mac\\Home\\Desktop\\depo trade 2\\httpserver\\bots\\"..getBot().name..".json"
 
 Process_Table = {
     [1] = { -- 1 st bot from bot list
-Deposit_World = "longtbl",
-        Vault_World   = "lonsafe|longtbl332"
+        Deposit_World = "XXX",
+        Vault_World   = "XXX|XXX"
     }
 }
 
@@ -677,20 +677,7 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
                         end
                         local total_value_in_dls = tradeddl + (tradedbgl * 100)
                         sleep(500)
-                        local isValidTrade = false
-                        if targetMode == "addbalance" then
-                            if total_value_in_dls > 0 and not foreignitem then
-                                isValidTrade = true
-                                _G.ModifiedTargetAmount = total_value_in_dls
-                                targetAmount = total_value_in_dls -- Update local argument for inside this function
-                            end
-                        else
-                            if total_value_in_dls == targetAmount and not foreignitem then
-                                isValidTrade = true
-                            end
-                        end
-                        
-                        if isValidTrade then
+                        if total_value_in_dls == targetAmount and not foreignitem then
                             bot:sendPacket(2, "action|dialog_return\ndialog_name|trade_confirm\nbuttonClicked|accept")
                             local termimatecount, acceptedbyother = 0, false
                             while bot:isInWorld() and not isTradeHappened(os.time() + 5) do
@@ -749,42 +736,32 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
         customPrint(reason .. ": " .. depoworld)
         SendWebhook(reason .. ": " .. depoworld, Webhook_Url)
         stopped = true
+        return
     end
-    return targetAmount
 end
 
 local function getJobDetailsFromJSON()
-    local file, err = io.open(Target_Path, "r")
-    if not file then 
-        customPrint("File Read Error: " .. tostring(err))
-        return nil 
-    end
+    local file = io.open(Target_Path, "r")
+    if not file then return nil end
     local content = file:read("*a")
     file:close()
     if content == nil or content == "" then return nil end
     local success, data = pcall(json.decode, content)
     if not success or type(data) ~= "table" then return nil end
     if next(data) == nil then return nil end
-    
-    if data.active_bot and data.active_bot.name:lower() == botname:lower() then
+    if data.active_bot and data.active_bot.name == botname then
         if data.details then
             local d = data.details
-            if d.mode and d.growid and d.amount ~= nil and d.userid and d.start_time then
+            if d.mode and d.growid and d.amount and d.userid and d.start_time then
                 return {
                     mode    = d.mode,
                     start   = d.start_time,
                     growid  = d.growid,
                     amount  = tonumber(d.amount),
-                    userid  = tostring(d.userid)
+                    userid  = d.userid
                 }
-            else
-                customPrint("JSON Rejected: Missing details fields. mode=" .. tostring(d.mode) .. " growid=" .. tostring(d.growid) .. " amount=" .. tostring(d.amount) .. " userid=" .. tostring(d.userid) .. " start=" .. tostring(d.start_time))
             end
-        else
-            customPrint("JSON Rejected: Missing 'details' table.")
         end
-    else
-        customPrint("JSON Rejected: Bot name mismatch. Expected: " .. tostring(botname) .. " | Got: " .. tostring(data.active_bot and data.active_bot.name))
     end
     return nil
 end
@@ -808,7 +785,7 @@ setBots()
 while not stopped do
     local datalist = nil
     changeStatus("Waiting User")
-    customPrint("Searching user... Looking in: " .. Target_Path)
+    customPrint("Searching user...")
     local targetTime = os.time() + (60 * Save_Vault)
     while not datalist do
         if targetMode == "addbalance" and os.time() > targetTime then break end
@@ -846,11 +823,7 @@ while not stopped do
             end
             if not expired then
                 changeStatus("Ready For Trade")
-                _G.ModifiedTargetAmount = nil
                 tradeProcess(targetGrowID, targetAmount, targetMode)
-                if _G.ModifiedTargetAmount then
-                    targetAmount = _G.ModifiedTargetAmount
-                end
             end
         end
         if not expired then
@@ -866,9 +839,9 @@ while not stopped do
         local sf = io.open(statusFile, "w")
         if sf then
             if not expired then
-                sf:write('{"status":"SUCCESS","userid":"' .. targetUserID .. '","amount":' .. targetAmount .. '}')
+                sf:write('{"status":"SUCCESS","userid":"' .. targetUserID .. '"}')
             else
-                sf:write('{"status":"EXPIRED","userid":"' .. targetUserID .. '","amount":0}')
+                sf:write('{"status":"EXPIRED","userid":"' .. targetUserID .. '"}')
             end
             sf:close()
         end

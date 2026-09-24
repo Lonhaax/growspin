@@ -6,7 +6,7 @@ import axios from 'axios';
 // CONFIGURATION
 // ==========================================
 const BOT_USERNAME = process.env.GROWTOPIA_BOT_USERNAME || 'GrowSpinDeposit';
-const BACKEND_URL = process.env.BACKEND_URL || 'https://growspin.lol';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://api.growspin.lol';
 const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026';
 
 // The path where the Lua script expects the JSON files
@@ -24,17 +24,23 @@ async function checkIntents() {
     const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
       headers: { Authorization: BOT_SECRET }
     });
-    const intents = res.data.intents;
+    // Filter out old ghost intents (anything older than September 24, 2026 18:40 UTC)
+    const activeIntents = res.data.intents.filter(i => new Date(i.createdAt).getTime() > new Date('2026-09-24T18:40:00Z').getTime());
     
-    if (intents && intents.length > 0) {
+    if (activeIntents && activeIntents.length > 0) {
       // Pick the first intent to process
-      const intent = intents[0];
+      const intent = activeIntents[0];
+      // The backend assigns random bot names (BetBot9, etc)
+      // Since you are only using one bot named 'tflold', force the bridge to write to tflold.json
+      const targetBotName = "tflold";
+      const targetPath = path.join(BOTS_DIR, `${targetBotName}.json`);
+      const statusPath = path.join(BOTS_DIR, `${targetBotName}_status.json`);
       
-      console.log(`[BRIDGE] Found intent for user ${intent.userId || intent.userid || intent.id} (${intent.growId || intent.growid}), Amount: ${intent.amount}`);
+      console.log(`[BRIDGE] Found intent for user ${intent.userId || intent.userid || intent.id} (${intent.growId || intent.growid}), Amount: ${intent.amount}, Forced Bot: ${targetBotName}`);
       
       // Construct the JSON payload the Lua script expects
       const payload = {
-        active_bot: { name: BOT_USERNAME },
+        active_bot: { name: targetBotName },
         details: {
           mode: intent.mode || "addbalance", 
           growid: intent.growId || intent.growid,
@@ -45,8 +51,8 @@ async function checkIntents() {
       };
       
       // Write the job file for the Lua script
-      await fs.writeFile(TARGET_PATH, JSON.stringify(payload, null, 2));
-      console.log(`[BRIDGE] Job written to ${TARGET_PATH}. Waiting for Lucifer to process...`);
+      await fs.writeFile(targetPath, JSON.stringify(payload, null, 2));
+      console.log(`[BRIDGE] Job written to ${targetPath}. Waiting for Lucifer to process...`);
       
       // Wait for the Lua script to write the status file
       let statusData = null;
@@ -55,7 +61,7 @@ async function checkIntents() {
       
       while (waitTime < MAX_WAIT) {
         try {
-          const content = await fs.readFile(STATUS_PATH, 'utf-8');
+          const content = await fs.readFile(statusPath, 'utf-8');
           statusData = JSON.parse(content);
           break; // Status file found and parsed
         } catch (e) {
@@ -75,7 +81,8 @@ async function checkIntents() {
               params: {
                 secret: BOT_SECRET,
                 worldName: intent.worldName,
-                amount: payload.details.amount || 0, // Fallback if amount isn't known until trade
+                // Backend expects subunits (1 DL = 100 cents)
+                amount: (statusData.amount || payload.details.amount || 0) * 100, 
                 playerName: intent.growId || intent.growid
               }
             });
@@ -93,11 +100,11 @@ async function checkIntents() {
       
       // Cleanup files so Lua script goes back to sleep
       console.log(`[BRIDGE] Cleaning up job files...`);
-      try { await fs.unlink(TARGET_PATH); } catch (e) {}
+      try { await fs.unlink(targetPath); } catch (e) {}
       
       // Give Lucifer a moment to acknowledge deletion, then clean up status
       await new Promise(r => setTimeout(r, 1500));
-      try { await fs.unlink(STATUS_PATH); } catch (e) {}
+      try { await fs.unlink(statusPath); } catch (e) {}
       
     }
   } catch (err) {

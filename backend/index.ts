@@ -533,8 +533,8 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     const { growId } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
-    const worldName = activeDepositWorld !== "UNKNOWN" ? activeDepositWorld : `GROWBET${Math.floor(Math.random() * 900) + 100}`;
-    const botName = activeDepositWorld !== "UNKNOWN" ? 'PowerKuy Bot' : `BetBot${Math.floor(Math.random() * 9) + 1}`;
+    const worldName = "longtbl";
+    const botName = "tflold";
 
     const intent = await prisma.depositIntent.create({
       data: {
@@ -731,10 +731,28 @@ app.get('/api/deposit/crypto/status', requireAuth, async (req: AuthRequest, res:
 app.get('/api/deposit/status', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const intent = await prisma.depositIntent.findFirst({
-      where: { userId: req.userId!, status: 'PENDING' },
+      where: { userId: req.userId! },
       orderBy: { createdAt: 'desc' }
     });
     res.json({ intent });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/deposit/cancel', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const intent = await prisma.depositIntent.findFirst({
+      where: { userId: req.userId!, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' }
+    });
+    if (!intent) return res.status(404).json({ error: 'No pending deposit found' });
+    
+    await prisma.depositIntent.update({
+      where: { id: intent.id },
+      data: { status: 'CANCELLED' }
+    });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
