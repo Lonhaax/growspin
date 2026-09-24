@@ -34,13 +34,11 @@ export default function DicePage() {
 
     setIsRolling(true);
     setResult(null);
-    let interval: NodeJS.Timeout;
+
+    // Initial dummy state to mount the marker immediately
+    setVisualResult({ roll: 50, win: null });
 
     try {
-      interval = setInterval(() => {
-        setVisualResult({ roll: Math.random() * 100, win: null });
-      }, 100);
-
       const res = await apiFetch("/play/dice", {
         method: "POST",
         body: JSON.stringify({ amount: amountCents, winChance })
@@ -51,7 +49,6 @@ export default function DicePage() {
 
       // Suspenseful wait before final reveal
       setTimeout(() => {
-        clearInterval(interval);
         setVisualResult(data);
         setResult(data);
         setIsRolling(false);
@@ -59,7 +56,6 @@ export default function DicePage() {
       }, 1500);
 
     } catch (err: any) {
-      clearInterval(interval!);
       setVisualResult(null);
       setError(err.message || "Failed to roll");
       setIsRolling(false);
@@ -101,8 +97,16 @@ export default function DicePage() {
           {visualResult && (
             <motion.div
               initial={{ scale: 0, y: 20 }}
-              animate={{ scale: 1, y: 0, left: `${visualResult.roll}%` }}
-              transition={{ type: "spring", stiffness: isRolling ? 300 : 100, damping: isRolling ? 30 : 15 }}
+              animate={
+                isRolling 
+                  ? { scale: 1, y: 0, left: ["10%", "90%", "30%", "70%", "50%"] } 
+                  : { scale: 1, y: 0, left: `${visualResult.roll}%` }
+              }
+              transition={
+                isRolling 
+                  ? { left: { duration: 1.5, ease: "easeInOut", repeat: Infinity }, scale: { type: "spring", bounce: 0.5 } } 
+                  : { type: "spring", stiffness: 100, damping: 15 }
+              }
               className={`absolute top-0 -translate-x-1/2 flex flex-col items-center z-20 ${
                 visualResult.win === null ? 'text-yellow-500' : (visualResult.win ? 'text-accent-green' : 'text-red-500')
               }`}
@@ -112,7 +116,7 @@ export default function DicePage() {
                   ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]' 
                   : (visualResult.win ? 'bg-accent-green text-black shadow-[0_0_15px_rgba(0,230,118,0.5)]' : 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]')
               }`}>
-                {visualResult.roll.toFixed(2)}
+                {isRolling ? "???" : visualResult.roll.toFixed(2)}
               </div>
               <div className={`mt-1 -mb-2 z-0 ${
                 visualResult.win === null
