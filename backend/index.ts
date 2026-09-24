@@ -537,7 +537,7 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
     const worldName = "longtbl";
-    const botName = "tflold";
+    const botName = "Searching...";
 
     const intent = {
       id: globalNextIntentId++,
