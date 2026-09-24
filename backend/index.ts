@@ -575,6 +575,27 @@ app.get('/api/internal/bot/intents', async (req: Request, res: Response) => {
   }
 });
 
+app.post('/api/internal/bot/assign', async (req: Request, res: Response) => {
+  try {
+    const secret = req.headers.authorization;
+    if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { intentId, botName } = req.body;
+    const intent = globalInMemoryIntents.find(i => i.id === intentId || i.userId === intentId);
+    
+    if (intent) {
+      intent.botName = botName;
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Internal Assign Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/internal/bot/credit', async (req: Request, res: Response) => {
   try {
     const secret = req.query.secret as string;

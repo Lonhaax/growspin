@@ -9,7 +9,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'https://api.growspin.lol';
 const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026';
 
 // Define your fleet of bots here. Add as many as you are running in Lucifer.
-const BOT_POOL = ['tflold', 'bot2', 'bot3', 'bot4', 'bot5'];
+const BOT_POOL = ['tflold', 'longs2', 'bot3', 'bot4', 'bot5'];
 
 // State tracking for the bot pool
 const botStates = {};
@@ -26,31 +26,39 @@ async function processIntentAsync(intent, botName) {
   const targetPath = path.join(BOTS_DIR, `${botName}.json`);
   const statusPath = path.join(BOTS_DIR, `${botName}_status.json`);
   const intentId = intent.userId || intent.userid || intent.id;
-  
+
   console.log(`[BRIDGE] [${botName}] Assigned intent for user ${intentId} (${intent.growId || intent.growid}), Amount: ${intent.amount}`);
-  
+
   try {
+    // Tell the backend which bot this intent was assigned to so the frontend can display it
+    await axios.post(`${BACKEND_URL}/api/internal/bot/assign`, {
+      intentId: intentId,
+      botName: botName
+    }, {
+      headers: { Authorization: BOT_SECRET }
+    });
+
     // Construct the JSON payload the Lua script expects
     const payload = {
       active_bot: { name: botName },
       details: {
-        mode: intent.mode || "addbalance", 
+        mode: intent.mode || "addbalance",
         growid: intent.growId || intent.growid,
         amount: intent.amount,
         userid: intentId,
         start_time: Math.floor(Date.now() / 1000)
       }
     };
-    
+
     // Write the job file for the Lua script
     await fs.writeFile(targetPath, JSON.stringify(payload, null, 2));
     console.log(`[BRIDGE] [${botName}] Job written. Waiting for Lucifer to process...`);
-    
+
     // Wait for the Lua script to write the status file
     let statusData = null;
     let waitTime = 0;
     const MAX_WAIT = 600; // 10 minutes timeout
-    
+
     while (waitTime < MAX_WAIT) {
       try {
         const content = await fs.readFile(statusPath, 'utf-8');
@@ -62,10 +70,10 @@ async function processIntentAsync(intent, botName) {
         waitTime++;
       }
     }
-    
+
     if (statusData) {
       console.log(`[BRIDGE] [${botName}] Lucifer finished with status: ${statusData.status}`);
-      
+
       if (statusData.status === 'SUCCESS') {
         console.log(`[BRIDGE] [${botName}] Crediting user ${intent.growId}...`);
         try {
@@ -73,7 +81,7 @@ async function processIntentAsync(intent, botName) {
             params: {
               secret: BOT_SECRET,
               worldName: intent.worldName || "longtbl",
-              amount: (statusData.amount || payload.details.amount || 0) * 100, 
+              amount: (statusData.amount || payload.details.amount || 0) * 100,
               playerName: intent.growId || intent.growid
             }
           });
@@ -85,18 +93,18 @@ async function processIntentAsync(intent, botName) {
         console.log(`[BRIDGE] [${botName}] Trade expired or failed.`);
       }
     } else {
-       console.log(`[BRIDGE] [${botName}] Timeout waiting for Lucifer to process job.`);
+      console.log(`[BRIDGE] [${botName}] Timeout waiting for Lucifer to process job.`);
     }
-    
+
   } catch (err) {
     console.error(`[BRIDGE] [${botName}] Error processing intent:`, err.message);
   } finally {
     // Cleanup files so Lua script goes back to sleep
     console.log(`[BRIDGE] [${botName}] Cleaning up job files and freeing bot...`);
-    try { await fs.unlink(targetPath); } catch (e) {}
+    try { await fs.unlink(targetPath); } catch (e) { }
     await new Promise(r => setTimeout(r, 1500));
-    try { await fs.unlink(statusPath); } catch (e) {}
-    
+    try { await fs.unlink(statusPath); } catch (e) { }
+
     // Release the bot back to the pool
     botStates[botName].isBusy = false;
     botStates[botName].currentIntentId = null;
@@ -106,49 +114,49 @@ async function processIntentAsync(intent, botName) {
 async function checkIntents() {
   if (isChecking) return;
   isChecking = true;
-  
+
   try {
     const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
       headers: { Authorization: BOT_SECRET }
     });
-    
+
     const activeIntents = res.data.intents || [];
-    
+
     for (const intent of activeIntents) {
       // Check if this intent is already being processed by a bot
       const intentId = intent.userId || intent.userid || intent.id;
       const isAlreadyAssigned = Object.values(botStates).some(b => b.currentIntentId === intentId);
-      
+
       if (isAlreadyAssigned) {
         continue;
       }
-      
+
       // Find an idle bot
       const idleBotName = BOT_POOL.find(name => !botStates[name].isBusy);
-      
+
       if (!idleBotName) {
         // No bots available, break out and wait for the next tick
         console.log(`[BRIDGE] No idle bots available. Queuing intent for user ${intentId}...`);
         break;
       }
-      
+
       // Assign and dispatch
       botStates[idleBotName].isBusy = true;
       botStates[idleBotName].currentIntentId = intentId;
-      
+
       // Fire and forget (don't await)
       processIntentAsync(intent, idleBotName).catch(e => {
         console.error(`[BRIDGE] Unhandled error in async processor for ${idleBotName}:`, e);
       });
     }
-    
+
   } catch (err) {
     console.error('[BRIDGE] Loop error:', err?.message);
     if (err.response) {
       console.error('[BRIDGE] Server Response:', err.response.data);
     }
   }
-  
+
   isChecking = false;
 }
 
