@@ -518,10 +518,14 @@ local function safeVaultProcess(targetDL)
                             end
                         end
                         if missingdl < 0 then 
-                            local targetput = missingdl / 100
-                            datatarget = 0
-                            if not safePut(BGL, targetput, datatarget) then
-                                failedvault = true
+                            local targetput = math.floor(math.abs(missingdl) / 100)
+                            if targetput > 0 then
+                                datatarget = currentbgl - targetput
+                                if not safePut(BGL, targetput, datatarget) then
+                                    failedvault = true
+                                else
+                                    missingdl = missingdl + (targetput * 100)
+                                end
                             end
                         end
                     end
