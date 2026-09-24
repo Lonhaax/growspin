@@ -632,7 +632,7 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
                         for i, targetid in ipairs(itemlist) do
                             bot:getConsole():clear()
                             local targetcount = targetid == BGL and targetBGL or targetDL
-                            bot:say("/trade " .. playername)
+                            bot:say("/trade " .. tradeName)
                             sleep(500)
                             if not consoleFind("cancel your current", os.time() + 5) then break end
                             bot:sendPacket(2, "action|mod_trade\nitemID|" .. targetid)
@@ -661,7 +661,7 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
                             break
                         elseif waitAttempts % 3 == 0 then
                             bot:getConsole():clear()
-                            bot:say("/trade " .. playername)
+                            bot:say("/trade " .. tradeName)
                             sleep(250)
                             if not consoleFind("cancel your current", os.time() + 5) then break end
                         end
