@@ -261,6 +261,11 @@ export default function BattlesPage() {
   };
 
   const socketRef = useRef<any>(null);
+  const activeBattleIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    activeBattleIdRef.current = activeBattle?.id || null;
+  }, [activeBattle]);
 
   useEffect(() => {
     socketRef.current = io(backendUrl, { withCredentials: true });
@@ -277,30 +282,37 @@ export default function BattlesPage() {
       fetchLobby();
     });
 
-    socketRef.current.on('battle_started', (payload: any) => {
+    socketRef.current.on('battle_started', async (payload: any) => {
       // payload: { battleId, rounds, winnerId, isTie, tiedPlayers, totalPotValue, numPlayers, mode, entryFee }
-      setActiveBattle((prev: any) => {
-        if (prev && prev.id === payload.battleId) {
-          // It's our battle! Start the animation for everyone.
-          setFullRoundsData(payload.rounds);
-          
-          if (payload.isTie && payload.tiedPlayers && payload.tiedPlayers.length > 1) {
-            setTieBreakerData({
-              tiedPlayers: payload.tiedPlayers,
-              winnerId: payload.winnerId,
-              totalPotValue: payload.totalPotValue
-            });
-            setFinalWinner(null);
-          } else {
-            setTieBreakerData(null);
-            setFinalWinner(payload.winnerId);
-          }
-          
+      if (activeBattleIdRef.current === payload.battleId) {
+        setActiveBattle((prev: any) => prev ? { ...prev, status: 'running' } : prev);
+        
+        setFullRoundsData(payload.rounds);
+        setRoundResults([]);
+        setCurrentRound(0);
+        let cumulativeResults: any[] = [];
+        
+        for (let i = 0; i < payload.rounds.length; i++) {
+          setCurrentRound(i);
           setRolling(true);
-          return { ...prev, status: 'running' }; // Optimistic update
+          const hasLucky = payload.rounds[i].some((r: any) => r.hitLuckyStar);
+          await new Promise(r => setTimeout(r, hasLucky ? 8500 : 4000)); 
+          setRolling(false);
+          cumulativeResults.push(payload.rounds[i]);
+          setRoundResults([...cumulativeResults]);
+          if (i < payload.rounds.length - 1) await new Promise(r => setTimeout(r, 500));
         }
-        return prev;
-      });
+        
+        if (payload.isTie && payload.tiedPlayers && payload.tiedPlayers.length > 1) {
+          setTieBreakerData({ tiedPlayers: payload.tiedPlayers, winnerId: payload.winnerId, totalPotValue: payload.totalPotValue });
+          setFinalWinner(null);
+          setIsTieBreakerOpen(true);
+        } else {
+          setTieBreakerData(null);
+          setFinalWinner(payload.winnerId);
+          setActiveBattle((prev: any) => prev ? { ...prev, status: 'finished', winnerId: payload.winnerId, totalPotValue: payload.totalPotValue } : prev);
+        }
+      }
       fetchLobby();
     });
 
