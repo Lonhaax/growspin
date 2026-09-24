@@ -2,7 +2,7 @@
 
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
 import { ShieldCheck, Dices } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,17 @@ export default function DicePage() {
   const [result, setResult] = useState<{ roll: number, win: boolean, profit: number } | null>(null);
   const [visualResult, setVisualResult] = useState<{ roll: number, win: boolean | null } | null>(null);
   const [error, setError] = useState("");
+
+  // Safely drive the chaotic rolling animation using React lifecycle
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRolling) {
+      interval = setInterval(() => {
+        setVisualResult({ roll: Math.random() * 100, win: null });
+      }, 150);
+    }
+    return () => clearInterval(interval);
+  }, [isRolling]);
 
   const handleRoll = async () => {
     if (!user) {
@@ -49,16 +60,16 @@ export default function DicePage() {
 
       // Suspenseful wait before final reveal
       setTimeout(() => {
+        setIsRolling(false);
         setVisualResult(data);
         setResult(data);
-        setIsRolling(false);
         refreshUser();
       }, 1500);
 
     } catch (err: any) {
+      setIsRolling(false);
       setVisualResult(null);
       setError(err.message || "Failed to roll");
-      setIsRolling(false);
     }
   };
 
@@ -96,17 +107,9 @@ export default function DicePage() {
           {/* Result marker */}
           {visualResult && (
             <motion.div
-              initial={{ scale: 0, y: 20 }}
-              animate={
-                isRolling 
-                  ? { scale: 1, y: 0, left: ["10%", "90%", "30%", "70%", "50%"] } 
-                  : { scale: 1, y: 0, left: `${visualResult.roll}%` }
-              }
-              transition={
-                isRolling 
-                  ? { left: { duration: 1.5, ease: "easeInOut", repeat: Infinity }, scale: { type: "spring", bounce: 0.5 } } 
-                  : { type: "spring", stiffness: 100, damping: 15 }
-              }
+              initial={{ scale: 0, y: 20, left: "50%" }}
+              animate={{ scale: 1, y: 0, left: `${visualResult.roll}%` }}
+              transition={{ type: "spring", stiffness: isRolling ? 400 : 100, damping: isRolling ? 25 : 15 }}
               className={`absolute top-0 -translate-x-1/2 flex flex-col items-center z-20 ${
                 visualResult.win === null ? 'text-yellow-500' : (visualResult.win ? 'text-accent-green' : 'text-red-500')
               }`}
