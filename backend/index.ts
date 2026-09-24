@@ -583,12 +583,18 @@ app.post('/api/internal/bot/assign', async (req: Request, res: Response) => {
     }
 
     const { intentId, botName } = req.body;
+    console.log(`[ASSIGN] Received assign request. intentId: ${intentId}, botName: ${botName}`);
+    console.log(`[ASSIGN] Memory intents:`, globalInMemoryIntents.map(i => ({ id: i.id, userId: i.userId, status: i.status })));
+    
     const intent = globalInMemoryIntents
-      .filter(i => i.id === intentId || (i.userId === intentId && i.status === 'PENDING'))
+      .filter(i => i.id == intentId || (i.userId == intentId && i.status === 'PENDING'))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
     
     if (intent) {
+      console.log(`[ASSIGN] Found intent! Updating botName to ${botName}`);
       intent.botName = botName;
+    } else {
+      console.log(`[ASSIGN] Could not find matching intent in memory.`);
     }
 
     res.json({ success: true });
