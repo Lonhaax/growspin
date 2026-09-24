@@ -2362,6 +2362,7 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
           data: {
             caseIds: JSON.stringify(caseIds),
             mode,
+            targetPlayerCount: playerCount,
             entryFee,
             status: 'waiting',
             participants: {
@@ -2382,6 +2383,7 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
       });
     });
 
+    io.emit('battle_updated', result);
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -2398,11 +2400,7 @@ app.post('/api/battles/join', requireAuth, requireNotFrozen, async (req: AuthReq
       const battle = await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
       if (!battle) throw new Error('Battle not found');
       if (battle.status !== 'waiting') throw new Error('Battle already started');
-      if (battle.participants.length >= 4) throw new Error('Battle full'); // hard limit is 4
-
-      // We need to know the target player count but schema didn't have it explicitly.
-      // We will just let people join up to 4. 
-      // Wait, we need to enforce the chosen limit, but it's fine for now, we'll allow joining up to 4.
+      if (battle.participants.length >= battle.targetPlayerCount) throw new Error('Battle full');
 
       if (battle.participants.find(p => p.userId === userId.toString())) {
         throw new Error('Already in battle');
@@ -2440,6 +2438,7 @@ app.post('/api/battles/join', requireAuth, requireNotFrozen, async (req: AuthReq
       return await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
     });
 
+    io.emit('battle_updated', result);
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -2453,6 +2452,9 @@ app.post('/api/battles/call-bots', requireAuth, requireNotFrozen, async (req: Au
     const result = await prisma.$transaction(async (tx) => {
       const battle = await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
       if (!battle || battle.status !== 'waiting') throw new Error('Battle not available');
+      
+      const availableSpots = battle.targetPlayerCount - battle.participants.length;
+      if (botCount > availableSpots) throw new Error('Cannot add that many bots');
 
       let nextPos = battle.participants.length + 1;
       for (let i = 0; i < botCount; i++) {
@@ -2467,6 +2469,8 @@ app.post('/api/battles/call-bots', requireAuth, requireNotFrozen, async (req: Au
 
       return await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
     });
+    
+    io.emit('battle_updated', result);
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -2527,7 +2531,14 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         const roundRolls = [];
         for (const p of battle.participants) {
           const totalWeight = primaryPool.reduce((acc, item) => acc + item.weight, 0);
-          let randomNum = Math.random() * totalWeight;
+          
+          let pfFloat = Math.random();
+          if (!p.userId.startsWith('bot-')) {
+            const pfRes = await generateProvablyFairFloat(tx, parseInt(p.userId));
+            pfFloat = pfRes.float;
+          }
+
+          let randomNum = pfFloat * totalWeight;
           let winningItem = primaryPool[0];
           for (const item of primaryPool) {
             if (randomNum < item.weight) {
@@ -2544,7 +2555,14 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
             hitLuckyStar = true;
             const safeLsPool = luckyStarPool.length > 0 ? luckyStarPool : c.items;
             const lsTotalWeight = safeLsPool.reduce((acc: number, item: any) => acc + item.weight, 0);
-            let lsRandomNum = Math.random() * lsTotalWeight;
+            
+            let lsPfFloat = Math.random();
+            if (!p.userId.startsWith('bot-')) {
+              const lsPfRes = await generateProvablyFairFloat(tx, parseInt(p.userId));
+              lsPfFloat = lsPfRes.float;
+            }
+
+            let lsRandomNum = lsPfFloat * lsTotalWeight;
             for (const item of safeLsPool) {
               if (lsRandomNum < item.weight) {
                 finalWonItem = item;
@@ -2663,6 +2681,7 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
       }
     }
 
+    io.emit('battle_started', result);
     res.json(result);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });

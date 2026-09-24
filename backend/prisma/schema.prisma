@@ -56,12 +56,13 @@ model RefreshToken {
 }
 
 model Battle {
-  id            Int      @id @default(autoincrement())
-  caseIds       String   @db.Text // JSON string of case IDs
-  mode          String   @default("normal") // "normal", "crazy", "terminal"
-  entryFee      Int
-  status        String   @default("waiting") // "waiting", "running", "finished"
-  winnerId      String? // Could be "bot-X" or userId as string
+  id               Int      @id @default(autoincrement())
+  caseIds          String   @db.Text // JSON string of case IDs
+  mode             String   @default("normal") // "normal", "crazy", "terminal"
+  targetPlayerCount Int     @default(2) // 2, 3, or 4 players
+  entryFee         Int
+  status           String   @default("waiting") // "waiting", "running", "finished"
+  winnerId         String? // Could be "bot-X" or userId as string
   totalPotValue Int      @default(0)
   createdAt     DateTime @default(now())
 

@@ -8,6 +8,9 @@ import { apiFetch } from "@/lib/auth";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import Link from "next/link";
+import io from "socket.io-client";
+
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 const CARD_SIZE = 120; 
 const CARD_GAP = 12;
@@ -257,6 +260,55 @@ export default function BattlesPage() {
     } catch (e) {}
   };
 
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    socketRef.current = io(backendUrl, { withCredentials: true });
+
+    socketRef.current.on('battle_updated', (updatedBattle: any) => {
+      // If we are looking at this battle, update it instantly
+      setActiveBattle((prev: any) => {
+        if (prev && prev.id === updatedBattle.id) {
+          return updatedBattle;
+        }
+        return prev;
+      });
+      // Always refresh lobby behind the scenes
+      fetchLobby();
+    });
+
+    socketRef.current.on('battle_started', (payload: any) => {
+      // payload: { battleId, rounds, winnerId, isTie, tiedPlayers, totalPotValue, numPlayers, mode, entryFee }
+      setActiveBattle((prev: any) => {
+        if (prev && prev.id === payload.battleId) {
+          // It's our battle! Start the animation for everyone.
+          setFullRoundsData(payload.rounds);
+          
+          if (payload.isTie && payload.tiedPlayers && payload.tiedPlayers.length > 1) {
+            setTieBreakerData({
+              tiedPlayers: payload.tiedPlayers,
+              winnerId: payload.winnerId,
+              totalPotValue: payload.totalPotValue
+            });
+            setFinalWinner(null);
+          } else {
+            setTieBreakerData(null);
+            setFinalWinner(payload.winnerId);
+          }
+          
+          setRolling(true);
+          return { ...prev, status: 'running' }; // Optimistic update
+        }
+        return prev;
+      });
+      fetchLobby();
+    });
+
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     if (view === "lobby") {
       fetchLobby();
@@ -337,30 +389,8 @@ export default function BattlesPage() {
     setLoading(true);
     try {
       const res = await apiFetch("/battles/start", { method: "POST", body: JSON.stringify({ battleId: activeBattle.id }) });
-      const data = await res.json();
-      if (res.ok) {
-        setFullRoundsData(data.rounds); setRoundResults([]); setCurrentRound(0);
-        let cumulativeResults: any[] = [];
-        for (let i = 0; i < data.rounds.length; i++) {
-          setCurrentRound(i);
-          setRolling(true);
-          const hasLucky = data.rounds[i].some((r: any) => r.hitLuckyStar);
-          await new Promise(r => setTimeout(r, hasLucky ? 8500 : 4000)); 
-          setRolling(false);
-          cumulativeResults.push(data.rounds[i]);
-          setRoundResults([...cumulativeResults]);
-          if (i < data.rounds.length - 1) await new Promise(r => setTimeout(r, 500));
-        }
-        if (data.isTie) {
-          setTieBreakerData({ tiedPlayers: data.tiedPlayers, winnerId: data.winnerId, totalPotValue: data.totalPotValue });
-          setIsTieBreakerOpen(true);
-          // Wait for tie breaker to finish visually before showing final banner
-        } else {
-          setFinalWinner(data.winnerId);
-          setActiveBattle({ ...activeBattle, status: 'finished', winnerId: data.winnerId, totalPotValue: data.totalPotValue });
-          refreshUser();
-        }
-      }
+      if (!res.ok) throw new Error("Failed to start battle");
+      // The socket listener handles the animation block.
     } catch (e) {}
     setLoading(false);
   };
