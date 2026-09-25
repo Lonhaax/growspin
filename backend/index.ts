@@ -611,7 +611,8 @@ app.get('/api/internal/bot/intent/:id', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    const intentId = parseInt(req.params.id) || req.params.id;
+    const paramId = req.params.id as string;
+    const intentId = parseInt(paramId) || paramId;
     const intent = globalInMemoryIntents.find(i => i.id == intentId || i.userId == intentId);
     
     if (intent) {
