@@ -536,8 +536,17 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     const { growId, amount } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
-    const WORLDS = ['longtbl']; // Add more worlds here when needed, e.g. ['longtbl', 'depo2']
-    const worldName = WORLDS[globalNextIntentId % WORLDS.length];
+    // Generate a random 8-character alphanumeric string for a disposable world
+    const generateRandomWorld = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+    
+    const worldName = generateRandomWorld();
     const botName = "Searching...";
 
     const intent = {
