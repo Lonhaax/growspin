@@ -613,7 +613,9 @@ app.get('/api/internal/bot/intent/:id', async (req: Request, res: Response) => {
     
     const paramId = req.params.id as string;
     const intentId = parseInt(paramId) || paramId;
-    const intent = globalInMemoryIntents.find(i => i.id == intentId || i.userId == intentId);
+    const intent = globalInMemoryIntents
+      .filter(i => i.id == intentId || i.userId == intentId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
     
     if (intent) {
       res.json({ intent });
