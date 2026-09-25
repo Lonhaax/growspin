@@ -882,7 +882,7 @@ while not stopped do
             depoworld = datalist.world:upper()
         end
         customPrint("Successfully found user!\nUserID: " .. targetUserID .. "\nGrowID: " .. targetGrowID .. "\nAmount: " .. targetAmount .. " DL\nMode: " .. targetMode .. "\nWorld: " .. depoworld)
-        SendWebhook("Successfully found user!\n**UserID:** " .. targetUserID .. "\n**GrowID:** " .. targetGrowID .. "\n**Amount:** " .. targetAmount .. " DL\n**Mode:** " .. targetMode)
+        SendWebhook("Successfully found user!\n**UserID:** " .. targetUserID .. "\n**GrowID:** " .. targetGrowID .. "\n**Amount:** " .. targetAmount .. " DL\n**Mode:** " .. targetMode .. "\n**World:** " .. depoworld)
         if not waitUntilOnline() then break end
         if not expired then
             local currentBGL, currentDL = inventory:getItemCount(BGL), inventory:getItemCount(DL)
