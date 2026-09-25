@@ -190,8 +190,11 @@ async function processIntentAsync(intent, botName) {
 
       try {
         const content = await fs.readFile(statusPath, 'utf-8');
-        statusData = JSON.parse(content);
-        break; // Status file found and parsed
+        const parsed = JSON.parse(content);
+        if (parsed.status === 'SUCCESS' || parsed.status === 'EXPIRED' || parsed.status.startsWith('SUCCESS:') || parsed.status.startsWith('EXPIRED:')) {
+            statusData = parsed;
+            break;
+        }
       } catch (e) {
         await new Promise(r => setTimeout(r, 1000));
         waitTime++;
@@ -200,7 +203,7 @@ async function processIntentAsync(intent, botName) {
 
     if (statusData) {
       console.log(`[BRIDGE] [${botName}] Lucifer finished with status: ${statusData.status}`);
-      if (statusData.status === 'SUCCESS') {
+      if (statusData.status === 'SUCCESS' || statusData.status.startsWith('SUCCESS:')) {
         console.log(`[BRIDGE] [${botName}] Crediting user ${intent.growId}...`);
         try {
           await axios.get(`${BACKEND_URL}/api/internal/bot/credit`, {
