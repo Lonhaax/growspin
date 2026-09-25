@@ -405,13 +405,6 @@ local function safeVaultProcess(targetDL)
     if expirytime ~= 0 and os.time() > expirytime then expired = true return end
     warpWorld(vaultworld, vaultworldid, true)
     if stopped or expired then return end
-    if vaultx == 100 and not nuked and not wrongdoor and not level then
-        vaultx, vaulty, checkx, checky = getVaultCoordinats()
-        if vaultx == nil then
-            removeEvent(Event.variantlist)
-            error("Vault coordinats cannot found!", 2)
-        end
-    end
     if nuked or wrongdoor or level or worldempty then
         local reason = nuked and "Vault World Nuked!" or wrongdoor and "Vault World Has Wrong Door!" or level and "Vault World Has Level Limit!" or "Vault World Has No Locks Left!"
         customPrint(reason .. ": " .. vaultworld)
@@ -419,26 +412,11 @@ local function safeVaultProcess(targetDL)
         stopped = true
         return
     end
-    if not bot:isInTile(checkx, checky) then
-        bot:findPath(checkx, checky)
-        local walkWait = 0
-        while not bot:isInTile(checkx, checky) and walkWait < 20 do
-            sleep(500)
-            walkWait = walkWait + 1
-        end
-    end
+
+    -- Skip wrenching the vault block since we're just dropping items on the floor
+    -- Fall back to a dummy empty string for getVaultData
     getDialog():clear()
-    local waitAttempts = 0
-    while bot:isInTile(checkx, checky) do
-        if expirytime ~= 0 and os.time() > expirytime then expired = true return end
-        bot:wrench(vaultx, vaulty)
-        sleep(1500)
-        local currentdialog = getDialog():get():dump()
-        if #currentdialog > 0 then
-            dialogText = currentdialog
-            break
-        end
-    end
+    dialogText = ""
     if dialogText then
         local currentbgl, currentdl = inventory:getItemCount(BGL), inventory:getItemCount(DL)
         local currenttotal = (currentbgl * 100) + currentdl
