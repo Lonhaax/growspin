@@ -27,8 +27,6 @@ const socket = io(BACKEND_URL, {
 
 socket.on('connect', () => {
   console.log(`[BRIDGE] Connected to backend via WebSockets!`);
-  // On startup/reconnect, fetch pending intents just in case we missed any
-  fetchPendingIntents();
 });
 
 socket.on('new_bot_intent', (intent) => {
