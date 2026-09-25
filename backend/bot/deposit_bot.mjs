@@ -93,8 +93,11 @@ async function fetchPendingIntents() {
   }
 }
 
+let isProcessingQueue = false;
+
 async function handleNewIntent(intent) {
   const intentId = intent.userId || intent.userid || intent.id;
+  if (!intentId) return;
   
   // Check if this intent is already being processed or queued
   const isAlreadyAssigned = Object.values(botStates).some(b => b.currentIntentId == intentId);
@@ -102,44 +105,32 @@ async function handleNewIntent(intent) {
   
   if (isAlreadyAssigned || isQueued) return;
 
-  // Find an idle bot by scanning directory
-  const idleBots = await getIdleBots();
-  // Filter out any bots the bridge *thinks* are busy just in case
-  const availableBots = idleBots.filter(name => !botStates[name]?.isBusy);
-  const idleBotName = availableBots[0];
-
-  if (!idleBotName) {
-    console.log(`[BRIDGE] No idle bots available. Queuing intent for user ${intentId}...`);
-    intentQueue.push(intent);
-    return;
-  }
-
-  // Claim the bot
-  if (!botStates[idleBotName]) botStates[idleBotName] = { isBusy: false, currentIntentId: null };
-  botStates[idleBotName].isBusy = true;
-  botStates[idleBotName].currentIntentId = intentId;
-
-  // The bridge tracks isBusy locally so we don't double-assign before lua wakes up
-  processIntentAsync(intent, idleBotName).catch(e => {
-    console.error(`[BRIDGE] Unhandled error in async processor for ${idleBotName}:`, e);
-  });
+  intentQueue.push(intent);
+  processQueue().catch(e => console.error('[BRIDGE] Error in processQueue:', e));
 }
 
 async function processQueue() {
+  if (isProcessingQueue) return;
   if (intentQueue.length === 0) return;
-  const idleBots = await getIdleBots();
-  const availableBots = idleBots.filter(name => !botStates[name]?.isBusy);
-  const idleBotName = availableBots[0];
-  
-  if (idleBotName) {
-    const nextIntent = intentQueue.shift();
-    if (!botStates[idleBotName]) botStates[idleBotName] = { isBusy: false, currentIntentId: null };
-    botStates[idleBotName].isBusy = true;
-    botStates[idleBotName].currentIntentId = (nextIntent.userId || nextIntent.userid || nextIntent.id);
-    console.log(`[BRIDGE] Popped intent from queue, assigning to ${idleBotName}.`);
+  isProcessingQueue = true;
+
+  try {
+    const idleBots = await getIdleBots();
+    const availableBots = idleBots.filter(name => !botStates[name]?.isBusy);
     
-    // The bridge tracks isBusy locally so we don't double-assign before lua wakes up    
-    processIntentAsync(nextIntent, idleBotName).catch(console.error);
+    while (intentQueue.length > 0 && availableBots.length > 0) {
+      const idleBotName = availableBots.shift();
+      const nextIntent = intentQueue.shift();
+      
+      if (!botStates[idleBotName]) botStates[idleBotName] = { isBusy: false, currentIntentId: null };
+      botStates[idleBotName].isBusy = true;
+      botStates[idleBotName].currentIntentId = (nextIntent.userId || nextIntent.userid || nextIntent.id);
+      
+      console.log(`[BRIDGE] Popped intent from queue, assigning to ${idleBotName}.`);
+      processIntentAsync(nextIntent, idleBotName).catch(console.error);
+    }
+  } finally {
+    isProcessingQueue = false;
   }
 }
 
