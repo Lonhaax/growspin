@@ -237,3 +237,8 @@ async function processIntentAsync(intent, botName) {
 
 console.log(`[BRIDGE] Starting Event-Driven Socket Bridge...`);
 console.log(`[BRIDGE] Dynamic Bot Auto-Scaling Enabled (Watching ${BOTS_DIR} for _ready.txt files)`);
+
+// Poll the queue periodically in case idle bots wake up
+setInterval(() => {
+  processQueue().catch(() => {});
+}, 1000);
