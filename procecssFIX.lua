@@ -811,7 +811,11 @@ local function getJobDetailsFromJSON()
     file:close()
     if content == nil or content == "" then return nil end
     local success, data = pcall(json.decode, content)
-    if not success or type(data) ~= "table" then return nil end
+    if not success then
+        customPrint("JSON Decode Error: " .. tostring(data) .. " | Content: " .. tostring(content))
+        return nil
+    end
+    if type(data) ~= "table" then return nil end
     if next(data) == nil then return nil end
     
     if data.active_bot and data.active_bot.name:lower() == botname:lower() then
