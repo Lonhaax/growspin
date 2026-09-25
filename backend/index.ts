@@ -536,17 +536,10 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     const { growId, amount } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
-    // Generate a random 8-character alphanumeric string for a disposable world
-    const generateRandomWorld = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
-      for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    };
-    
-    const worldName = generateRandomWorld();
+    // Growtopia restricts world creation to ~10/day per IP, so we must use a predefined pool of already-created worlds
+    // You should manually create these 5 worlds (or change the names here to worlds you already own)
+    const WORLDS = ['X7B8Q', 'P4M9R', 'Z2L5W', 'E8C1T', 'longtbl'];
+    const worldName = WORLDS[Math.floor(Math.random() * WORLDS.length)];
     const botName = "Searching...";
 
     const intent = {
