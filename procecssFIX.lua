@@ -301,7 +301,7 @@ local function getVaultCoordinats()
     local tiles = world:getTiles()
     for i = 1, #tiles do
         local tile = tiles[i]
-        if tile.fg == 8878 then
+        if tile.fg == 8878 or tile.fg == 1422 then
             local vaultxx, vaultyy = tile.x, tile.y
             for dx = -1, 1 do
                 for dy = -1, 1 do
@@ -405,12 +405,28 @@ local function safeVaultProcess(targetDL)
     if expirytime ~= 0 and os.time() > expirytime then expired = true return end
     warpWorld(vaultworld, vaultworldid, true)
     if stopped or expired then return end
+    if vaultx == 100 and not nuked and not wrongdoor and not level then
+        vaultx, vaulty, checkx, checky = getVaultCoordinats()
+        if vaultx == nil then
+            removeEvent(Event.variantlist)
+            error("Vault coordinats cannot found!", 2)
+        end
+    end
     if nuked or wrongdoor or level or worldempty then
         local reason = nuked and "Vault World Nuked!" or wrongdoor and "Vault World Has Wrong Door!" or level and "Vault World Has Level Limit!" or "Vault World Has No Locks Left!"
         customPrint(reason .. ": " .. vaultworld)
         SendWebhook(reason .. ": " .. vaultworld, Webhook_Url)
         stopped = true
         return
+    end
+
+    if not bot:isInTile(checkx, checky) then
+        bot:findPath(checkx, checky)
+        local walkWait = 0
+        while not bot:isInTile(checkx, checky) and walkWait < 20 do
+            sleep(500)
+            walkWait = walkWait + 1
+        end
     end
 
     -- Skip wrenching the vault block since we're just dropping items on the floor
