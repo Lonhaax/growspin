@@ -186,6 +186,8 @@ async function processIntentAsync(intent, botName) {
             statusData = parsed;
             break;
         }
+        await new Promise(r => setTimeout(r, 1000));
+        waitTime++;
       } catch (e) {
         await new Promise(r => setTimeout(r, 1000));
         waitTime++;
