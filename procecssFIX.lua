@@ -386,7 +386,7 @@ end
 
 local function safePut(dataid, datacount, datatarget)
     if bot.status ~= 1 then return false end
-    bot:sendPacket(2, "action|drop\n|itemID|" .. dataid)
+    bot:sendPacket(2, "action|drop\nitemID|" .. dataid)
     sleep(200)
     bot:sendPacket(2,
         "action|dialog_return\n"..
