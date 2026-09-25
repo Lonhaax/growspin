@@ -805,7 +805,6 @@ end
 local function getJobDetailsFromJSON()
     local file, err = io.open(Target_Path, "r")
     if not file then 
-        customPrint("File Read Error: " .. tostring(err))
         return nil 
     end
     local content = file:read("*a")
