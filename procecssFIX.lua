@@ -385,15 +385,14 @@ local function safeTake(dataid, datacount, datatarget)
 end
 
 local function safePut(dataid, datacount, datatarget)
-    if bot.status ~= 1 or not bot:isInTile(checkx, checky) then return false end
+    if bot.status ~= 1 then return false end
+    bot:sendPacket(2, "action|drop\n|itemID|" .. dataid)
+    sleep(200)
     bot:sendPacket(2,
         "action|dialog_return\n"..
-        "dialog_name|storageboxxtreme\n"..
-        "tilex|"..vaultx.."|\n"..
-        "tiley|"..vaulty.."|\n"..
-        "itemid|"..dataid.."|\n"..
-        "itemcount|"..datacount.."|\n"..
-        "buttonClicked|do_add"
+        "dialog_name|drop_item\n"..
+        "itemID|"..dataid.."|\n"..
+        "count|"..datacount
     )
     sleep(750)
     return waitForInvChange(dataid, datatarget)
