@@ -60,6 +60,21 @@ async function processIntentAsync(intent, botName) {
     const MAX_WAIT = 600; // 10 minutes timeout
 
     while (waitTime < MAX_WAIT) {
+      if (waitTime % 5 === 0) {
+        try {
+          const cancelCheck = await axios.get(`${BACKEND_URL}/api/internal/bot/intent/${intentId}`, {
+            headers: { Authorization: BOT_SECRET }
+          });
+          if (cancelCheck.data.intent && cancelCheck.data.intent.status === 'CANCELLED') {
+            console.log(`[BRIDGE] [${botName}] User cancelled intent ${intentId}. Aborting.`);
+            await fs.unlink(targetPath).catch(() => {});
+            break;
+          }
+        } catch (e) {
+          // ignore network errors
+        }
+      }
+
       try {
         const content = await fs.readFile(statusPath, 'utf-8');
         statusData = JSON.parse(content);

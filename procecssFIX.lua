@@ -4,7 +4,7 @@ Target_Path = "\\\\Mac\\Home\\Desktop\\depo trade\\httpserver\\bots\\"..getBot()
 Process_Table = {
     [1] = { -- 1 st bot from bot list
 Deposit_World = "longtbl",
-        Vault_World   = "lonsafe|longtbl332"
+        Vault_World   = "ujfpp|gtblnew22"
     }
 }
 
@@ -598,6 +598,15 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
     while not completed and reconnect(depoworld, "NONE", false) do
         local dialogText = nil
         if expirytime ~= 0 and os.time() > expirytime then expired = true return end
+        if Target_Path then
+            local tf = io.open(Target_Path, "r")
+            if tf then 
+                tf:close() 
+            else 
+                customPrint("Job file deleted. Assuming cancelled by user.")
+                return 
+            end
+        end
         local players = world:getPlayers()
         for i = 1, #players do
             local player = players[i]
