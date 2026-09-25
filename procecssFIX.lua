@@ -605,6 +605,7 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
             if cf then
                 cf:close()
                 customPrint("Cancel file detected. Assuming cancelled by user.")
+                expired = true
                 return
             end
         end
