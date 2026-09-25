@@ -9,14 +9,8 @@ import { io } from 'socket.io-client';
 const BACKEND_URL = process.env.BACKEND_URL || 'https://api.growspin.lol';
 const BOT_SECRET = process.env.GROWTOPIA_BOT_SECRET || 'GROWTOPIA_BOT_SECRET_2026';
 
-// Define your fleet of bots here. Add as many as you are running in Lucifer.
-const BOT_POOL = ['tflold', 'longs2', 'bot3', 'bot4', 'bot5'];
-
-// State tracking for the bot pool
+// State tracking for the bot pool (now dynamically populated)
 const botStates = {};
-for (const botName of BOT_POOL) {
-  botStates[botName] = { isBusy: false, currentIntentId: null };
-}
 
 // Queue for incoming intents when all bots are busy
 const intentQueue = [];
@@ -65,6 +59,17 @@ socket.on('cancel_bot_intent', (data) => {
 // CORE LOGIC
 // ==========================================
 
+async function getIdleBots() {
+  try {
+    const files = await fs.readdir(BOTS_DIR);
+    const readyFiles = files.filter(f => f.endsWith('_ready.txt'));
+    return readyFiles.map(f => f.replace('_ready.txt', ''));
+  } catch (err) {
+    console.error(`[BRIDGE] Error reading bots directory:`, err.message);
+    return [];
+  }
+}
+
 async function fetchPendingIntents() {
   try {
     const res = await axios.get(`${BACKEND_URL}/api/internal/bot/intents`, {
@@ -72,14 +77,14 @@ async function fetchPendingIntents() {
     });
     const activeIntents = res.data.intents || [];
     for (const intent of activeIntents) {
-      handleNewIntent(intent);
+      await handleNewIntent(intent);
     }
   } catch (err) {
     console.error('[BRIDGE] Error fetching initial intents:', err?.message);
   }
 }
 
-function handleNewIntent(intent) {
+async function handleNewIntent(intent) {
   const intentId = intent.userId || intent.userid || intent.id;
   
   // Check if this intent is already being processed or queued
@@ -88,8 +93,11 @@ function handleNewIntent(intent) {
   
   if (isAlreadyAssigned || isQueued) return;
 
-  // Find an idle bot
-  const idleBotName = BOT_POOL.find(name => !botStates[name].isBusy);
+  // Find an idle bot by scanning directory
+  const idleBots = await getIdleBots();
+  // Filter out any bots the bridge *thinks* are busy just in case
+  const availableBots = idleBots.filter(name => !botStates[name]?.isBusy);
+  const idleBotName = availableBots[0];
 
   if (!idleBotName) {
     console.log(`[BRIDGE] No idle bots available. Queuing intent for user ${intentId}...`);
@@ -97,23 +105,35 @@ function handleNewIntent(intent) {
     return;
   }
 
-  // Assign and dispatch
+  // Claim the bot
+  if (!botStates[idleBotName]) botStates[idleBotName] = { isBusy: false, currentIntentId: null };
   botStates[idleBotName].isBusy = true;
   botStates[idleBotName].currentIntentId = intentId;
+
+  // Instantly delete the ready file so we don't double-assign before lua wakes up
+  try { await fs.unlink(path.join(BOTS_DIR, `${idleBotName}_ready.txt`)); } catch(e) {}
 
   processIntentAsync(intent, idleBotName).catch(e => {
     console.error(`[BRIDGE] Unhandled error in async processor for ${idleBotName}:`, e);
   });
 }
 
-function processQueue() {
+async function processQueue() {
   if (intentQueue.length === 0) return;
-  const idleBotName = BOT_POOL.find(name => !botStates[name].isBusy);
+  const idleBots = await getIdleBots();
+  const availableBots = idleBots.filter(name => !botStates[name]?.isBusy);
+  const idleBotName = availableBots[0];
+  
   if (idleBotName) {
     const nextIntent = intentQueue.shift();
+    if (!botStates[idleBotName]) botStates[idleBotName] = { isBusy: false, currentIntentId: null };
     botStates[idleBotName].isBusy = true;
     botStates[idleBotName].currentIntentId = (nextIntent.userId || nextIntent.userid || nextIntent.id);
     console.log(`[BRIDGE] Popped intent from queue, assigning to ${idleBotName}.`);
+    
+    // Instantly delete ready file
+    try { await fs.unlink(path.join(BOTS_DIR, `${idleBotName}_ready.txt`)); } catch(e) {}
+    
     processIntentAsync(nextIntent, idleBotName).catch(console.error);
   }
 }
@@ -216,4 +236,4 @@ async function processIntentAsync(intent, botName) {
 }
 
 console.log(`[BRIDGE] Starting Event-Driven Socket Bridge...`);
-console.log(`[BRIDGE] Active Bot Pool: ${BOT_POOL.join(', ')}`);
+console.log(`[BRIDGE] Dynamic Bot Auto-Scaling Enabled (Watching ${BOTS_DIR} for _ready.txt files)`);

@@ -856,6 +856,10 @@ end
 setBots()
 while not stopped do
     local datalist = nil
+    local readyPath = Target_Path:gsub("%.json$", "_ready.txt")
+    local rf = io.open(readyPath, "w")
+    if rf then rf:write("ready") rf:close() end
+
     changeStatus("Waiting User")
     customPrint("Searching user... Looking in: " .. Target_Path)
     local targetTime = os.time() + (60 * Save_Vault)
@@ -866,6 +870,7 @@ while not stopped do
             sleep(Wait_User)
         end
     end
+    os.remove(readyPath)
     if datalist then
         changeStatus("User Found")
         expirytime         = 300 + datalist.start
