@@ -598,13 +598,13 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
     while not completed and reconnect(depoworld, "NONE", false) do
         local dialogText = nil
         if expirytime ~= 0 and os.time() > expirytime then expired = true return end
-        if Target_Path then
-            local tf = io.open(Target_Path, "r")
-            if tf then 
-                tf:close() 
-            else 
-                customPrint("Job file deleted. Assuming cancelled by user.")
-                return 
+        local cancelPath = Target_Path:gsub("%.json$", "_cancel.txt")
+        if cancelPath then
+            local cf = io.open(cancelPath, "r")
+            if cf then
+                cf:close()
+                customPrint("Cancel file detected. Assuming cancelled by user.")
+                return
             end
         end
         local players = world:getPlayers()

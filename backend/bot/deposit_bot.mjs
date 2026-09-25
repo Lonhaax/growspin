@@ -67,7 +67,8 @@ async function processIntentAsync(intent, botName) {
           });
           if (cancelCheck.data.intent && cancelCheck.data.intent.status === 'CANCELLED') {
             console.log(`[BRIDGE] [${botName}] User cancelled intent ${intentId}. Aborting.`);
-            await fs.unlink(targetPath).catch(() => {});
+            const cancelPath = path.join(BOTS_DIR, `${botName}_cancel.txt`);
+            await fs.writeFile(cancelPath, 'cancel').catch(() => {});
             break;
           }
         } catch (e) {
@@ -119,6 +120,7 @@ async function processIntentAsync(intent, botName) {
     try { await fs.unlink(targetPath); } catch (e) { }
     await new Promise(r => setTimeout(r, 1500));
     try { await fs.unlink(statusPath); } catch (e) { }
+    try { await fs.unlink(path.join(BOTS_DIR, `${botName}_cancel.txt`)); } catch (e) { }
 
     // Release the bot back to the pool
     botStates[botName].isBusy = false;
