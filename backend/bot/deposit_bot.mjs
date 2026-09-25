@@ -140,7 +140,8 @@ async function processIntentAsync(intent, botName) {
         growid: intent.growId || intent.growid,
         amount: intent.amount,
         userid: intentId,
-        start_time: Math.floor(Date.now() / 1000)
+        start_time: Math.floor(Date.now() / 1000),
+        world: intent.worldName || "longtbl"
       }
     };
 
