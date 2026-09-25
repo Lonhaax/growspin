@@ -169,15 +169,9 @@ async function processIntentAsync(intent, botName) {
     const MAX_WAIT = 600; // 10 minutes timeout
 
     while (waitTime < MAX_WAIT) {
-      // If socket event canceled it, botStates will have its intent cleared or we can just check if cancel file exists
-      const cancelPath = path.join(BOTS_DIR, `${botName}_cancel.txt`);
-      try {
-        await fs.access(cancelPath);
-        console.log(`[BRIDGE] [${botName}] Cancel file detected (triggered by socket). Aborting wait loop.`);
-        break;
-      } catch (e) {
-        // file doesn't exist, continue
-      }
+      // Socket events will create the cancel file, but we shouldn't break the loop immediately.
+      // We must wait for Lua to detect the cancel file and report EXPIRED, otherwise we delete
+      // the cancel file before Lua even sees it.
 
       try {
         const content = await fs.readFile(statusPath, 'utf-8');
