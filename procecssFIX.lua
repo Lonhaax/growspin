@@ -301,7 +301,7 @@ local function getVaultCoordinats()
     local tiles = world:getTiles()
     for i = 1, #tiles do
         local tile = tiles[i]
-        if tile.fg == 8878 or tile.fg == 1422 then
+        if tile.fg == 8878 then
             local vaultxx, vaultyy = tile.x, tile.y
             for dx = -1, 1 do
                 for dy = -1, 1 do
