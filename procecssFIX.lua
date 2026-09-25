@@ -1,10 +1,10 @@
 --=== MAIN SETTINGS ===--
-Target_Path = "\\\\Mac\\Home\\Desktop\\depo trade\\httpserver\\bots\\"..getBot().name..".json"
+Target_Path = "C:\\Users\\jake\\Desktop\\depo trade\\httpserver\\bots\\"..getBot().name..".json"
 
 Process_Table = {
     [1] = { -- 1 st bot from bot list
 Deposit_World = "longtbl",
-        Vault_World   = "ujfpp|gtblnew22"
+        Vault_World   = "1lkll|gtblnew22"
     }
 }
 

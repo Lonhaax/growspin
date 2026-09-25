@@ -22,7 +22,7 @@ for (const botName of BOT_POOL) {
 const intentQueue = [];
 
 // The path where the Lua script expects the JSON files
-const BOTS_DIR = '/Users/jake/Desktop/depo trade/httpserver/bots';
+const BOTS_DIR = 'C:/Users/jake/Desktop/depo trade/httpserver/bots';
 
 // ==========================================
 // SOCKET CONNECTION
