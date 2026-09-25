@@ -62,8 +62,17 @@ socket.on('cancel_bot_intent', (data) => {
 async function getIdleBots() {
   try {
     const files = await fs.readdir(BOTS_DIR);
-    const readyFiles = files.filter(f => f.endsWith('_ready.txt'));
-    return readyFiles.map(f => f.replace('_ready.txt', ''));
+    const statusFiles = files.filter(f => f.endsWith('_status.json'));
+    const idleBots = [];
+    for (const f of statusFiles) {
+      try {
+        const content = await fs.readFile(path.join(BOTS_DIR, f), 'utf-8');
+        if (JSON.parse(content).status === 'Waiting User') {
+          idleBots.push(f.replace('_status.json', ''));
+        }
+      } catch (e) {}
+    }
+    return idleBots;
   } catch (err) {
     console.error(`[BRIDGE] Error reading bots directory:`, err.message);
     return [];
@@ -110,9 +119,7 @@ async function handleNewIntent(intent) {
   botStates[idleBotName].isBusy = true;
   botStates[idleBotName].currentIntentId = intentId;
 
-  // Instantly delete the ready file so we don't double-assign before lua wakes up
-  try { await fs.unlink(path.join(BOTS_DIR, `${idleBotName}_ready.txt`)); } catch(e) {}
-
+  // The bridge tracks isBusy locally so we don't double-assign before lua wakes up
   processIntentAsync(intent, idleBotName).catch(e => {
     console.error(`[BRIDGE] Unhandled error in async processor for ${idleBotName}:`, e);
   });
@@ -131,9 +138,7 @@ async function processQueue() {
     botStates[idleBotName].currentIntentId = (nextIntent.userId || nextIntent.userid || nextIntent.id);
     console.log(`[BRIDGE] Popped intent from queue, assigning to ${idleBotName}.`);
     
-    // Instantly delete ready file
-    try { await fs.unlink(path.join(BOTS_DIR, `${idleBotName}_ready.txt`)); } catch(e) {}
-    
+    // The bridge tracks isBusy locally so we don't double-assign before lua wakes up    
     processIntentAsync(nextIntent, idleBotName).catch(console.error);
   }
 }
@@ -236,7 +241,7 @@ async function processIntentAsync(intent, botName) {
 }
 
 console.log(`[BRIDGE] Starting Event-Driven Socket Bridge...`);
-console.log(`[BRIDGE] Dynamic Bot Auto-Scaling Enabled (Watching ${BOTS_DIR} for _ready.txt files)`);
+console.log(`[BRIDGE] Dynamic Bot Auto-Scaling Enabled (Watching ${BOTS_DIR} for _status.json 'Waiting User')`);
 
 // Poll the queue periodically in case idle bots wake up
 setInterval(() => {
