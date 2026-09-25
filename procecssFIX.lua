@@ -807,6 +807,7 @@ local function getJobDetailsFromJSON()
     if not file then 
         return nil 
     end
+    customPrint("DEBUG: File opened successfully! Reading contents...")
     local content = file:read("*a")
     file:close()
     if content == nil or content == "" then return nil end
