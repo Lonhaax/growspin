@@ -538,7 +538,7 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
 
     // Growtopia restricts world creation to ~10/day per IP, so we must use a predefined pool of already-created worlds
     // You should manually create these 5 worlds (or change the names here to worlds you already own)
-    const WORLDS = ['X7B8Q', 'P4M9R', 'Z2L5W', 'E8C1T', 'longtbl'];
+    const WORLDS = ['K9B3X8L', 'J4P7Q2M', 'N5V1R9T', 'W8F6Y3C', 'H2D5M7Z'];
     const worldName = WORLDS[Math.floor(Math.random() * WORLDS.length)];
     const botName = "Searching...";
 
