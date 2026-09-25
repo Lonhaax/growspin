@@ -80,6 +80,13 @@ end
 
 local function changeStatus(data)
     bot.custom_status = data
+    if Target_Path then
+        local sf = io.open(Target_Path:gsub("%.json$", "_status.json"), "w")
+        if sf then
+            sf:write('{"status":"' .. data .. '"}')
+            sf:close()
+        end
+    end
     sleep(100)
 end
 
