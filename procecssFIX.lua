@@ -595,6 +595,7 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
         sleep(300)
     end
     convertBGL(depoworld, "NONE")
+    local tradeAttempts = 0
     while not completed and reconnect(depoworld, "NONE", false) do
         local dialogText = nil
         if expirytime ~= 0 and os.time() > expirytime then expired = true return end
@@ -619,7 +620,15 @@ local function tradeProcess(targetGrowID, targetAmount, mode)
                 bot:say("/trade " .. tradeName)
                 sleep(1000)
                 local tradesuccess = consoleFind("trading with", os.time() + 5)
-                if tradesuccess then
+                if not tradesuccess then
+                    tradeAttempts = tradeAttempts + 1
+                    if tradeAttempts >= 10 then
+                        customPrint("Player failed to accept trade 10 times. Assuming AFK.")
+                        expired = true
+                        return
+                    end
+                else
+                    tradeAttempts = 0
                     local dlcount, bglcount = inventory:getItemCount(DL), inventory:getItemCount(BGL)
                     if mode == "withdraw" then
                         local targetBGL, targetDL = math.floor(targetAmount / 100), targetAmount % 100
@@ -815,7 +824,8 @@ local function getJobDetailsFromJSON()
                     start   = d.start_time,
                     growid  = d.growid,
                     amount  = tonumber(d.amount),
-                    userid  = tostring(d.userid)
+                    userid  = tostring(d.userid),
+                    world   = d.world
                 }
             else
                 customPrint("JSON Rejected: Missing details fields. mode=" .. tostring(d.mode) .. " growid=" .. tostring(d.growid) .. " amount=" .. tostring(d.amount) .. " userid=" .. tostring(d.userid) .. " start=" .. tostring(d.start_time))
@@ -864,7 +874,10 @@ while not stopped do
         local targetGrowID = datalist.growid
         local targetAmount = datalist.amount
         local targetUserID = datalist.userid
-        customPrint("Successfully found user!\nUserID: " .. targetUserID .. "\nGrowID: " .. targetGrowID .. "\nAmount: " .. targetAmount .. " DL\nMode: " .. targetMode)
+        if datalist.world and datalist.world ~= "" then
+            depoworld = datalist.world:upper()
+        end
+        customPrint("Successfully found user!\nUserID: " .. targetUserID .. "\nGrowID: " .. targetGrowID .. "\nAmount: " .. targetAmount .. " DL\nMode: " .. targetMode .. "\nWorld: " .. depoworld)
         SendWebhook("Successfully found user!\n**UserID:** " .. targetUserID .. "\n**GrowID:** " .. targetGrowID .. "\n**Amount:** " .. targetAmount .. " DL\n**Mode:** " .. targetMode)
         if not waitUntilOnline() then break end
         if not expired then

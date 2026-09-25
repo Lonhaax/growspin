@@ -536,7 +536,8 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     const { growId, amount } = req.body;
     if (!growId) return res.status(400).json({ error: 'growId is required' });
 
-    const worldName = "longtbl";
+    const WORLDS = ['longtbl']; // Add more worlds here when needed, e.g. ['longtbl', 'depo2']
+    const worldName = WORLDS[globalNextIntentId % WORLDS.length];
     const botName = "Searching...";
 
     const intent = {
@@ -551,6 +552,7 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
     };
     
     globalInMemoryIntents.push(intent);
+    io.emit('new_bot_intent', intent);
 
     res.json({ success: true, intent });
   } catch (err: any) {
@@ -798,6 +800,7 @@ app.post('/api/deposit/cancel', requireAuth, async (req: AuthRequest, res: Respo
     if (!intent) return res.status(404).json({ error: 'No pending deposit found' });
     
     intent.status = 'CANCELLED';
+    io.emit('cancel_bot_intent', { intentId: intent.id });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
