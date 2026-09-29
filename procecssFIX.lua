@@ -78,12 +78,16 @@ local function SendWebhook(Text)
     wh:send()
 end
 
-local function changeStatus(data)
+local function changeStatus(data, amount)
     bot.custom_status = data
     if Target_Path then
         local sf = io.open(Target_Path:gsub("%.json$", "_status.json"), "w")
         if sf then
-            sf:write('{"status":"' .. data .. '"}')
+            if amount then
+                sf:write('{"status":"' .. data .. '", "amount":' .. tostring(amount) .. '}')
+            else
+                sf:write('{"status":"' .. data .. '"}')
+            end
             sf:close()
         end
     end
@@ -912,7 +916,7 @@ while not stopped do
             end
         end
         if not expired then
-            changeStatus("SUCCESS:" .. targetUserID)
+            changeStatus("SUCCESS:" .. targetUserID, targetAmount)
             customPrint("Transaction Successful!\nUserID: " .. targetUserID .. "\nGrowID: " .. targetGrowID .. "\nAmount: " .. targetAmount .. " DL\nMode: " .. targetMode)
             SendWebhook("Transaction Successful!\n**UserID:** " .. targetUserID .. "\n**GrowID:** " .. targetGrowID .. "\n**Amount:** " .. targetAmount .. " DL\n**Mode:** " .. targetMode)
         else
