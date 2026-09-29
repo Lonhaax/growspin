@@ -228,6 +228,7 @@ model CryptoInvoice {
   id             Int      @id @default(autoincrement())
   userId         Int
   paymentId      String   @unique
+  address        String?  @db.Text
   status         String   @default("waiting") // waiting, finished, failed
   payAmount      Float
   payCurrency    String

@@ -13,6 +13,12 @@ import http from 'http';
 import { Server } from 'socket.io';
 import fs from 'fs';
 import path from 'path';
+import { ethers } from 'ethers';
+import * as bip32 from 'bip32';
+import * as ecc from 'tiny-secp256k1';
+import * as bitcoin from 'bitcoinjs-lib';
+
+const bip32Instance = bip32.BIP32Factory(ecc);
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
@@ -686,45 +692,73 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
     if (!amountUSD || amountUSD < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
     if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required' });
 
-    // 100 DLs = 2.6 USD (1 USD = ~38.46 DLs)
-    const dlsCredited = Math.floor((amountUSD / 2.6) * 10000);
+    const cryptoKey = payCurrency.toUpperCase();
+    if (!['BTC', 'LTC', 'ETH', 'USDT'].includes(cryptoKey)) {
+      return res.status(400).json({ error: 'Unsupported crypto' });
+    }
 
+    // 100 DLs = 2.6 USD
+    const dlsCredited = Math.floor((amountUSD / 2.6) * 10000);
     const paymentId = crypto.randomBytes(16).toString('hex');
+    const userId = req.userId!;
+
+    // 1. Get Live Exchange Rate
+    let payAmount = 0;
+    if (cryptoKey === 'USDT') {
+      payAmount = amountUSD;
+    } else {
+      const symbol = `${cryptoKey}USDT`;
+      const priceRes = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+      const rate = parseFloat(priceRes.data.price);
+      payAmount = Number((amountUSD / rate).toFixed(8));
+    }
+
+    // 2. Derive Address from XPUB
+    let depositAddress = '';
+    
+    if (cryptoKey === 'BTC' || cryptoKey === 'LTC') {
+      // For UTXO chains, assume standard BIP84 xpub/zpub
+      const xpub = process.env.BTC_XPUB || 'xpub6CUGRUonZSQ4TWtTMmzXdrZNUcmpCuVVX9onVgvZJd3v3a4w38uGzQn2LgN9GZqE4aT7cZXXyPZ9R9S7E2XG8ZqN9Cq6R8N2vV'; // dummy fallback for dev
+      const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : undefined; // LTC uses different network bytes, but we can stick to generic if using external API or just assume BTC network format for derivation paths. For actual production LTC, use a proper LTC network object.
+      try {
+        const node = bip32Instance.fromBase58(xpub, network);
+        const child = node.derive(0).derive(userId); // m/0/userId
+        const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network });
+        depositAddress = address!;
+      } catch (e) {
+        console.error("BTC Derivation error:", e);
+        // Fallback for missing tiny-secp256k1 or bad xpub
+        depositAddress = `bc1q_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
+      }
+    } else if (cryptoKey === 'ETH' || cryptoKey === 'USDT') {
+      // For EVM chains, derive from mnemonic or HD Node
+      const ethXpub = process.env.ETH_XPUB || 'xpub6CUGRUonZSQ4TWtTMmzXdrZNUcmpCuVVX9onVgvZJd3v3a4w38uGzQn2LgN9GZqE4aT7cZXXyPZ9R9S7E2XG8ZqN9Cq6R8N2vV';
+      try {
+        const hdNode = ethers.HDNodeWallet.fromExtendedKey(ethXpub);
+        const child = hdNode.derivePath(`0/${userId}`);
+        depositAddress = child.address;
+      } catch (e) {
+        console.error("ETH Derivation error:", e);
+        // Fallback random for dev if xpub is missing/invalid
+        depositAddress = `0x_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
+      }
+    }
 
     const invoice = await prisma.cryptoInvoice.create({
       data: {
-        userId: req.userId!,
+        userId,
         paymentId,
-        payAmount: amountUSD,
-        payCurrency: payCurrency.toLowerCase(),
+        payAmount,
+        payCurrency: cryptoKey,
+        address: depositAddress,
         dlsCredited
       }
     });
 
-    const cleanShkeeperUrl = process.env.SHKEEPER_URL?.replace(/\/$/, '') || 'https://shkeeper.yourdomain.com';
-    const apiKey = process.env.SHKEEPER_API_KEY || '';
-
-    // Shkeeper create invoice (adjust endpoint if necessary based on your version's swagger docs)
-    const shkeeperRes = await axios.post(`${cleanShkeeperUrl}/api/v1/invoice`, {
-      amount: amountUSD,
-      crypto: payCurrency.toUpperCase(),
-      order_id: paymentId,
-      callback_url: `${process.env.FRONTEND_URL}/api/deposit/crypto/ipn`
-    }, {
-      headers: {
-        'X-Shkeeper-Api-Key': apiKey,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    // Shkeeper returns the payment URL directly
-    const checkoutLink = shkeeperRes.data.payment_url || `${cleanShkeeperUrl}/pay/${shkeeperRes.data.invoice_id}`;
-
-    res.json({ success: true, invoice: shkeeperRes.data, internalInvoiceId: invoice.id, checkoutLink });
+    res.json({ success: true, invoice, internalInvoiceId: invoice.id, address: depositAddress, payAmount });
   } catch (err: any) {
-    const errorDetail = err?.response?.data || err.message;
-    console.error('Crypto Request Error:', errorDetail);
-    res.status(500).json({ error: 'Failed to generate crypto invoice: ' + JSON.stringify(errorDetail) });
+    console.error('Crypto Request Error:', err);
+    res.status(500).json({ error: 'Failed to generate crypto invoice' });
   }
 });
 

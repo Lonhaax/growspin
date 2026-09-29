@@ -164,13 +164,20 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
         body: JSON.stringify({ amountUSD: cryptoAmount, payCurrency: cryptoCurrency })
       });
       const data = await res.json();
-      if (data.success && data.checkoutLink) {
-        window.location.href = data.checkoutLink;
+      if (data.success && data.address) {
+        setInvoice({
+          internalInvoiceId: data.internalInvoiceId,
+          payment_id: data.invoice.paymentId,
+          pay_address: data.address,
+          pay_amount: data.payAmount,
+          pay_currency: data.invoice.payCurrency,
+          status: 'waiting'
+        });
       } else {
-        setError(data.error || 'Failed to generate crypto invoice');
+        setError(data.error || 'Failed to generate deposit address');
       }
     } catch (e) {
-      setError('Network error. Check API keys.');
+      setError('Network error. Please try again.');
     }
     setLoading(false);
   };
@@ -413,6 +420,37 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     exit={{ opacity: 0, x: 20 }}
                     className="space-y-6"
                   >
+                    {invoice ? (
+                      <div className="space-y-4">
+                        <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5">
+                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">Send Exactly</p>
+                          <div className="flex items-center justify-between bg-[#0c0e14] p-4 rounded-xl border border-white/5">
+                            <span className="text-2xl font-black text-emerald-400 tracking-wider font-mono">
+                              {invoice.pay_amount} <span className="text-lg">{invoice.pay_currency}</span>
+                            </span>
+                            <button onClick={() => copyToClipboard(invoice.pay_amount.toString())} className="text-[#7a819c] hover:text-white transition-colors">
+                              <Copy size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5">
+                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">To Address</p>
+                          <div className="flex items-center justify-between bg-[#0c0e14] p-4 rounded-xl border border-white/5 overflow-hidden">
+                            <span className="text-sm font-bold text-white font-mono truncate mr-2">{invoice.pay_address}</span>
+                            <button onClick={() => copyToClipboard(invoice.pay_address)} className="text-[#7a819c] hover:text-white transition-colors shrink-0">
+                              <Copy size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 relative overflow-hidden">
+                          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-3" />
+                          <p className="text-emerald-300 font-medium text-sm">Waiting for payment confirmation...</p>
+                          <p className="text-[#7a819c] text-xs mt-3 text-center">Do not close this window. Your balance will update automatically once the network confirms the transaction.</p>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="space-y-6">
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
@@ -464,10 +502,11 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                           disabled={cryptoAmount < 1 || loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-[#00c566] hover:from-[#00c566] hover:to-emerald-400 disabled:opacity-50 disabled:grayscale text-black rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:shadow-[0_0_30px_rgba(0,230,118,0.5)] active:scale-[0.98]"
                         >
-                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Proceed to Checkout'}
+                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Generate Address'}
                           {!loading && <ArrowRight size={20} />}
                         </button>
                       </div>
+                    )}
                   </motion.div>
                 )}
 
