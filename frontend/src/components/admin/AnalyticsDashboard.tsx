@@ -5,7 +5,8 @@ import { apiFetch } from "@/lib/auth";
 import {
   Users, TrendingUp, Coins, Activity, UserPlus, Star,
   Bomb, CircleDot, Dices, AlignEndHorizontal, Flame,
-  PackageOpen, Swords, RefreshCw, Crown, Gamepad2, Zap
+  PackageOpen, Swords, RefreshCw, Crown, Gamepad2, Zap,
+  Database, ArrowDownToLine, HandCoins
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -13,6 +14,9 @@ import {
 interface Overview {
   totalUsers: number;
   totalWagered: number;
+  totalLiability: number;
+  totalDeposits: number;
+  totalWithdrawals: number;
   casinoPot: number;
   activeToday: number;
   newUsersToday: number;
@@ -257,6 +261,13 @@ export default function AnalyticsDashboard() {
           <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           Refresh
         </button>
+      </div>
+
+      {/* ── Cash Flow Row ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <KpiCard label="Total Liability" value={`${fmtDL(overview.totalLiability)} DL`} sub="Sum of all user balances" icon={Database} color="#f43f5e" />
+        <KpiCard label="Total Deposits" value={`${fmtDL(overview.totalDeposits)} DL`} sub="All-time completed" icon={ArrowDownToLine} color="#10b981" />
+        <KpiCard label="Total Withdrawals" value={`${fmtDL(overview.totalWithdrawals)} DL`} sub="All-time approved" icon={HandCoins} color="#f59e0b" />
       </div>
 
       {/* ── KPI Row ── */}

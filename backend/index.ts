@@ -3200,6 +3200,32 @@ app.put('/api/admin/settings', requireAuth, requireAdmin, async (req: AuthReques
   }
 });
 
+// GET /api/admin/chat - Fetch recent chat messages for moderation
+app.get('/api/admin/chat', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const messages = await prisma.chatMessage.findMany({
+      include: { user: { select: { username: true } } },
+      orderBy: { timestamp: 'desc' },
+      take: 100,
+    });
+    res.json(messages);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/chat/:id - Delete a chat message
+app.delete('/api/admin/chat/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const messageId = parseInt(String(req.params.id));
+    await prisma.chatMessage.delete({ where: { id: messageId } });
+    io.emit('chatMessageDeleted', { id: messageId });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/admin/chat/rain - Manually trigger a rain drop
 app.post('/api/admin/chat/rain', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -3407,6 +3433,20 @@ app.get('/api/admin/bot', requireAuth, requireAdmin, async (req: Request, res: R
   }
 });
 
+// GET /api/admin/deposits
+app.get('/api/admin/deposits', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const deposits = await prisma.depositIntent.findMany({
+      include: { user: { select: { username: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    res.json(deposits);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseInt(String(req.params.id));
@@ -3486,7 +3526,7 @@ app.get('/api/admin/analytics', requireAuth, requireAdmin, async (req: AuthReque
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // ── Overview KPIs ──
-    const [totalUsers, settings, activeToday, newUsersToday, newUsersThisWeek, wageredAgg] = await Promise.all([
+    const [totalUsers, settings, activeToday, newUsersToday, newUsersThisWeek, wageredAgg, liabilityAgg, totalDeposits, totalWithdrawals] = await Promise.all([
       prisma.user.count(),
       prisma.siteSettings.findUnique({ where: { id: 1 } }),
       prisma.transaction.findMany({
@@ -3497,6 +3537,9 @@ app.get('/api/admin/analytics', requireAuth, requireAdmin, async (req: AuthReque
       prisma.user.count({ where: { createdAt: { gte: oneDayAgo } } }),
       prisma.user.count({ where: { createdAt: { gte: oneWeekAgo } } }),
       prisma.user.aggregate({ _sum: { totalWagered: true } }),
+      prisma.user.aggregate({ _sum: { mockBalance: true } }),
+      prisma.depositIntent.aggregate({ where: { status: 'COMPLETED' }, _sum: { amount: true } }),
+      prisma.withdrawalRequest.aggregate({ where: { status: 'approved' }, _sum: { amount: true } }),
     ]);
 
     // ── Revenue by game type (last 30 days) ──
@@ -3627,6 +3670,9 @@ app.get('/api/admin/analytics', requireAuth, requireAdmin, async (req: AuthReque
       overview: {
         totalUsers,
         totalWagered: wageredAgg._sum.totalWagered ?? 0,
+        totalLiability: liabilityAgg._sum.mockBalance ?? 0,
+        totalDeposits: totalDeposits._sum.amount ?? 0,
+        totalWithdrawals: totalWithdrawals._sum.amount ?? 0,
         casinoPot: settings?.casinoPot ?? 0,
         activeToday: activeToday.length,
         newUsersToday,

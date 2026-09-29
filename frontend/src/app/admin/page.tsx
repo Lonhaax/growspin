@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
@@ -11,12 +11,15 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [botState, setBotState] = useState<any>(null);
+  
+  const [chatLogs, setChatLogs] = useState<any[]>([]);
+  const [depositLogs, setDepositLogs] = useState<any[]>([]);
 
   // Users state
   const [users, setUsers] = useState<any[]>([]);
@@ -56,6 +59,20 @@ export default function AdminPage() {
     setWithdrawalsLoading(false);
   };
 
+  const fetchChat = async () => {
+    try {
+      const res = await apiFetch('/admin/chat');
+      if (res.ok) setChatLogs(await res.json());
+    } catch (e) {}
+  };
+
+  const fetchDeposits = async () => {
+    try {
+      const res = await apiFetch('/admin/deposits');
+      if (res.ok) setDepositLogs(await res.json());
+    } catch (e) {}
+  };
+
   const fetchSettings = async () => {
     try {
       const res = await apiFetch("/admin/settings");
@@ -71,6 +88,8 @@ export default function AdminPage() {
       fetchSettings();
       fetchUsers();
       fetchWithdrawals();
+      fetchChat();
+      fetchDeposits();
 
       const fetchBots = async () => {
         try {
@@ -151,6 +170,14 @@ export default function AdminPage() {
       setError(e.message);
     }
     setLoading(false);
+  };
+
+  const handleDeleteChat = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this chat message?")) return;
+    try {
+      await apiFetch(`/admin/chat/${id}`, { method: 'DELETE' });
+      fetchChat();
+    } catch (e) {}
   };
 
   const handleAuditUser = async (user: any) => {
@@ -471,6 +498,28 @@ export default function AdminPage() {
           >
             <Activity size={15} />
             <span>Bots ({(botState?.bots || []).length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("chat")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "chat"
+                ? "bg-rose-500 text-black shadow-[0_0_15px_rgba(244,63,94,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <MessageSquare size={15} />
+            <span>Chat Logs</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("deposits")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "deposits"
+                ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <ArrowDownToLine size={15} />
+            <span>Deposit Ledger</span>
           </button>
         </div>
       </div>
@@ -1367,6 +1416,130 @@ export default function AdminPage() {
                 The bridge queue holds deposits/withdrawals waiting for a bot to become idle.
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: CHAT LOGS */}
+      {activeTab === "chat" && (
+        <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-white flex items-center gap-2">
+              <MessageSquare className="text-rose-500" /> Chat Moderation
+            </h2>
+            <button
+              onClick={fetchChat}
+              className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
+            >
+              <RefreshCw size={13} />
+              Refresh
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#10131a] text-[#7a819c] font-black uppercase text-[10px] tracking-wider border-b border-[#202535]">
+                <tr>
+                  <th className="px-6 py-4">ID</th>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Message</th>
+                  <th className="px-6 py-4">Time</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#202535]">
+                {chatLogs.map(log => (
+                  <tr key={log.id} className="hover:bg-[#151923] transition-colors">
+                    <td className="px-6 py-4 font-mono text-[#7a819c] text-xs">#{log.id}</td>
+                    <td className="px-6 py-4 font-bold text-white">{log.user?.username || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-gray-300 font-medium max-w-md truncate">{log.content}</td>
+                    <td className="px-6 py-4 text-[#7a819c] text-xs font-medium">
+                      {new Date(log.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleDeleteChat(log.id)}
+                        className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+                        title="Delete Message"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {chatLogs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-[#7a819c] font-black text-sm">
+                      No chat messages found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: DEPOSIT LEDGER */}
+      {activeTab === "deposits" && (
+        <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-black text-white flex items-center gap-2">
+              <ArrowDownToLine className="text-amber-500" /> Deposit Ledger
+            </h2>
+            <button
+              onClick={fetchDeposits}
+              className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
+            >
+              <RefreshCw size={13} />
+              Refresh
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#10131a] text-[#7a819c] font-black uppercase text-[10px] tracking-wider border-b border-[#202535]">
+                <tr>
+                  <th className="px-6 py-4">Intent ID</th>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">GrowID / World</th>
+                  <th className="px-6 py-4">Amount</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#202535]">
+                {depositLogs.map(dep => (
+                  <tr key={dep.id} className="hover:bg-[#151923] transition-colors">
+                    <td className="px-6 py-4 font-mono text-[#7a819c] text-xs">#{dep.id}</td>
+                    <td className="px-6 py-4 font-bold text-white">{dep.user?.username || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-gray-300 font-medium">{dep.growId} / {dep.worldName}</td>
+                    <td className="px-6 py-4">
+                      {dep.amount > 0 ? <DLCurrency amount={dep.amount} /> : <span className="text-gray-500 text-xs">TBD</span>}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg ${
+                        dep.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                        dep.status === 'FAILED' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                        'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                      }`}>
+                        {dep.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[#7a819c] text-xs font-medium">
+                      {new Date(dep.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+                {depositLogs.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-[#7a819c] font-black text-sm">
+                      No deposit records found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
