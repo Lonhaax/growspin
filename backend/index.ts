@@ -3399,6 +3399,28 @@ app.post('/api/admin/withdrawals/:id/reject', requireAuth, requireAdmin, async (
   }
 });
 
+app.get('/api/admin/bot', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    res.json(globalBridgeState || { bots: [], queueSize: 0 });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const transactions = await prisma.transaction.findMany({
+      where: { userId },
+      orderBy: { timestamp: 'desc' },
+      take: 100
+    });
+    res.json(transactions);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/admin/growtopia/search
 app.get('/api/admin/growtopia/search', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   const q = req.query.q as string;
@@ -4224,8 +4246,14 @@ const HOST = process.env.HOST || '0.0.0.0';
 import { startChatBot, triggerRain, setIoInstance } from './bot/chat_bot';
 import { startCryptoWatcher } from './services/crypto_watcher';
 
+export let globalBridgeState: any = null;
+
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
+  
+  socket.on('bridge_state', (state) => {
+    globalBridgeState = state;
+  });
   
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.id}`);

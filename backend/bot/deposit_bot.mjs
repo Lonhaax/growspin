@@ -235,3 +235,29 @@ console.log(`[BRIDGE] Dynamic Bot Auto-Scaling Enabled (Watching ${BOTS_DIR} for
 setInterval(() => {
   processQueue().catch(() => {});
 }, 1000);
+
+// Heartbeat to send live bot state to the admin dashboard
+setInterval(async () => {
+  try {
+    const files = await fs.readdir(BOTS_DIR);
+    const statusFiles = files.filter(f => f.endsWith('_status.json'));
+    const liveBots = [];
+    for (const f of statusFiles) {
+      try {
+        const content = await fs.readFile(path.join(BOTS_DIR, f), 'utf-8');
+        const parsed = JSON.parse(content);
+        const name = f.replace('_status.json', '');
+        liveBots.push({
+          name,
+          gameStatus: parsed.status,
+          isBusy: botStates[name]?.isBusy || false,
+          currentIntentId: botStates[name]?.currentIntentId || null
+        });
+      } catch (e) {}
+    }
+    socket.emit('bridge_state', {
+      bots: liveBots,
+      queueSize: intentQueue.length
+    });
+  } catch (e) {}
+}, 2000);

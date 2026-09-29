@@ -11,17 +11,20 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [botState, setBotState] = useState<any>(null);
 
   // Users state
   const [users, setUsers] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
   const [editingUser, setEditingUser] = useState<any>(null);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [auditUser, setAuditUser] = useState<any>(null);
+  const [auditTransactions, setAuditTransactions] = useState<any[]>([]);
 
   // Withdrawals state
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -63,11 +66,22 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    let botInterval: any;
     if (user?.role === 'admin') {
       fetchSettings();
       fetchUsers();
       fetchWithdrawals();
+
+      const fetchBots = async () => {
+        try {
+          const res = await apiFetch("/admin/bot");
+          if (res.ok) setBotState(await res.json());
+        } catch (e) {}
+      };
+      fetchBots();
+      botInterval = setInterval(fetchBots, 2500);
     }
+    return () => clearInterval(botInterval);
   }, [user]);
 
   const handleSaveUser = async () => {
@@ -137,6 +151,15 @@ export default function AdminPage() {
       setError(e.message);
     }
     setLoading(false);
+  };
+
+  const handleAuditUser = async (user: any) => {
+    setAuditUser(user);
+    setAuditTransactions([]);
+    try {
+      const res = await apiFetch(`/admin/users/${user.id}/transactions`);
+      if (res.ok) setAuditTransactions(await res.json());
+    } catch (e) {}
   };
 
   const handleApproveWithdrawal = async (id: number) => {
@@ -438,6 +461,17 @@ export default function AdminPage() {
             <ArrowDownToLine size={15} />
             <span>Withdrawals</span>
           </button>
+          <button
+            onClick={() => setActiveTab("bots")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "bots"
+                ? "bg-purple-500 text-black shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Activity size={15} />
+            <span>Bots ({(botState?.bots || []).length})</span>
+          </button>
         </div>
       </div>
       </div>
@@ -576,6 +610,13 @@ export default function AdminPage() {
                               </button>
                             </>
                           )}
+                          <button
+                            onClick={() => handleAuditUser(u)}
+                            className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg transition-colors"
+                            title="Audit Player"
+                          >
+                            <Search size={13} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -584,6 +625,65 @@ export default function AdminPage() {
               </table>
             </div>
           </div>
+
+          {/* AUDIT PLAYER MODAL */}
+          {auditUser && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+              <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 w-full max-w-4xl shadow-2xl space-y-6 flex flex-col max-h-[90vh]">
+                <div className="flex items-center justify-between pb-4 border-b border-[#202535]">
+                  <div>
+                    <h3 className="text-xl font-black text-white flex items-center gap-2">
+                      <Search size={18} className="text-purple-400" /> Audit Logs: {auditUser.username}
+                    </h3>
+                    <p className="text-xs text-[#7f86a2] mt-0.5">Last 100 transactions across all games.</p>
+                  </div>
+                  <button
+                    onClick={() => setAuditUser(null)}
+                    className="text-[#646b85] hover:text-white text-xs font-black uppercase"
+                  >
+                    Close
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto min-h-[400px]">
+                  {auditTransactions.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-[#646b85] font-black">
+                      No transactions found or loading...
+                    </div>
+                  ) : (
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-[#0b0e14] sticky top-0 z-10">
+                        <tr>
+                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider rounded-tl-xl">ID</th>
+                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Game</th>
+                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Amount</th>
+                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Result</th>
+                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider rounded-tr-xl">Time</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#202535]">
+                        {auditTransactions.map(tx => (
+                          <tr key={tx.id} className="hover:bg-[#1a1f2e]/50 transition-colors">
+                            <td className="px-4 py-3 text-[#7f86a2] font-mono text-xs">#{tx.id}</td>
+                            <td className="px-4 py-3 font-bold text-white capitalize">{tx.gameType}</td>
+                            <td className="px-4 py-3">
+                              <DLCurrency amount={tx.amount} />
+                            </td>
+                            <td className="px-4 py-3 font-mono text-xs text-white">
+                              {tx.result.length > 50 ? tx.result.substring(0, 50) + "..." : tx.result}
+                            </td>
+                            <td className="px-4 py-3 text-[#7f86a2] text-xs">
+                              {new Date(tx.timestamp).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* EDIT PLAYER MODAL / PANEL */}
           {editingUser && (
@@ -1217,6 +1317,58 @@ export default function AdminPage() {
 
       {activeTab === "analytics" && (
         <AnalyticsDashboard />
+      )}
+
+      {/* TAB: BOTS */}
+      {activeTab === "bots" && (
+        <div className="space-y-6">
+          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-6 shadow-xl">
+            <h2 className="text-xl font-black text-white mb-4 flex items-center gap-2">
+              <Activity className="text-purple-500" />
+              Live Bot Fleet
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(botState?.bots || []).map((bot: any) => (
+                <div key={bot.name} className="bg-[#0b0e14] border border-[#222738] rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden">
+                  <div className="flex justify-between items-center z-10">
+                    <span className="font-bold text-white text-lg">{bot.name}</span>
+                    <span className={`px-2 py-1 text-xs font-black rounded-lg ${bot.isBusy ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                      {bot.isBusy ? 'BUSY' : 'IDLE'}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium text-gray-400 z-10">
+                    Game Status: <span className="text-white">{bot.gameStatus || 'Unknown'}</span>
+                  </div>
+                  {bot.currentIntentId && (
+                    <div className="text-xs font-medium text-cyan-400 z-10">
+                      Processing Intent #{bot.currentIntentId}
+                    </div>
+                  )}
+                  {/* Decorative background */}
+                  <div className={`absolute -right-10 -bottom-10 w-32 h-32 blur-3xl opacity-20 ${bot.isBusy ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                </div>
+              ))}
+              {(botState?.bots || []).length === 0 && (
+                <div className="col-span-full py-10 text-center text-gray-500 font-bold">
+                  No active bots connected.
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-6 shadow-xl">
+            <h2 className="text-lg font-black text-white mb-4">Bridge Queue</h2>
+            <div className="flex items-center gap-4">
+              <div className="bg-[#0b0e14] border border-[#222738] rounded-xl p-4 px-8 text-center">
+                <div className="text-4xl font-black text-cyan-400">{botState?.queueSize || 0}</div>
+                <div className="text-xs text-gray-500 font-bold mt-1 uppercase">Pending Intents</div>
+              </div>
+              <div className="text-sm text-gray-400">
+                The bridge queue holds deposits/withdrawals waiting for a bot to become idle.
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
