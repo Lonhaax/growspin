@@ -94,9 +94,6 @@ const authLimiter = rateLimit({
 // app.use('/api/', apiLimiter);
 // app.use('/api/auth/', authLimiter);
 
-import vipRoutes from './routes/vip';
-app.use('/api/vip', vipRoutes);
-
 // ─── VIP Helpers & Tiers ──────────────────────────────────────────────────────
 const VIP_TIERS = [
   {
@@ -538,6 +535,8 @@ app.get('/api/internal/bot/status', async (req: Request, res: Response) => {
 
 let globalNextIntentId = 1;
 const globalInMemoryIntents: any[] = [];
+
+app.use('/api/vip', require('./routes/vip').default);
 
 app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
