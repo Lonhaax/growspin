@@ -713,21 +713,18 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       payAmount = Number((amountUSD / rate).toFixed(8));
     }
 
-    // 2. Derive Address from Mnemonic
+    // 2. Derive Address from XPUB
     let depositAddress = '';
-    const mnemonic = process.env.MASTER_MNEMONIC;
-
-    if (!mnemonic) {
-      throw new Error("MASTER_MNEMONIC not set in .env");
-    }
     
     if (cryptoKey === 'BTC' || cryptoKey === 'LTC') {
+      const xpub = process.env.BTC_XPUB;
+      if (!xpub) throw new Error("BTC_XPUB not set in .env");
+      
       const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : undefined;
       try {
-        const seed = require('bip39').mnemonicToSeedSync(mnemonic);
-        const node = bip32Instance.fromSeed(seed, network);
-        // BIP84 Native Segwit Path
-        const child = node.derivePath(`m/84'/0'/0'/0/${userId}`);
+        const node = bip32Instance.fromBase58(xpub, network);
+        // We already derived m/84'/0'/0' when generating the xpub, so just derive the child /0/userId
+        const child = node.derive(0).derive(userId);
         const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network });
         depositAddress = address!;
       } catch (e) {
@@ -735,10 +732,13 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
         depositAddress = `bc1q_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
       }
     } else if (cryptoKey === 'ETH' || cryptoKey === 'USDT') {
+      const ethXpub = process.env.ETH_XPUB;
+      if (!ethXpub) throw new Error("ETH_XPUB not set in .env");
+      
       try {
-        const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
-        // Standard Ethereum BIP44 Path offset by userId
-        const child = hdNode.derivePath(`m/44'/60'/0'/0/${userId}`);
+        const hdNode = ethers.HDNodeWallet.fromExtendedKey(ethXpub);
+        // The xpub is already at m/44'/60'/0', so we just derive /0/userId
+        const child = hdNode.derivePath(`0/${userId}`);
         depositAddress = child.address;
       } catch (e) {
         console.error("ETH Derivation error:", e);
