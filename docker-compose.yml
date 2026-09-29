@@ -30,8 +30,6 @@ services:
       - DISCORD_WEBHOOK_URL=
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
-    env_file:
-      - ./backend/.env
     depends_on:
       - db
 
