@@ -824,7 +824,7 @@ app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest
     }
 
     // Wrap in transaction to deduct balance and create request safely
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await withUserLock(req.userId!, () => prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({ where: { id: req.userId! } });
       if (!user) throw new Error("User not found");
       if (user.mockBalance < amount) throw new Error("Insufficient balance");
@@ -845,7 +845,7 @@ app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest
       });
 
       return { user: updatedUser, request };
-    });
+    }));
 
     res.json({ success: true, request: result.request, balance: result.user.mockBalance });
   } catch (err: any) {
