@@ -713,33 +713,35 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       payAmount = Number((amountUSD / rate).toFixed(8));
     }
 
-    // 2. Derive Address from XPUB
+    // 2. Derive Address from Mnemonic
     let depositAddress = '';
+    const mnemonic = process.env.MASTER_MNEMONIC;
+
+    if (!mnemonic) {
+      throw new Error("MASTER_MNEMONIC not set in .env");
+    }
     
     if (cryptoKey === 'BTC' || cryptoKey === 'LTC') {
-      // For UTXO chains, assume standard BIP84 xpub/zpub
-      const xpub = process.env.BTC_XPUB || 'xpub6CUGRUonZSQ4TWtTMmzXdrZNUcmpCuVVX9onVgvZJd3v3a4w38uGzQn2LgN9GZqE4aT7cZXXyPZ9R9S7E2XG8ZqN9Cq6R8N2vV'; // dummy fallback for dev
-      const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : undefined; // LTC uses different network bytes, but we can stick to generic if using external API or just assume BTC network format for derivation paths. For actual production LTC, use a proper LTC network object.
+      const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : undefined;
       try {
-        const node = bip32Instance.fromBase58(xpub, network);
-        const child = node.derive(0).derive(userId); // m/0/userId
+        const seed = require('bip39').mnemonicToSeedSync(mnemonic);
+        const node = bip32Instance.fromSeed(seed, network);
+        // BIP84 Native Segwit Path
+        const child = node.derivePath(`m/84'/0'/0'/0/${userId}`);
         const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network });
         depositAddress = address!;
       } catch (e) {
         console.error("BTC Derivation error:", e);
-        // Fallback for missing tiny-secp256k1 or bad xpub
         depositAddress = `bc1q_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
       }
     } else if (cryptoKey === 'ETH' || cryptoKey === 'USDT') {
-      // For EVM chains, derive from mnemonic or HD Node
-      const ethXpub = process.env.ETH_XPUB || 'xpub6CUGRUonZSQ4TWtTMmzXdrZNUcmpCuVVX9onVgvZJd3v3a4w38uGzQn2LgN9GZqE4aT7cZXXyPZ9R9S7E2XG8ZqN9Cq6R8N2vV';
       try {
-        const hdNode = ethers.HDNodeWallet.fromExtendedKey(ethXpub);
-        const child = hdNode.derivePath(`0/${userId}`);
+        const hdNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
+        // Standard Ethereum BIP44 Path offset by userId
+        const child = hdNode.derivePath(`m/44'/60'/0'/0/${userId}`);
         depositAddress = child.address;
       } catch (e) {
         console.error("ETH Derivation error:", e);
-        // Fallback random for dev if xpub is missing/invalid
         depositAddress = `0x_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
       }
     }
