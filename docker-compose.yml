@@ -28,10 +28,10 @@ services:
       - JWT_ACCESS_SECRET=f71d68a2e0bbec1b48cb4de5478469c7757d9d336c2258329d5db4083bb74eb4
       - JWT_REFRESH_SECRET=904b431a76f0170ca3c387603ee2b03134f4c3fda6f08dac1d1b0bd4ad8163d4
       - DISCORD_WEBHOOK_URL=
-      - BTCPAY_URL=https://btcpay.yourdomain.com
-      - BTCPAY_STORE_ID=your_store_id
-      - BTCPAY_API_KEY=your_api_key
-      - BTCPAY_WEBHOOK_SECRET=your_webhook_secret
+      - BTCPAY_URL=https://btc.growspin.lol
+      - BTCPAY_STORE_ID=EsgFa2ZtpqtA9jWMKRUGHx3w28KZJQ9y3TDhuBMsghSz
+      - BTCPAY_API_KEY=05f50709bf71547a9927d0640e260689e0e45cc1
+      - BTCPAY_WEBHOOK_SECRET=4PPfRQaTcB6FC8Y5SNCjs9dFtQEX
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
     depends_on:
