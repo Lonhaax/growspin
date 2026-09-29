@@ -15,7 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import { ethers } from 'ethers';
 import * as bip32 from 'bip32';
-import * as ecc from 'tiny-secp256k1';
+import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 
 const bip32Instance = bip32.BIP32Factory(ecc);
