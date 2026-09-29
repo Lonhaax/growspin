@@ -30,10 +30,10 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
-const BTCPAY_URL = process.env.BTCPAY_URL || 'https://btc.growspin.lol';
-const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || 'EsgFa2ZtpqtA9jWMKRUGHx3w28KZJQ9y3TDhuBMsghSz';
-const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || '05f50709bf71547a9927d0640e260689e0e45cc1';
-const BTCPAY_WEBHOOK_SECRET = process.env.BTCPAY_WEBHOOK_SECRET || '4PPfRQaTcB6FC8Y5SNCjs9dFtQEX';
+const BTCPAY_URL = process.env.BTCPAY_URL || 'https://btcpay.yourdomain.com';
+const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || 'your_store_id';
+const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || 'your_api_key';
+const BTCPAY_WEBHOOK_SECRET = process.env.BTCPAY_WEBHOOK_SECRET || 'your_webhook_secret';
 
 const recentLiveBets: any[] = [];
 const highRollerBets: any[] = [];
@@ -43,7 +43,7 @@ function emitLiveBet(ioInstance: any, betData: any) {
   // Recent bets
   recentLiveBets.unshift(betData);
   if (recentLiveBets.length > 10) recentLiveBets.pop();
-
+  
   // High Rollers (Top 10 highest payout amounts)
   const payoutAmount = betData.profit > 0 ? betData.betAmount + betData.profit : 0;
   if (payoutAmount > 0) {
@@ -270,7 +270,7 @@ async function generateProvablyFairFloat(tx: any, userId: number): Promise<{ flo
   const hmac = crypto.createHmac('sha256', pf.serverSeed).update(`${pf.clientSeed}-${pf.nonce}`).digest('hex');
   const hexSubstring = hmac.substring(0, 8); // 32 bits
   const float = parseInt(hexSubstring, 16) / 0xffffffff;
-
+  
   return { float, pf, hmac };
 }
 
@@ -332,7 +332,7 @@ async function requireNotFrozen(req: AuthRequest, res: Response, next: NextFunct
       res.status(401).json({ error: 'User not found' });
       return;
     }
-
+    
     if (user.debt > 0 && user.debtCreatedAt && !user.isFrozen) {
       const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
       if (user.debtCreatedAt < fiveDaysAgo) {
@@ -342,12 +342,12 @@ async function requireNotFrozen(req: AuthRequest, res: Response, next: NextFunct
         });
       }
     }
-
+    
     if (user.isFrozen) {
       res.status(403).json({ error: 'Account frozen due to unpaid loan. Please repay your loan.' });
       return;
     }
-
+    
     next();
   } catch (error) {
     res.status(500).json({ error: 'Server error checking freeze status.' });
@@ -518,7 +518,7 @@ app.get('/api/internal/bot/status', async (req: Request, res: Response) => {
   try {
     const secret = req.query.secret as string;
     const worldName = req.query.worldName as string;
-
+    
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') return res.status(401).json({ error: 'Unauthorized' });
     if (worldName && worldName !== "") {
       activeDepositWorld = worldName;
@@ -554,7 +554,7 @@ app.post('/api/deposit/request', requireAuth, requireNotFrozen, async (req: Auth
       status: 'PENDING',
       createdAt: new Date()
     };
-
+    
     globalInMemoryIntents.push(intent);
     io.emit('new_bot_intent', intent);
 
@@ -591,11 +591,11 @@ app.post('/api/internal/bot/assign', async (req: Request, res: Response) => {
     const { intentId, botName } = req.body;
     console.log(`[ASSIGN] Received assign request. intentId: ${intentId}, botName: ${botName}`);
     console.log(`[ASSIGN] Memory intents:`, globalInMemoryIntents.map(i => ({ id: i.id, userId: i.userId, status: i.status })));
-
+    
     const intent = globalInMemoryIntents
       .filter(i => i.id == intentId || (i.userId == intentId && i.status === 'PENDING'))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
-
+    
     if (intent) {
       console.log(`[ASSIGN] Found intent! Updating botName to ${botName}`);
       intent.botName = botName;
@@ -616,13 +616,13 @@ app.get('/api/internal/bot/intent/:id', async (req: Request, res: Response) => {
     if (secret !== 'GROWTOPIA_BOT_SECRET_2026') {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
+    
     const paramId = req.params.id as string;
     const intentId = parseInt(paramId) || paramId;
     const intent = globalInMemoryIntents
       .filter(i => i.id == intentId || i.userId == intentId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
-
+    
     if (intent) {
       res.json({ intent });
     } else {
@@ -701,19 +701,26 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       }
     });
 
-    const cleanBitcartUrl = BTCPAY_URL.replace(/\/$/, ''); // re-using the BTCPAY_URL variable for Bitcart
-    const bitcartRes = await axios.post(`${cleanBitcartUrl}/api/invoices`, {
-      price: amountUSD,
-      store_id: BTCPAY_STORE_ID,
-      order_id: paymentId,
+    const cleanBtcPayUrl = BTCPAY_URL.replace(/\/$/, '');
+    const btcpayRes = await axios.post(`${cleanBtcPayUrl}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`, {
+      amount: amountUSD,
       currency: 'USD',
-      notification_url: `${FRONTEND_URL}/api/deposit/crypto/ipn`,
-      redirect_url: `${FRONTEND_URL}/profile`
+      metadata: {
+        orderId: paymentId,
+        itemDesc: `GrowSpin DL Deposit (${dlsCredited / 100} DLs)`,
+      },
+      checkout: {
+        paymentMethods: [payCurrency.toUpperCase()],
+        redirectURL: `${FRONTEND_URL}/profile`,
+      }
+    }, {
+      headers: { 
+        'Authorization': `token ${BTCPAY_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    const checkoutLink = `${cleanBitcartUrl}/i/${bitcartRes.data.id}`;
-
-    res.json({ success: true, invoice: bitcartRes.data, internalInvoiceId: invoice.id, checkoutLink });
+    res.json({ success: true, invoice: btcpayRes.data, internalInvoiceId: invoice.id, checkoutLink: btcpayRes.data.checkoutLink });
   } catch (err: any) {
     const errorDetail = err?.response?.data || err.message;
     console.error('Crypto Request Error:', errorDetail);
@@ -721,34 +728,43 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
   }
 });
 
-app.post('/api/deposit/crypto/ipn', express.json(), async (req: Request, res: Response) => {
+app.post('/api/deposit/crypto/ipn', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
   try {
-    const data = req.body;
-    const order_id = data.order_id;
-    if (!order_id) return res.status(200).send('Ignored');
+    const signature = req.headers['btcpay-sig'] as string;
+    if (!signature) return res.status(400).json({ error: 'Missing signature' });
+
+    // BTCPay sends signature as "sha256=..."
+    const expectedSig = 'sha256=' + crypto.createHmac('sha256', BTCPAY_WEBHOOK_SECRET).update(req.body).digest('hex');
+    if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig)) === false) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    const payload = JSON.parse(req.body.toString());
+    const { type, invoiceId, metadata } = payload;
+    const order_id = metadata?.orderId;
+    if (!order_id) return res.status(200).send('OK');
 
     const invoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-    if (data.status === 'complete' || data.status === 'confirmed') {
-      if (invoice.status !== 'finished') {
-        await withUserLock(invoice.userId, async () => {
-          const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
-          if (freshInvoice?.status === 'finished') return;
+    if (type === 'InvoiceSettled' && invoice.status !== 'finished') {
+      await withUserLock(invoice.userId, async () => {
+        // Recheck status
+        const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
+        if (freshInvoice?.status === 'finished') return;
 
-          await prisma.cryptoInvoice.update({
-            where: { paymentId: order_id },
-            data: { status: 'finished' }
-          });
-
-          await prisma.user.update({
-            where: { id: invoice.userId },
-            data: { mockBalance: { increment: invoice.dlsCredited } }
-          });
+        await prisma.cryptoInvoice.update({
+          where: { paymentId: order_id },
+          data: { status: 'finished' }
         });
-        io.to(`user-${invoice.userId}`).emit('crypto_deposit_success', { amount: invoice.dlsCredited });
-      }
-    } else if (data.status === 'invalid' || data.status === 'expired') {
+
+        await prisma.user.update({
+          where: { id: invoice.userId },
+          data: { mockBalance: { increment: invoice.dlsCredited } }
+        });
+      });
+      io.to(`user-${invoice.userId}`).emit('crypto_deposit_success', { amount: invoice.dlsCredited });
+    } else if (type === 'InvoiceExpired' || type === 'InvoiceInvalid') {
       await prisma.cryptoInvoice.update({
         where: { paymentId: order_id },
         data: { status: 'failed' }
@@ -796,9 +812,9 @@ app.post('/api/deposit/cancel', requireAuth, async (req: AuthRequest, res: Respo
     const intent = globalInMemoryIntents
       .filter(i => i.userId === req.userId! && i.status === 'PENDING')
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
-
+      
     if (!intent) return res.status(404).json({ error: 'No pending deposit found' });
-
+    
     intent.status = 'CANCELLED';
     io.emit('cancel_bot_intent', { intentId: intent.id });
     res.json({ success: true });
@@ -1491,19 +1507,19 @@ app.post('/api/play/mines/start', requireAuth, requireNotFrozen, async (req: Aut
         // Generate mine locations using provably fair hash
         const pfResult = await generateProvablyFairFloat(tx, userId);
         let currentHash = pfResult.hmac;
-
+        
         const allTiles = Array.from({ length: 25 }, (_, i) => i);
         const mineLocations: number[] = [];
         let hashIndex = 0;
-
+        
         while (mineLocations.length < minesCount) {
           if (hashIndex >= currentHash.length - 2) {
-            currentHash = crypto.createHmac('sha256', currentHash).update(pfResult.pf.serverSeed).digest('hex');
-            hashIndex = 0;
+             currentHash = crypto.createHmac('sha256', currentHash).update(pfResult.pf.serverSeed).digest('hex');
+             hashIndex = 0;
           }
           const val = parseInt(currentHash.substring(hashIndex, hashIndex + 2), 16);
           hashIndex += 2;
-
+          
           const tileIndex = val % allTiles.length;
           mineLocations.push(allTiles[tileIndex]);
           allTiles.splice(tileIndex, 1);
@@ -1573,10 +1589,10 @@ app.post('/api/play/mines/click', requireAuth, requireNotFrozen, async (req: Aut
               rakebackBalance: { increment: rakebackAmount }
             }
           });
-          const potCut = Math.floor(game.betAmount * 0.05);
-          if (potCut > 0) {
-            await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
-          }
+        const potCut = Math.floor(game.betAmount * 0.05);
+        if (potCut > 0) {
+          await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
+        }
 
           await tx.transaction.create({
             data: { userId, amount: game.betAmount, gameType: 'mines', result: 'loss' },
@@ -1791,10 +1807,10 @@ app.post('/api/chat/send', requireAuth, requireNotFrozen, async (req: AuthReques
       data: { userId, content: content.trim() },
       include: { user: { select: { username: true, totalWagered: true } } }
     });
-
+    
     // Broadcast the new message via Socket.io
     io.emit('chat_message', msg);
-
+    
     res.json(msg);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
@@ -1889,7 +1905,7 @@ app.post('/api/vip/claim-rakeback', requireAuth, requireNotFrozen, async (req: A
       return await prisma.$transaction(async (tx) => {
         const user = await tx.user.findUnique({ where: { id: userId } });
         if (!user) throw new Error('User not found');
-
+        
         if (user.rakebackBalance <= 0) {
           throw new Error('No rakeback available to claim');
         }
@@ -1978,7 +1994,7 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
         isLuckyStarItem: false
       });
     }
-
+    
     // If primaryPool is empty (bad config), fallback to all items
     if (primaryPool.length === 0) {
       primaryPool.push(...selectedCase.items);
@@ -2017,7 +2033,7 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
     // The filler is drawn from the main pool, allowing the trigger to pass by visually.
     const winningIndex = 50;
     const safeFillerPool = primaryPool;
-
+    
     const strip = Array.from({ length: 75 }).map((_, i) => {
       if (i === winningIndex) return winningItem; // if hitLuckyStar, this is the trigger item
       const rand = Math.floor(Math.random() * safeFillerPool.length);
@@ -2039,126 +2055,126 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
     requireAuth(req as AuthRequest, res, async () => {
       requireNotFrozen(req as AuthRequest, res, async () => {
         const userId = (req as AuthRequest).userId!;
-        const isBorrow = req.body.borrow === true;
+      const isBorrow = req.body.borrow === true;
 
-        try {
-          const result = await withUserLock(userId, async () => {
-            return await prisma.$transaction(async (tx) => {
-              const user = await tx.user.findUnique({ where: { id: userId } });
-              if (!user) throw new Error('User not found');
+      try {
+        const result = await withUserLock(userId, async () => {
+          return await prisma.$transaction(async (tx) => {
+            const user = await tx.user.findUnique({ where: { id: userId } });
+            if (!user) throw new Error('User not found');
 
-              let settings = await tx.siteSettings.findUnique({ where: { id: 1 } });
-              if (!settings) {
-                settings = await tx.siteSettings.create({ data: { id: 1 } });
+            let settings = await tx.siteSettings.findUnique({ where: { id: 1 } });
+            if (!settings) {
+              settings = await tx.siteSettings.create({ data: { id: 1 } });
+            }
+            const siteMaxBorrow = settings.maxBorrowLimit ?? 100000;
+
+            if (isBorrow) {
+              if (!settings.borrowEnabled) {
+                throw new Error('Case borrowing is currently disabled by administrator.');
               }
-              const siteMaxBorrow = settings.maxBorrowLimit ?? 100000;
+              const userCreditLimit = calculateUserBorrowLimit(user, siteMaxBorrow);
 
-              if (isBorrow) {
-                if (!settings.borrowEnabled) {
-                  throw new Error('Case borrowing is currently disabled by administrator.');
-                }
-                const userCreditLimit = calculateUserBorrowLimit(user, siteMaxBorrow);
-
-                if (user.debt + selectedCase.price > userCreditLimit) {
-                  const remaining = Math.max(0, userCreditLimit - user.debt);
-                  throw new Error(`Credit limit reached! Your current credit limit is ${(userCreditLimit / 100).toFixed(0)} DLs (increases as you play & wager). You currently owe ${(user.debt / 100).toFixed(2)} DLs (Available credit: ${(remaining / 100).toFixed(2)} DLs).`);
-                }
-              } else {
-                if (user.mockBalance < selectedCase.price) throw new Error('Insufficient balance');
+              if (user.debt + selectedCase.price > userCreditLimit) {
+                const remaining = Math.max(0, userCreditLimit - user.debt);
+                throw new Error(`Credit limit reached! Your current credit limit is ${(userCreditLimit / 100).toFixed(0)} DLs (increases as you play & wager). You currently owe ${(user.debt / 100).toFixed(2)} DLs (Available credit: ${(remaining / 100).toFixed(2)} DLs).`);
               }
+            } else {
+              if (user.mockBalance < selectedCase.price) throw new Error('Insufficient balance');
+            }
 
-              // Calculate XP and Rakeback (Loans do NOT award rakeback)
-              const newXp = user.xp + selectedCase.price;
-              const newLevel = calculateLevel(newXp);
-              const rakebackAmount = isBorrow ? 0 : Math.floor(selectedCase.price * getVIPRakebackPercentage(user.totalWagered));
+            // Calculate XP and Rakeback (Loans do NOT award rakeback)
+            const newXp = user.xp + selectedCase.price;
+            const newLevel = calculateLevel(newXp);
+            const rakebackAmount = isBorrow ? 0 : Math.floor(selectedCase.price * getVIPRakebackPercentage(user.totalWagered));
 
-              // Create the item in inventory
-              const createdItem = await tx.userItem.create({
-                data: {
-                  userId,
-                  name: finalWonItem.name,
-                  value: finalWonItem.value,
-                  color: finalWonItem.color,
-                  imageUrl: finalWonItem.imageUrl,
-                  status: 'inventory',
-                  isBorrowed: isBorrow,
-                  borrowPrice: isBorrow ? selectedCase.price : 0
-                }
-              });
-
-              const userUpdateData: any = {
-                xp: newXp,
-                level: newLevel,
-                totalWagered: { increment: selectedCase.price }, /* POT_HOOK:selectedCase.price */
-                rakebackBalance: { increment: rakebackAmount }
-              };
-
-              if (isBorrow) {
-                const interest = Math.floor(selectedCase.price * 0.1);
-                userUpdateData.debt = { increment: selectedCase.price + interest };
-                if (user.debt === 0) { userUpdateData.debtCreatedAt = new Date(); }
-                await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: interest } } });
-              } else {
-                userUpdateData.mockBalance = { decrement: selectedCase.price };
-                const potCut = Math.floor(selectedCase.price * 0.05);
-                if (potCut > 0) {
-                  await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
-                }
+            // Create the item in inventory
+            const createdItem = await tx.userItem.create({
+              data: {
+                userId,
+                name: finalWonItem.name,
+                value: finalWonItem.value,
+                color: finalWonItem.color,
+                imageUrl: finalWonItem.imageUrl,
+                status: 'inventory',
+                isBorrowed: isBorrow,
+                borrowPrice: isBorrow ? selectedCase.price : 0
               }
-
-              const updatedUser = await tx.user.update({
-                where: { id: userId },
-                data: userUpdateData
-              });
-
-              await tx.transaction.create({
-                data: {
-                  userId,
-                  amount: selectedCase.price,
-                  gameType: isBorrow ? 'case_borrow' : 'case_open',
-                  result: isBorrow ? 'borrowed' : 'wager'
-                },
-              });
-
-              if (winningItem.value >= 10000) {
-                await tx.chatMessage.create({
-                  data: {
-                    userId,
-                    content: `🎁 Just unboxed a ${winningItem.name} ($${(winningItem.value / 100).toFixed(2)}) from ${selectedCase.name}${isBorrow ? ' (Borrowed)' : ''}!`
-                  }
-                });
-              }
-
-              return {
-                winningItem: finalWonItem,
-                hitLuckyStar,
-                strip,
-                winningIndex,
-                updatedUser: {
-                  ...updatedUser,
-                  borrowLimit: calculateUserBorrowLimit(updatedUser, siteMaxBorrow)
-                },
-                createdItem,
-                isDemo: false,
-                isBorrow
-              };
             });
+
+            const userUpdateData: any = {
+              xp: newXp,
+              level: newLevel,
+              totalWagered: { increment: selectedCase.price }, /* POT_HOOK:selectedCase.price */
+              rakebackBalance: { increment: rakebackAmount }
+            };
+
+            if (isBorrow) {
+              const interest = Math.floor(selectedCase.price * 0.1);
+              userUpdateData.debt = { increment: selectedCase.price + interest };
+              if (user.debt === 0) { userUpdateData.debtCreatedAt = new Date(); }
+              await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: interest } } });
+            } else {
+              userUpdateData.mockBalance = { decrement: selectedCase.price };
+              const potCut = Math.floor(selectedCase.price * 0.05);
+              if (potCut > 0) {
+                await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
+              }
+            }
+
+            const updatedUser = await tx.user.update({
+              where: { id: userId },
+              data: userUpdateData
+            });
+
+            await tx.transaction.create({
+              data: {
+                userId,
+                amount: selectedCase.price,
+                gameType: isBorrow ? 'case_borrow' : 'case_open',
+                result: isBorrow ? 'borrowed' : 'wager'
+              },
+            });
+
+            if (winningItem.value >= 10000) {
+              await tx.chatMessage.create({
+                data: {
+                  userId,
+                  content: `🎁 Just unboxed a ${winningItem.name} ($${(winningItem.value / 100).toFixed(2)}) from ${selectedCase.name}${isBorrow ? ' (Borrowed)' : ''}!`
+                }
+              });
+            }
+
+            return {
+              winningItem: finalWonItem,
+              hitLuckyStar,
+              strip,
+              winningIndex,
+              updatedUser: {
+                ...updatedUser,
+                borrowLimit: calculateUserBorrowLimit(updatedUser, siteMaxBorrow)
+              },
+              createdItem,
+              isDemo: false,
+              isBorrow
+            };
           });
+        });
 
-          if (!result.isDemo && !result.isBorrow) {
-            emitLiveBet(io, {
-              user: result.updatedUser.username,
-              game: `Case (${selectedCase.name})`,
-              betAmount: selectedCase.price,
-              multiplier: result.winningItem.value / selectedCase.price,
-              profit: result.winningItem.value - selectedCase.price
-            });
-          }
-
-          res.json(result);
-        } catch (txErr: any) {
-          res.status(400).json({ error: txErr.message });
+        if (!result.isDemo && !result.isBorrow) {
+          emitLiveBet(io, { 
+            user: result.updatedUser.username, 
+            game: `Case (${selectedCase.name})`, 
+            betAmount: selectedCase.price, 
+            multiplier: result.winningItem.value / selectedCase.price, 
+            profit: result.winningItem.value - selectedCase.price 
+          });
         }
+
+        res.json(result);
+      } catch (txErr: any) {
+        res.status(400).json({ error: txErr.message });
+      }
       });
     });
 
@@ -2268,7 +2284,7 @@ app.post('/api/inventory/sell', requireAuth, async (req: AuthRequest, res: Respo
         if (totalPayout > 0) {
           userUpdate.mockBalance = { increment: totalPayout };
         }
-        if (totalDebtCleared > 0) {
+                if (totalDebtCleared > 0) {
           userUpdate.debt = { decrement: totalDebtCleared };
           const currentUser = await tx.user.findUnique({ where: { id: userId } });
           if (currentUser && currentUser.debt <= totalDebtCleared) {
@@ -2518,7 +2534,7 @@ app.post('/api/battles/call-bots', requireAuth, requireNotFrozen, async (req: Au
     const result = await prisma.$transaction(async (tx) => {
       const battle = await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
       if (!battle || battle.status !== 'waiting') throw new Error('Battle not available');
-
+      
       const availableSpots = battle.targetPlayerCount - battle.participants.length;
       if (botCount > availableSpots) throw new Error('Cannot add that many bots');
 
@@ -2535,7 +2551,7 @@ app.post('/api/battles/call-bots', requireAuth, requireNotFrozen, async (req: Au
 
       return await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
     });
-
+    
     io.emit('battle_updated', result);
     res.json(result);
   } catch (error: any) {
@@ -2597,7 +2613,7 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         const roundRolls = [];
         for (const p of battle.participants) {
           const totalWeight = primaryPool.reduce((acc, item) => acc + item.weight, 0);
-
+          
           let pfFloat = Math.random();
           if (!p.userId.startsWith('bot-')) {
             const pfRes = await generateProvablyFairFloat(tx, parseInt(p.userId));
@@ -2621,7 +2637,7 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
             hitLuckyStar = true;
             const safeLsPool = luckyStarPool.length > 0 ? luckyStarPool : c.items;
             const lsTotalWeight = safeLsPool.reduce((acc: number, item: any) => acc + item.weight, 0);
-
+            
             let lsPfFloat = Math.random();
             if (!p.userId.startsWith('bot-')) {
               const lsPfRes = await generateProvablyFairFloat(tx, parseInt(p.userId));
@@ -2642,12 +2658,12 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
           participantStats[p.id].lastPull = finalWonItem.value;
           totalPotValue += finalWonItem.value;
 
-          roundRolls.push({
-            participantId: p.id,
-            userId: p.userId,
-            item: winningItem,
-            hitLuckyStar,
-            actualWinItem: hitLuckyStar ? finalWonItem : undefined
+          roundRolls.push({ 
+            participantId: p.id, 
+            userId: p.userId, 
+            item: winningItem, 
+            hitLuckyStar, 
+            actualWinItem: hitLuckyStar ? finalWonItem : undefined 
           });
         }
         console.log("ROUND ROLLS: ", JSON.stringify(roundRolls, null, 2));
@@ -2737,12 +2753,12 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
     if (!result.winnerId.startsWith('bot-')) {
       const winnerUser = await prisma.user.findUnique({ where: { id: parseInt(result.winnerId) } });
       if (winnerUser) {
-        emitLiveBet(io, {
-          user: winnerUser.username,
-          game: 'Case Battle',
-          betAmount: result.entryFee,
-          multiplier: result.totalPotValue / (result.entryFee || 1),
-          profit: result.totalPotValue - result.entryFee
+        emitLiveBet(io, { 
+          user: winnerUser.username, 
+          game: 'Case Battle', 
+          betAmount: result.entryFee, 
+          multiplier: result.totalPotValue / (result.entryFee || 1), 
+          profit: result.totalPotValue - result.entryFee 
         });
       }
     }
@@ -2905,7 +2921,7 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
     // Download image
     const imageFilename = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
     const imagePath = path.join(__dirname, '../frontend/public/items', imageFilename);
-
+    
     // Ensure dir exists
     fs.mkdirSync(path.join(__dirname, '../frontend/public/items'), { recursive: true });
 
@@ -2944,7 +2960,7 @@ app.delete('/api/admin/items/:id', requireAuth, requireAdmin, async (req: AuthRe
     try {
       const imagePath = path.join(__dirname, '../frontend/public', item.imageUrl);
       if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-    } catch (e) { }
+    } catch (e) {}
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete' });
@@ -3381,7 +3397,7 @@ app.post('/api/admin/withdrawals/:id/approve', requireAuth, requireAdmin, async 
   try {
     const reqId = parseInt(String(req.params.id));
     const request = await prisma.withdrawalRequest.findUnique({ where: { id: reqId } });
-
+    
     if (!request) return res.status(404).json({ error: "Withdrawal not found" });
     if (request.status !== "pending") return res.status(400).json({ error: "Request is not pending" });
 
@@ -3401,7 +3417,7 @@ app.post('/api/admin/withdrawals/:id/reject', requireAuth, requireAdmin, async (
   try {
     const reqId = parseInt(String(req.params.id));
     const request = await prisma.withdrawalRequest.findUnique({ where: { id: reqId } });
-
+    
     if (!request) return res.status(404).json({ error: "Withdrawal not found" });
     if (request.status !== "pending") return res.status(400).json({ error: "Request is not pending" });
 
@@ -4272,7 +4288,7 @@ setInterval(async () => {
     if (recentMessages.length === 0) return;
 
     const totalRainAmount = 1000 * Math.floor(Math.random() * 5 + 1); // 1,000 to 5,000 cents (10 to 50 DLs)
-
+    
     // Trigger the automated rain drop via the bot system
     try {
       await triggerRain(totalRainAmount);
@@ -4294,11 +4310,11 @@ export let globalBridgeState: any = null;
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
-
+  
   socket.on('bridge_state', (state) => {
     globalBridgeState = state;
   });
-
+  
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.id}`);
   });
