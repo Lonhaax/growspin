@@ -3409,7 +3409,7 @@ app.get('/api/admin/bot', requireAuth, requireAdmin, async (req: Request, res: R
 
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = parseInt(req.params.id);
+    const userId = parseInt(String(req.params.id));
     const transactions = await prisma.transaction.findMany({
       where: { userId },
       orderBy: { timestamp: 'desc' },
