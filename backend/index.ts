@@ -701,7 +701,8 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       }
     });
 
-    const btcpayRes = await axios.post(`${BTCPAY_URL}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`, {
+    const cleanBtcPayUrl = BTCPAY_URL.replace(/\/$/, '');
+    const btcpayRes = await axios.post(`${cleanBtcPayUrl}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`, {
       amount: amountUSD,
       currency: 'USD',
       metadata: {
@@ -721,8 +722,9 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
 
     res.json({ success: true, invoice: btcpayRes.data, internalInvoiceId: invoice.id, checkoutLink: btcpayRes.data.checkoutLink });
   } catch (err: any) {
-    console.error('Crypto Request Error:', err?.response?.data || err.message);
-    res.status(500).json({ error: 'Failed to generate crypto invoice' });
+    const errorDetail = err?.response?.data || err.message;
+    console.error('Crypto Request Error:', errorDetail);
+    res.status(500).json({ error: 'Failed to generate crypto invoice: ' + JSON.stringify(errorDetail) });
   }
 });
 
