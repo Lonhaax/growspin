@@ -35,10 +35,10 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
-const BTCPAY_URL = process.env.BTCPAY_URL || 'https://btcpay.yourdomain.com';
-const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || 'your_store_id';
-const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || 'your_api_key';
-const BTCPAY_WEBHOOK_SECRET = process.env.BTCPAY_WEBHOOK_SECRET || 'your_webhook_secret';
+const BTCPAY_URL = process.env.BTCPAY_URL || 'https://btc.growspin.lol';
+const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || 'EsgFa2ZtpqtA9jWMKRUGHx3w28KZJQ9y3TDhuBMsghSz';
+const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || '05f50709bf71547a9927d0640e260689e0e45cc1';
+const BTCPAY_WEBHOOK_SECRET = process.env.BTCPAY_WEBHOOK_SECRET || '4PPfRQaTcB6FC8Y5SNCjs9dFtQEX';
 const recentLiveBets = [];
 const highRollerBets = [];
 const luckyWins = [];
@@ -644,25 +644,17 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
                 dlsCredited
             }
         });
-        const cleanBtcPayUrl = BTCPAY_URL.replace(/\/$/, '');
-        const btcpayRes = await axios_1.default.post(`${cleanBtcPayUrl}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`, {
-            amount: amountUSD,
+        const cleanBitcartUrl = BTCPAY_URL.replace(/\/$/, ''); // re-using the BTCPAY_URL variable for Bitcart
+        const bitcartRes = await axios_1.default.post(`${cleanBitcartUrl}/api/invoices`, {
+            price: amountUSD,
+            store_id: BTCPAY_STORE_ID,
+            order_id: paymentId,
             currency: 'USD',
-            metadata: {
-                orderId: paymentId,
-                itemDesc: `GrowSpin DL Deposit (${dlsCredited / 100} DLs)`,
-            },
-            checkout: {
-                paymentMethods: [payCurrency.toUpperCase()],
-                redirectURL: `${FRONTEND_URL}/profile`,
-            }
-        }, {
-            headers: {
-                'Authorization': `token ${BTCPAY_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
+            notification_url: `${FRONTEND_URL}/api/deposit/crypto/ipn`,
+            redirect_url: `${FRONTEND_URL}/profile`
         });
-        res.json({ success: true, invoice: btcpayRes.data, internalInvoiceId: invoice.id, checkoutLink: btcpayRes.data.checkoutLink });
+        const checkoutLink = `${cleanBitcartUrl}/i/${bitcartRes.data.id}`;
+        res.json({ success: true, invoice: bitcartRes.data, internalInvoiceId: invoice.id, checkoutLink });
     }
     catch (err) {
         const errorDetail = err?.response?.data || err.message;
@@ -670,42 +662,34 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
         res.status(500).json({ error: 'Failed to generate crypto invoice: ' + JSON.stringify(errorDetail) });
     }
 });
-app.post('/api/deposit/crypto/ipn', express_1.default.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/deposit/crypto/ipn', express_1.default.json(), async (req, res) => {
     try {
-        const signature = req.headers['btcpay-sig'];
-        if (!signature)
-            return res.status(400).json({ error: 'Missing signature' });
-        // BTCPay sends signature as "sha256=..."
-        const expectedSig = 'sha256=' + crypto_1.default.createHmac('sha256', BTCPAY_WEBHOOK_SECRET).update(req.body).digest('hex');
-        if (crypto_1.default.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig)) === false) {
-            return res.status(401).json({ error: 'Invalid signature' });
-        }
-        const payload = JSON.parse(req.body.toString());
-        const { type, invoiceId, metadata } = payload;
-        const order_id = metadata?.orderId;
+        const data = req.body;
+        const order_id = data.order_id;
         if (!order_id)
-            return res.status(200).send('OK');
+            return res.status(200).send('Ignored');
         const invoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
         if (!invoice)
             return res.status(404).json({ error: 'Invoice not found' });
-        if (type === 'InvoiceSettled' && invoice.status !== 'finished') {
-            await (0, mutex_1.withUserLock)(invoice.userId, async () => {
-                // Recheck status
-                const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
-                if (freshInvoice?.status === 'finished')
-                    return;
-                await prisma.cryptoInvoice.update({
-                    where: { paymentId: order_id },
-                    data: { status: 'finished' }
+        if (data.status === 'complete' || data.status === 'confirmed') {
+            if (invoice.status !== 'finished') {
+                await (0, mutex_1.withUserLock)(invoice.userId, async () => {
+                    const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
+                    if (freshInvoice?.status === 'finished')
+                        return;
+                    await prisma.cryptoInvoice.update({
+                        where: { paymentId: order_id },
+                        data: { status: 'finished' }
+                    });
+                    await prisma.user.update({
+                        where: { id: invoice.userId },
+                        data: { mockBalance: { increment: invoice.dlsCredited } }
+                    });
                 });
-                await prisma.user.update({
-                    where: { id: invoice.userId },
-                    data: { mockBalance: { increment: invoice.dlsCredited } }
-                });
-            });
-            io.to(`user-${invoice.userId}`).emit('crypto_deposit_success', { amount: invoice.dlsCredited });
+                io.to(`user-${invoice.userId}`).emit('crypto_deposit_success', { amount: invoice.dlsCredited });
+            }
         }
-        else if (type === 'InvoiceExpired' || type === 'InvoiceInvalid') {
+        else if (data.status === 'invalid' || data.status === 'expired') {
             await prisma.cryptoInvoice.update({
                 where: { paymentId: order_id },
                 data: { status: 'failed' }
