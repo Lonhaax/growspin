@@ -30,8 +30,10 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_dev';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || null;
-const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || 'your_api_key_here';
-const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || 'your_ipn_secret_here';
+const BTCPAY_URL = process.env.BTCPAY_URL || 'https://btcpay.yourdomain.com';
+const BTCPAY_STORE_ID = process.env.BTCPAY_STORE_ID || 'your_store_id';
+const BTCPAY_API_KEY = process.env.BTCPAY_API_KEY || 'your_api_key';
+const BTCPAY_WEBHOOK_SECRET = process.env.BTCPAY_WEBHOOK_SECRET || 'your_webhook_secret';
 
 const recentLiveBets: any[] = [];
 const highRollerBets: any[] = [];
@@ -682,7 +684,7 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
   try {
     const { amountUSD, payCurrency } = req.body;
     if (!amountUSD || amountUSD < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
-    if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required (e.g. ltc, btc)' });
+    if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required' });
 
     // 100 DLs = 2.6 USD (1 USD = ~38.46 DLs)
     const dlsCredited = Math.floor((amountUSD / 2.6) * 10000);
@@ -699,42 +701,51 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       }
     });
 
-    const npRes = await axios.post('https://api.nowpayments.io/v1/payment', {
-      price_amount: amountUSD,
-      price_currency: 'usd',
-      pay_currency: payCurrency.toLowerCase(),
-      ipn_callback_url: `${FRONTEND_URL}/api/crypto/ipn`, // We map /api in Caddy
-      order_id: paymentId,
-      order_description: `GrowSpin DL Deposit`
+    const btcpayRes = await axios.post(`${BTCPAY_URL}/api/v1/stores/${BTCPAY_STORE_ID}/invoices`, {
+      amount: amountUSD,
+      currency: 'USD',
+      metadata: {
+        orderId: paymentId,
+        itemDesc: `GrowSpin DL Deposit (${dlsCredited / 100} DLs)`,
+      },
+      checkout: {
+        paymentMethods: [payCurrency.toUpperCase()],
+        redirectURL: `${FRONTEND_URL}/profile`,
+      }
     }, {
-      headers: { 'x-api-key': NOWPAYMENTS_API_KEY }
+      headers: { 
+        'Authorization': `token ${BTCPAY_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    res.json({ success: true, invoice: npRes.data, internalInvoiceId: invoice.id });
+    res.json({ success: true, invoice: btcpayRes.data, internalInvoiceId: invoice.id, checkoutLink: btcpayRes.data.checkoutLink });
   } catch (err: any) {
     console.error('Crypto Request Error:', err?.response?.data || err.message);
     res.status(500).json({ error: 'Failed to generate crypto invoice' });
   }
 });
 
-app.post('/api/deposit/crypto/ipn', async (req: Request, res: Response) => {
+app.post('/api/deposit/crypto/ipn', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
   try {
-    const signature = req.headers['x-nowpayments-sig'] as string;
+    const signature = req.headers['btcpay-sig'] as string;
     if (!signature) return res.status(400).json({ error: 'Missing signature' });
 
-    // Verify HMAC signature
-    const hmac = crypto.createHmac('sha512', NOWPAYMENTS_IPN_SECRET);
-    hmac.update(JSON.stringify(req.body));
-    if (hmac.digest('hex') !== signature) {
+    // BTCPay sends signature as "sha256=..."
+    const expectedSig = 'sha256=' + crypto.createHmac('sha256', BTCPAY_WEBHOOK_SECRET).update(req.body).digest('hex');
+    if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig)) === false) {
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    const { payment_status, order_id, actually_paid } = req.body;
+    const payload = JSON.parse(req.body.toString());
+    const { type, invoiceId, metadata } = payload;
+    const order_id = metadata?.orderId;
+    if (!order_id) return res.status(200).send('OK');
 
     const invoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-    if (payment_status === 'finished' && invoice.status !== 'finished') {
+    if (type === 'InvoiceSettled' && invoice.status !== 'finished') {
       await withUserLock(invoice.userId, async () => {
         // Recheck status
         const freshInvoice = await prisma.cryptoInvoice.findUnique({ where: { paymentId: order_id } });
@@ -750,7 +761,8 @@ app.post('/api/deposit/crypto/ipn', async (req: Request, res: Response) => {
           data: { mockBalance: { increment: invoice.dlsCredited } }
         });
       });
-    } else if (payment_status === 'failed' || payment_status === 'expired') {
+      io.to(`user-${invoice.userId}`).emit('crypto_deposit_success', { amount: invoice.dlsCredited });
+    } else if (type === 'InvoiceExpired' || type === 'InvoiceInvalid') {
       await prisma.cryptoInvoice.update({
         where: { paymentId: order_id },
         data: { status: 'failed' }
@@ -760,7 +772,7 @@ app.post('/api/deposit/crypto/ipn', async (req: Request, res: Response) => {
     res.json({ ok: true });
   } catch (err: any) {
     console.error('Crypto IPN Error:', err);
-    res.status(500).json({ error: 'Internal error' });
+    res.status(500).json({ error: 'Internal error processing IPN' });
   }
 });
 

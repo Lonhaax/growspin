@@ -164,15 +164,8 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
         body: JSON.stringify({ amountUSD: cryptoAmount, payCurrency: cryptoCurrency })
       });
       const data = await res.json();
-      if (data.success) {
-        setInvoice({
-          internalInvoiceId: data.internalInvoiceId,
-          payment_id: data.invoice.payment_id,
-          pay_address: data.invoice.pay_address,
-          pay_amount: data.invoice.pay_amount,
-          pay_currency: data.invoice.pay_currency,
-          status: 'waiting'
-        });
+      if (data.success && data.checkoutLink) {
+        window.location.href = data.checkoutLink;
       } else {
         setError(data.error || 'Failed to generate crypto invoice');
       }
@@ -420,33 +413,6 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     exit={{ opacity: 0, x: 20 }}
                     className="space-y-6"
                   >
-                    {invoice ? (
-                      <div className="space-y-4">
-                        <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5 text-center">
-                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">Send EXACTLY</p>
-                          <div className="inline-flex items-center gap-2 bg-[#0c0e14] px-6 py-3 rounded-xl border border-white/5">
-                            <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">{invoice.pay_amount}</span>
-                            <span className="text-xl font-bold text-white/50 uppercase">{invoice.pay_currency}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5">
-                          <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2 text-center">To Address</p>
-                          <div className="flex items-center gap-3 bg-[#0c0e14] p-4 rounded-xl border border-white/5 group hover:border-emerald-500/30 transition-colors cursor-pointer" onClick={() => copyToClipboard(invoice.pay_address)}>
-                            <p className="text-sm font-mono text-white/80 break-all flex-1">{invoice.pay_address}</p>
-                            <div className="p-2 bg-[#1e2333] group-hover:bg-emerald-500/20 rounded-lg text-[#7a819c] group-hover:text-emerald-400 transition-colors shrink-0">
-                              {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
-                          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-3" />
-                          <p className="text-emerald-300 font-medium text-sm">Awaiting blockchain confirmations...</p>
-                          <p className="text-[#7a819c] text-xs mt-1 text-center">Do not close this window until the deposit completes.</p>
-                        </div>
-                      </div>
-                    ) : (
                       <div className="space-y-6">
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
@@ -498,11 +464,10 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                           disabled={cryptoAmount < 1 || loading}
                           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-[#00c566] hover:from-[#00c566] hover:to-emerald-400 disabled:opacity-50 disabled:grayscale text-black rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:shadow-[0_0_30px_rgba(0,230,118,0.5)] active:scale-[0.98]"
                         >
-                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Proceed to Payment'}
+                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Proceed to Checkout'}
                           {!loading && <ArrowRight size={20} />}
                         </button>
                       </div>
-                    )}
                   </motion.div>
                 )}
 
