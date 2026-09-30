@@ -707,9 +707,13 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       payAmount = amountUSD;
     } else {
       const symbol = `${cryptoKey}USDT`;
-      const priceRes = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-      const rate = parseFloat(priceRes.data.price);
-      payAmount = Number((amountUSD / rate).toFixed(8));
+      try {
+        const priceRes = await axios.get(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`, { timeout: 3000 });
+        const rate = parseFloat(priceRes.data.price);
+        payAmount = Number((amountUSD / rate).toFixed(8));
+      } catch (priceErr: any) {
+        throw new Error(`Failed to fetch live price for ${symbol} from Binance: ${priceErr.message}`);
+      }
     }
 
     // 2. Derive Address from XPUB

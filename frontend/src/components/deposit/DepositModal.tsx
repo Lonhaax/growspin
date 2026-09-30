@@ -174,7 +174,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
           status: 'waiting'
         });
       } else {
-        setError(data.error || 'Failed to generate deposit address');
+        setError(data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to generate deposit address'));
       }
     } catch (e) {
       setError('Network error. Please try again.');
