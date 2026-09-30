@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const POLL_INTERVAL = 30000; // 30 seconds
 
 // ETH RPC provider
-const ethProvider = new ethers.JsonRpcProvider('https://cloudflare-eth.com');
+const ethProvider = new ethers.JsonRpcProvider('https://ethereum-rpc.publicnode.com');
 const USDT_CONTRACT_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7';
 const usdtAbi = ['function balanceOf(address) view returns (uint256)'];
 const usdtContract = new ethers.Contract(USDT_CONTRACT_ADDRESS, usdtAbi, ethProvider);
