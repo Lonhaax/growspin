@@ -62,9 +62,9 @@ export function startCryptoWatcher() {
                     }
                     else if (invoice.payCurrency === 'ETH') {
                         const balances = await Promise.all(
-                            evmProviders.map(provider => provider.getBalance(invoice.address).catch(() => 0n))
+                            evmProviders.map(provider => provider.getBalance(invoice.address!).catch(() => BigInt(0)))
                         );
-                        const totalEth = balances.reduce((acc, bal) => acc + bal, 0n);
+                        const totalEth = balances.reduce((acc, bal) => acc + bal, BigInt(0));
                         totalReceived = Number(ethers.formatEther(totalEth));
                     }
                     else if (invoice.payCurrency === 'USDT') {
@@ -72,7 +72,7 @@ export function startCryptoWatcher() {
                             USDT_CONTRACTS.map(async (c) => {
                                 try {
                                     const contract = new ethers.Contract(c.address, usdtAbi, c.provider);
-                                    const bal = await contract.balanceOf(invoice.address);
+                                    const bal = await contract.balanceOf(invoice.address!);
                                     return Number(ethers.formatUnits(bal, c.decimals));
                                 } catch (e) {
                                     return 0;
