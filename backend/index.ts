@@ -759,7 +759,7 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
     res.json({ success: true, invoice, internalInvoiceId: invoice.id, address: depositAddress, payAmount });
   } catch (err: any) {
     console.error('Crypto Request Error:', err);
-    res.status(500).json({ error: 'Failed to generate crypto invoice' });
+    res.status(500).json({ error: 'Failed to generate crypto invoice', details: err.message || err.toString() });
   }
 });
 
