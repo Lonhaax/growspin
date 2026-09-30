@@ -51,7 +51,6 @@ export function startCryptoWatcher() {
                         totalReceived = Number(ethers.formatUnits(balance, 6)); // USDT has 6 decimals
                     }
 
-                    // Check if received amount is at least 99% of expected (handles slight rounding)
                     if (totalReceived >= invoice.payAmount * 0.99) {
                         console.log(`[CRYPTO WATCHER] Payment received for Invoice ${invoice.id}: ${totalReceived} ${invoice.payCurrency}`);
 
@@ -72,6 +71,8 @@ export function startCryptoWatcher() {
                                 console.log(`[CRYPTO WATCHER] Credited ${invoice.dlsCredited} DLs to User ${invoice.userId}`);
                             }
                         });
+                    } else if (totalReceived > 0) {
+                        console.log(`[CRYPTO WATCHER] Invoice ${invoice.id} received ${totalReceived} ${invoice.payCurrency}, but needs ${invoice.payAmount}`);
                     }
                 } catch (invoiceErr: any) {
                     console.error(`[CRYPTO WATCHER] Error checking invoice ${invoice.id}:`, invoiceErr.message);
