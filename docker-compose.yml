@@ -32,6 +32,8 @@ services:
       - BTCPAY_STORE_ID=EsgFa2ZtpqtA9jWMKRUGHx3w28KZJQ9y3TDhuBMsghSz
       - BTCPAY_API_KEY=05f50709bf71547a9927d0640e260689e0e45cc1
       - BTCPAY_WEBHOOK_SECRET=4PPfRQaTcB6FC8Y5SNCjs9dFtQEX
+      - ETH_XPUB=xpub6FXScknCixVdwxjYcpBHtaLCYenZ713dyXHZfA71FJHD5bXaZDYfPLRditeo8w4UvmuNkKXDvKayFC8TSvbteMvS1q3eKspYRT4We1C5rmP
+      - BTC_XPUB=xpub6C4awWiWrNXcJs9oRMCxRT8eAPbaQnXFMz3QWdkkQhMVauyUDT3iNc4FyMRNPrcx9Qq3cnbMEzJftze5XbgdaDwriZond98p47UNWC8oR7E
       - NODE_ENV=production
       - FRONTEND_URL=https://growspin.lol
     depends_on:
