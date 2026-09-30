@@ -51,28 +51,36 @@ export function startCryptoWatcher() {
                         totalReceived = Number(ethers.formatUnits(balance, 6)); // USDT has 6 decimals
                     }
 
-                    if (totalReceived >= invoice.payAmount * 0.99) {
-                        console.log(`[CRYPTO WATCHER] Payment received for Invoice ${invoice.id}: ${totalReceived} ${invoice.payCurrency}`);
+                    if (totalReceived > 0) {
+                        const ratio = totalReceived / invoice.payAmount;
+                        const dlsToCredit = Math.floor(invoice.dlsCredited * ratio);
 
-                        await prisma.$transaction(async (db) => {
-                            // Ensure it's still waiting to prevent double credit
-                            const current = await db.cryptoInvoice.findUnique({ where: { id: invoice.id } });
-                            if (current?.status === 'waiting') {
-                                await db.cryptoInvoice.update({
-                                    where: { id: invoice.id },
-                                    data: { status: 'finished' }
-                                });
+                        if (dlsToCredit > 0) {
+                            console.log(`[CRYPTO WATCHER] Payment received for Invoice ${invoice.id}: ${totalReceived} ${invoice.payCurrency} (Ratio: ${ratio.toFixed(2)})`);
 
-                                await db.user.update({
-                                    where: { id: invoice.userId },
-                                    data: { mockBalance: { increment: invoice.dlsCredited } }
-                                });
-                                
-                                console.log(`[CRYPTO WATCHER] Credited ${invoice.dlsCredited} DLs to User ${invoice.userId}`);
-                            }
-                        });
-                    } else if (totalReceived > 0) {
-                        console.log(`[CRYPTO WATCHER] Invoice ${invoice.id} received ${totalReceived} ${invoice.payCurrency}, but needs ${invoice.payAmount}`);
+                            await prisma.$transaction(async (db) => {
+                                const current = await db.cryptoInvoice.findUnique({ where: { id: invoice.id } });
+                                if (current?.status === 'waiting') {
+                                    await db.cryptoInvoice.update({
+                                        where: { id: invoice.id },
+                                        data: { 
+                                            status: 'finished',
+                                            // Optionally, you could update dlsCredited here to reflect the actual amount
+                                            dlsCredited: dlsToCredit 
+                                        }
+                                    });
+
+                                    await db.user.update({
+                                        where: { id: invoice.userId },
+                                        data: { mockBalance: { increment: dlsToCredit } }
+                                    });
+                                    
+                                    console.log(`[CRYPTO WATCHER] Credited ${dlsToCredit} DLs to User ${invoice.userId} (Partial/Full Payment)`);
+                                }
+                            });
+                        } else {
+                            console.log(`[CRYPTO WATCHER] Invoice ${invoice.id} received dust (${totalReceived} ${invoice.payCurrency}), not enough to credit 1 DL.`);
+                        }
                     }
                 } catch (invoiceErr: any) {
                     console.error(`[CRYPTO WATCHER] Error checking invoice ${invoice.id}:`, invoiceErr.message);
