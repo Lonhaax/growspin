@@ -724,16 +724,23 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       const xpub = process.env.BTC_XPUB;
       if (!xpub) throw new Error("BTC_XPUB not set in .env");
       
-      const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : undefined;
+      const ltcNetwork = {
+        messagePrefix: '\x19Litecoin Signed Message:\n',
+        bech32: 'ltc',
+        bip32: { public: 0x019da462, private: 0x019d9cfe },
+        pubKeyHash: 0x30,
+        scriptHash: 0x32,
+        wif: 0xb0,
+      };
+      const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : ltcNetwork;
       try {
-        const node = bip32Instance.fromBase58(xpub, network);
-        // We already derived m/84'/0'/0' when generating the xpub, so just derive the child /0/userId
+        const node = bip32Instance.fromBase58(xpub, bitcoin.networks.bitcoin); // xpub is a BTC xpub, so parse it as BTC
         const child = node.derive(0).derive(userId);
         const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network });
         depositAddress = address!;
       } catch (e) {
-        console.error("BTC Derivation error:", e);
-        depositAddress = `bc1q_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
+        console.error("LTC/BTC Derivation error:", e);
+        depositAddress = `${cryptoKey === 'BTC' ? 'bc1q' : 'ltc1q'}_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
       }
     } else if (cryptoKey === 'ETH' || cryptoKey === 'USDT') {
       const ethXpub = process.env.ETH_XPUB;
