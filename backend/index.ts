@@ -717,7 +717,19 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       }
     }
 
-    // 2. Derive Address from XPUB
+    // 2. Create Placeholder Invoice to get unique ID
+    const invoice = await prisma.cryptoInvoice.create({
+      data: {
+        userId,
+        paymentId,
+        payAmount,
+        payCurrency: cryptoKey,
+        address: '', // Placeholder
+        dlsCredited
+      }
+    });
+
+    // 3. Derive Unique Address using invoice.id
     let depositAddress = '';
     
     if (cryptoKey === 'BTC' || cryptoKey === 'LTC') {
@@ -734,13 +746,13 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       };
       const network = cryptoKey === 'BTC' ? bitcoin.networks.bitcoin : ltcNetwork;
       try {
-        const node = bip32Instance.fromBase58(xpub, bitcoin.networks.bitcoin); // xpub is a BTC xpub, so parse it as BTC
-        const child = node.derive(0).derive(userId);
+        const node = bip32Instance.fromBase58(xpub, bitcoin.networks.bitcoin);
+        const child = node.derive(0).derive(invoice.id);
         const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network });
         depositAddress = address!;
       } catch (e) {
         console.error("LTC/BTC Derivation error:", e);
-        depositAddress = `${cryptoKey === 'BTC' ? 'bc1q' : 'ltc1q'}_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
+        depositAddress = `${cryptoKey === 'BTC' ? 'bc1q' : 'ltc1q'}_fallback_${invoice.id}_${crypto.randomBytes(4).toString('hex')}`;
       }
     } else if (cryptoKey === 'ETH' || cryptoKey === 'USDT') {
       const ethXpub = process.env.ETH_XPUB;
@@ -748,27 +760,21 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       
       try {
         const hdNode = ethers.HDNodeWallet.fromExtendedKey(ethXpub);
-        // The xpub is already at m/44'/60'/0', so we just derive /0/userId
-        const child = hdNode.derivePath(`0/${userId}`);
+        const child = hdNode.derivePath(`0/${invoice.id}`);
         depositAddress = child.address;
       } catch (e) {
         console.error("ETH Derivation error:", e);
-        depositAddress = `0x_fallback_${userId}_${crypto.randomBytes(4).toString('hex')}`;
+        depositAddress = `0x_fallback_${invoice.id}_${crypto.randomBytes(4).toString('hex')}`;
       }
     }
 
-    const invoice = await prisma.cryptoInvoice.create({
-      data: {
-        userId,
-        paymentId,
-        payAmount,
-        payCurrency: cryptoKey,
-        address: depositAddress,
-        dlsCredited
-      }
+    // 4. Update Invoice with derived address
+    await prisma.cryptoInvoice.update({
+      where: { id: invoice.id },
+      data: { address: depositAddress }
     });
 
-    res.json({ success: true, invoice, internalInvoiceId: invoice.id, address: depositAddress, payAmount });
+    res.json({ success: true, invoice: { ...invoice, address: depositAddress }, internalInvoiceId: invoice.id, address: depositAddress, payAmount });
   } catch (err: any) {
     console.error('Crypto Request Error:', err);
     res.status(500).json({ error: 'Failed to generate crypto invoice', details: err.message || err.toString() });
