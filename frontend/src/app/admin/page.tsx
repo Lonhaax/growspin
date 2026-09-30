@@ -20,6 +20,7 @@ export default function AdminPage() {
   
   const [chatLogs, setChatLogs] = useState<any[]>([]);
   const [depositLogs, setDepositLogs] = useState<any[]>([]);
+  const [cryptoDepositLogs, setCryptoDepositLogs] = useState<any[]>([]);
 
   // Users state
   const [users, setUsers] = useState<any[]>([]);
@@ -68,8 +69,12 @@ export default function AdminPage() {
 
   const fetchDeposits = async () => {
     try {
-      const res = await apiFetch('/admin/deposits');
-      if (res.ok) setDepositLogs(await res.json());
+      const [res1, res2] = await Promise.all([
+        apiFetch('/admin/deposits'),
+        apiFetch('/admin/crypto-deposits')
+      ]);
+      if (res1.ok) setDepositLogs(await res1.json());
+      if (res2.ok) setCryptoDepositLogs(await res2.json());
     } catch (e) {}
   };
 
@@ -1535,6 +1540,68 @@ export default function AdminPage() {
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-[#7a819c] font-black text-sm">
                       No deposit records found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
+            </h3>
+          </div>
+          
+          <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-[#10131a] text-[#7a819c] font-black uppercase text-[10px] tracking-wider border-b border-[#202535]">
+                <tr>
+                  <th className="px-6 py-4">Invoice ID</th>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Currency</th>
+                  <th className="px-6 py-4">Requested</th>
+                  <th className="px-6 py-4">DLs Expected</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Time</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#202535]">
+                {cryptoDepositLogs.map(dep => (
+                  <tr key={dep.id} className="hover:bg-[#151923] transition-colors">
+                    <td className="px-6 py-4 font-mono text-[#7a819c] text-xs">#{dep.id}</td>
+                    <td className="px-6 py-4 font-bold text-white">{dep.user?.username || 'Unknown'}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                        {dep.payCurrency}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-xs font-mono">
+                      <span className="text-cyan-400">{dep.payAmount} {dep.payCurrency}</span>
+                      <br/>
+                      <span className="text-[10px] text-gray-500">{dep.address}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <DLCurrency amount={dep.dlsCredited} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg ${
+                        dep.status === 'finished' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                        dep.status === 'failed' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                        'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                      }`}>
+                        {dep.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[#7a819c] text-xs font-medium">
+                      {new Date(dep.createdAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+                {cryptoDepositLogs.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-[#7a819c] font-black text-sm">
+                      No crypto deposits found.
                     </td>
                   </tr>
                 )}

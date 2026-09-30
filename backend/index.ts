@@ -3517,6 +3517,20 @@ app.get('/api/admin/deposits', requireAuth, requireAdmin, async (req: AuthReques
   }
 });
 
+// GET /api/admin/crypto-deposits
+app.get('/api/admin/crypto-deposits', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const cryptoDeposits = await prisma.cryptoInvoice.findMany({
+      include: { user: { select: { username: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    res.json(cryptoDeposits);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseInt(String(req.params.id));
