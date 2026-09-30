@@ -5,6 +5,7 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_dev';
 
 export interface AuthRequest extends Request {
   user?: any;
+  userId?: number;
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
@@ -15,8 +16,9 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   }
 
   try {
-    const payload = jwt.verify(token, ACCESS_SECRET);
+    const payload = jwt.verify(token, ACCESS_SECRET) as any;
     req.user = payload;
+    req.userId = payload.userId || payload.id;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
