@@ -687,6 +687,7 @@ app.get('/api/internal/bot/credit', async (req: Request, res: Response) => {
 
 app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
+    console.log(`[CRYPTO REQUEST] User: ${req.userId} Body:`, req.body);
     const { amountUSD, payCurrency } = req.body;
     if (!amountUSD || amountUSD < 1) return res.status(400).json({ error: 'Minimum deposit is $1' });
     if (!payCurrency) return res.status(400).json({ error: 'payCurrency is required' });
