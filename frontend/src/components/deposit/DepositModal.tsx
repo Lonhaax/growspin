@@ -422,6 +422,16 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                   >
                     {invoice ? (
                       <div className="space-y-4">
+                        <div className="flex justify-center mb-6 mt-2">
+                          <div className="p-3 bg-white rounded-xl">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${invoice.pay_currency.toLowerCase()}:${invoice.pay_address}?amount=${invoice.pay_amount}`)}`}
+                              alt="Deposit QR Code"
+                              className="w-40 h-40"
+                            />
+                          </div>
+                        </div>
+
                         <div className="bg-[#161a24] p-5 rounded-2xl border border-white/5">
                           <p className="text-[#7a819c] text-xs font-bold uppercase tracking-wider mb-2">Send Exactly</p>
                           <div className="flex items-center justify-between bg-[#0c0e14] p-4 rounded-xl border border-white/5">
