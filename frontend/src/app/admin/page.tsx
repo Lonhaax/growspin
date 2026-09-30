@@ -1492,13 +1492,26 @@ export default function AdminPage() {
             <h2 className="text-xl font-black text-white flex items-center gap-2">
               <ArrowDownToLine className="text-amber-500" /> Deposit Ledger
             </h2>
-            <button
-              onClick={fetchDeposits}
-              className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
-            >
-              <RefreshCw size={13} />
-              Refresh
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  if(!confirm('Are you sure you want to permanently delete all pending/failed crypto invoices?')) return;
+                  await apiFetch('/admin/purge-crypto');
+                  fetchDeposits();
+                }}
+                className="flex items-center gap-2 px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black text-red-400 hover:bg-red-500/20 transition-colors"
+              >
+                <XCircle size={13} />
+                Purge Old
+              </button>
+              <button
+                onClick={fetchDeposits}
+                className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
+              >
+                <RefreshCw size={13} />
+                Refresh
+              </button>
+            </div>
           </div>
           
           <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
