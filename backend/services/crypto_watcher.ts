@@ -5,11 +5,13 @@ import { ethers } from 'ethers';
 const prisma = new PrismaClient();
 const POLL_INTERVAL = 30000; // 30 seconds
 
-// ETH RPC provider
-const ethProvider = new ethers.JsonRpcProvider('https://ethereum-rpc.publicnode.com');
+// ETH RPC providers
+const ethMainnetProvider = new ethers.JsonRpcProvider('https://ethereum-rpc.publicnode.com');
+const ethBaseProvider = new ethers.JsonRpcProvider('https://mainnet.base.org');
+
 const USDT_CONTRACT_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7';
 const usdtAbi = ['function balanceOf(address) view returns (uint256)'];
-const usdtContract = new ethers.Contract(USDT_CONTRACT_ADDRESS, usdtAbi, ethProvider);
+const usdtContract = new ethers.Contract(USDT_CONTRACT_ADDRESS, usdtAbi, ethMainnetProvider);
 
 export function startCryptoWatcher() {
     console.log(`[CRYPTO WATCHER] Started blockchain polling for BTC, LTC, ETH, USDT`);
@@ -45,8 +47,12 @@ export function startCryptoWatcher() {
                         totalReceived = lits / 100000000;
                     }
                     else if (invoice.payCurrency === 'ETH') {
-                        const balance = await ethProvider.getBalance(invoice.address);
-                        totalReceived = Number(ethers.formatEther(balance));
+                        const [mainnetBalance, baseBalance] = await Promise.all([
+                            ethMainnetProvider.getBalance(invoice.address).catch(() => 0n),
+                            ethBaseProvider.getBalance(invoice.address).catch(() => 0n)
+                        ]);
+                        const totalEth = mainnetBalance + baseBalance;
+                        totalReceived = Number(ethers.formatEther(totalEth));
                     }
                     else if (invoice.payCurrency === 'USDT') {
                         const balance = await usdtContract.balanceOf(invoice.address);
