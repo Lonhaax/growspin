@@ -29,6 +29,8 @@ export function startCryptoWatcher() {
             if (pendingInvoices.length === 0) return;
 
             for (const invoice of pendingInvoices) {
+                if (!invoice.address) continue;
+
                 try {
                     let totalReceived = 0;
 
