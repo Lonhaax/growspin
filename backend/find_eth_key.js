@@ -3,7 +3,7 @@ const { ethers } = require('ethers');
 // ⚠️ PASTE YOUR 12 WORDS HERE TEMPORARILY
 const mnemonic = "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12";
 
-const target = '0x72023CB5ef43842326D6F4280DEB87Ec5CFc2C3F'.toLowerCase();
+const target = '0x74F8D2989E771cB03df8e083A005a63eDA3a4390'.toLowerCase();
 
 try {
     const baseNode = ethers.HDNodeWallet.fromPhrase(mnemonic);
