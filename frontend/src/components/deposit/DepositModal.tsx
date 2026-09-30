@@ -28,7 +28,7 @@ const CRYPTO_OPTIONS = [
   { id: 'ltc', name: 'Litecoin', ticker: 'LTC', color: 'from-blue-400 to-blue-600', icon: 'Ł' },
   { id: 'btc', name: 'Bitcoin', ticker: 'BTC', color: 'from-orange-400 to-orange-600', icon: '₿' },
   { id: 'eth', name: 'Ethereum', ticker: 'ETH', color: 'from-indigo-400 to-purple-600', icon: 'Ξ' },
-  { id: 'usdttrc20', name: 'Tether', ticker: 'USDT', color: 'from-green-400 to-emerald-600', icon: '₮' }
+  { id: 'USDT', name: 'Tether', ticker: 'USDT', color: 'from-green-400 to-emerald-600', icon: '₮' }
 ];
 
 export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -462,6 +462,12 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                       </div>
                     ) : (
                       <div className="space-y-6">
+                        {['ETH', 'USDT'].includes(cryptoCurrency) && (
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-500 font-bold mb-4">
+                            ⚠️ Send only on supported EVM networks: Mainnet, Arbitrum, Base, BSC, Optimism, Polygon. 
+                            <br/>DO NOT send via Tron (TRC20).
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
                             <span>Amount in USD</span>
