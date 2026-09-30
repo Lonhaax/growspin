@@ -3540,9 +3540,9 @@ app.get('/api/admin/crypto-deposits', requireAuth, requireAdmin, async (req: Aut
 app.get('/api/admin/purge-crypto', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const result = await prisma.cryptoInvoice.deleteMany({
-      where: { status: { not: 'finished' } }
+      where: { status: 'failed' }
     });
-    res.json({ success: true, deleted: result.count, message: `Deleted ${result.count} old pending/failed invoices.` });
+    res.json({ success: true, deleted: result.count, message: `Deleted ${result.count} old failed invoices.` });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
