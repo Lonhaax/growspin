@@ -1865,6 +1865,18 @@ app.post('/api/chat/send', requireAuth, requireNotFrozen, async (req: AuthReques
   }
 
   try {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user?.isChatBanned) {
+      return res.status(403).json({ error: 'You are banned from chat.' });
+    }
+
+    const filters = await prisma.chatFilter.findMany();
+    const lowerContent = content.toLowerCase();
+    for (const filter of filters) {
+      if (lowerContent.includes(filter.word.toLowerCase())) {
+        return res.status(400).json({ error: 'Message contains blacklisted content.' });
+      }
+    }
     const msg = await prisma.chatMessage.create({
       data: { userId, content: content.trim() },
       include: { user: { select: { username: true, totalWagered: true } } }
@@ -3297,6 +3309,62 @@ app.delete('/api/admin/chat/:id', requireAuth, requireAdmin, async (req: AuthReq
     await prisma.chatMessage.delete({ where: { id: messageId } });
     io.emit('chatMessageDeleted', { id: messageId });
     res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/chat/filters - List all blacklisted words
+app.get('/api/admin/chat/filters', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const filters = await prisma.chatFilter.findMany({ orderBy: { createdAt: 'desc' } });
+    res.json(filters);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/chat/filters - Add a new blacklisted word
+app.post('/api/admin/chat/filters', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { word } = req.body;
+    if (!word || typeof word !== 'string' || word.trim().length === 0) {
+      return res.status(400).json({ error: 'Invalid word' });
+    }
+    const filter = await prisma.chatFilter.create({ data: { word: word.trim().toLowerCase() } });
+    res.json(filter);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/chat/filters/:id - Remove a blacklisted word
+app.delete('/api/admin/chat/filters/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.chatFilter.delete({ where: { id } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/chat/ban/:userId - Toggle chat ban for a user
+app.post('/api/admin/chat/ban/:userId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const targetUserId = parseInt(req.params.userId);
+    const { isBanned } = req.body;
+    
+    if (typeof isBanned !== 'boolean') {
+      return res.status(400).json({ error: 'isBanned must be boolean' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: { isChatBanned: isBanned }
+    });
+    
+    res.json({ success: true, isChatBanned: updatedUser.isChatBanned });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare, MicOff } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
@@ -19,6 +19,8 @@ export default function AdminPage() {
   const [botState, setBotState] = useState<any>(null);
   
   const [chatLogs, setChatLogs] = useState<any[]>([]);
+  const [chatFilters, setChatFilters] = useState<any[]>([]);
+  const [newFilterWord, setNewFilterWord] = useState("");
   const [depositLogs, setDepositLogs] = useState<any[]>([]);
   const [cryptoDepositLogs, setCryptoDepositLogs] = useState<any[]>([]);
 
@@ -62,8 +64,12 @@ export default function AdminPage() {
 
   const fetchChat = async () => {
     try {
-      const res = await apiFetch('/admin/chat');
-      if (res.ok) setChatLogs(await res.json());
+      const [res1, res2] = await Promise.all([
+        apiFetch('/admin/chat'),
+        apiFetch('/admin/chat/filters')
+      ]);
+      if (res1.ok) setChatLogs(await res1.json());
+      if (res2.ok) setChatFilters(await res2.json());
     } catch (e) {}
   };
 
@@ -182,6 +188,39 @@ export default function AdminPage() {
     try {
       await apiFetch(`/admin/chat/${id}`, { method: 'DELETE' });
       fetchChat();
+    } catch (e) {}
+  };
+
+  const handleAddFilter = async () => {
+    if (!newFilterWord.trim()) return;
+    try {
+      const res = await apiFetch(`/admin/chat/filters`, {
+        method: 'POST',
+        body: JSON.stringify({ word: newFilterWord })
+      });
+      if (res.ok) {
+        setNewFilterWord("");
+        fetchChat();
+      }
+    } catch (e) {}
+  };
+
+  const handleRemoveFilter = async (id: number) => {
+    try {
+      await apiFetch(`/admin/chat/filters/${id}`, { method: 'DELETE' });
+      fetchChat();
+    } catch (e) {}
+  };
+
+  const handleChatBan = async (id: number, username: string, currentStatus: boolean) => {
+    const action = currentStatus ? "unban" : "ban";
+    if (!confirm(`Are you sure you want to ${action} ${username} from chat?`)) return;
+    try {
+      await apiFetch(`/admin/chat/ban/${id}`, {
+        method: 'POST',
+        body: JSON.stringify({ isBanned: !currentStatus })
+      });
+      fetchUsers(userSearch);
     } catch (e) {}
   };
 
@@ -644,6 +683,17 @@ export default function AdminPage() {
                           </button>
                           {user?.id !== u.id && (
                             <>
+                              <button
+                                onClick={() => handleChatBan(u.id, u.username, u.isChatBanned)}
+                                className={`p-1.5 border rounded-lg transition-colors ${
+                                  u.isChatBanned 
+                                    ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/20' 
+                                    : 'bg-slate-500/10 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-slate-500/20 hover:border-rose-500/20'
+                                }`}
+                                title={u.isChatBanned ? "Unban from Chat" : "Ban from Chat"}
+                              >
+                                <MicOff size={13} />
+                              </button>
                               <button
                                 onClick={() => handleFreezeUser(u.id, u.username, u.isFrozen)}
                                 className={`p-1.5 border rounded-lg transition-colors ${
@@ -1441,6 +1491,39 @@ export default function AdminPage() {
             </button>
           </div>
           
+          <div className="bg-[#0b0d12] border border-[#202535] rounded-xl p-6">
+            <h3 className="text-sm font-bold text-white mb-4">Keyword Blacklist (Auto-Drop)</h3>
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={newFilterWord}
+                onChange={(e) => setNewFilterWord(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddFilter()}
+                placeholder="Enter word to block..."
+                className="flex-1 bg-[#151923] border border-[#202535] rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-rose-500 outline-none"
+              />
+              <button
+                onClick={handleAddFilter}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg text-sm transition-colors"
+              >
+                Add Filter
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {chatFilters.map(filter => (
+                <div key={filter.id} className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-3 py-1.5 rounded-lg text-sm font-bold">
+                  {filter.word}
+                  <button onClick={() => handleRemoveFilter(filter.id)} className="hover:text-white transition-colors">
+                    <XCircle size={14} />
+                  </button>
+                </div>
+              ))}
+              {chatFilters.length === 0 && (
+                <div className="text-sm text-gray-500">No active filters.</div>
+              )}
+            </div>
+          </div>
+
           <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[#10131a] text-[#7a819c] font-black uppercase text-[10px] tracking-wider border-b border-[#202535]">
