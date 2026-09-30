@@ -3537,6 +3537,17 @@ app.get('/api/admin/crypto-deposits', requireAuth, requireAdmin, async (req: Aut
   }
 });
 
+app.get('/api/admin/purge-crypto', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await prisma.cryptoInvoice.deleteMany({
+      where: { status: { not: 'finished' } }
+    });
+    res.json({ success: true, deleted: result.count, message: `Deleted ${result.count} old pending/failed invoices.` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseInt(String(req.params.id));
