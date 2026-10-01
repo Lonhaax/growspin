@@ -697,8 +697,8 @@ app.post('/api/deposit/crypto/request', requireAuth, requireNotFrozen, async (re
       return res.status(400).json({ error: 'Unsupported crypto' });
     }
 
-    // 100 DLs = 3.35 USD
-    const dlsCredited = Math.floor((amountUSD / 3.35) * 10000);
+    // 100 DLs = 3.95 USD
+    const dlsCredited = Math.floor((amountUSD / 3.95) * 10000);
     const paymentId = crypto.randomBytes(16).toString('hex');
     const userId = req.userId!;
 
