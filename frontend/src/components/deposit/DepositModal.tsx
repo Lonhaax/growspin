@@ -530,11 +530,21 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
               </div>
             ) : (
               <div className="space-y-6">
-                <button onClick={() => setWithdrawMethod('')} className="text-sm text-[#7a819c] hover:text-white flex items-center gap-2 mb-4">
-                   &larr; Back to Methods
-                </button>
+                <div className="flex items-center justify-between mb-4">
+                  <button onClick={() => setWithdrawMethod('')} className="text-sm text-[#7a819c] hover:text-white flex items-center gap-2">
+                     &larr; Back to Methods
+                  </button>
+                  <div className="px-3 py-1 bg-[#1e293b] rounded-lg text-white text-xs font-bold border border-white/10 uppercase tracking-wider">
+                    {withdrawMethod === 'growtopia' ? 'Growtopia' : CRYPTO_OPTIONS.find(c => c.id === withdrawMethod)?.name || withdrawMethod}
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#7a819c] ml-1">Amount (DLs)</label>
+                  <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
+                    <span>Amount (DLs)</span>
+                    {withdrawMethod !== 'growtopia' && (
+                      <span className="text-emerald-400 font-bold">≈ ${(withdrawAmount / 2.6).toFixed(2)} USD</span>
+                    )}
+                  </label>
                   <input 
                     type="number" 
                     value={withdrawAmount || ''}
@@ -548,14 +558,14 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#7a819c] ml-1">
-                    Withdrawal Address or GrowID
+                    {withdrawMethod === 'growtopia' ? 'Your In-Game GrowID' : `${CRYPTO_OPTIONS.find(c => c.id === withdrawMethod)?.ticker || withdrawMethod.toUpperCase()} Address`}
                   </label>
                   <input 
                     type="text" 
                     value={withdrawAddress}
                     onChange={(e) => setWithdrawAddress(e.target.value)}
                     className="w-full bg-[#171c28] border border-[#232938] focus:border-blue-500/50 rounded-xl px-4 py-4 text-white placeholder-white/20 outline-none transition-all font-medium"
-                    placeholder="Enter crypto address or in-game ID..."
+                    placeholder={withdrawMethod === 'growtopia' ? "e.g. JohnDoe123" : "Paste wallet address here..."}
                   />
                 </div>
 
@@ -564,7 +574,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                   disabled={withdrawAmount < 50 || !withdrawAddress || loading}
                   className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold text-base transition-colors flex items-center justify-center gap-2"
                 >
-                  {loading ? <Loader2 className="animate-spin" size={20} /> : 'Request Withdrawal'}
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : `Request ${withdrawMethod === 'growtopia' ? 'Trade' : 'Transfer'}`}
                 </button>
               </div>
             )}
