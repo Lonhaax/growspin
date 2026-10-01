@@ -3341,7 +3341,7 @@ app.post('/api/admin/chat/filters', requireAuth, requireAdmin, async (req: AuthR
 // DELETE /api/admin/chat/filters/:id - Remove a blacklisted word
 app.delete('/api/admin/chat/filters/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     await prisma.chatFilter.delete({ where: { id } });
     res.json({ success: true });
   } catch (err: any) {
@@ -3352,7 +3352,7 @@ app.delete('/api/admin/chat/filters/:id', requireAuth, requireAdmin, async (req:
 // POST /api/admin/chat/ban/:userId - Toggle chat ban for a user
 app.post('/api/admin/chat/ban/:userId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const targetUserId = parseInt(req.params.userId);
+    const targetUserId = parseInt(req.params.userId as string);
     const { isBanned } = req.body;
     
     if (typeof isBanned !== 'boolean') {
