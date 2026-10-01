@@ -222,23 +222,31 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-[#06080d]/80 backdrop-blur-md"
         />
+
+        {/* Subtle background glow effect behind modal */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-lg bg-[#11141d] rounded-3xl shadow-2xl overflow-hidden border border-white/5"
+          className="relative w-full max-w-lg bg-[#0d1017]/90 backdrop-blur-xl rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden border border-white/[0.08]"
         >
+          {/* Top highlight line */}
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0 bg-[#161a24]">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.05] shrink-0 bg-white/[0.02]">
             <div className="flex items-center gap-3">
-              <Wallet className="text-emerald-400" size={18} />
-              <h2 className="text-base font-bold text-white">Deposit & Withdraw</h2>
+              <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                <Wallet className="text-emerald-400" size={18} />
+              </div>
+              <h2 className="text-lg font-black text-white tracking-wide">Cashier</h2>
             </div>
-            <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg text-[#7a819c] hover:text-white transition-colors">
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl text-[#7a819c] hover:text-white transition-all hover:rotate-90">
               <X size={18} />
             </button>
           </div>
@@ -265,38 +273,38 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
               </motion.div>
             ) : (
               <>
-                {/* Tabs */}
-                <div className="flex bg-[#0c0e14] rounded-xl p-1 mb-5 border border-white/5 relative">
+                {/* Premium Tabs */}
+                <div className="flex bg-[#050609]/50 rounded-2xl p-1.5 mb-6 border border-white/[0.05] relative shadow-inner">
+                  {/* Tab Highlight Indicator */}
+                  <div 
+                    className="absolute inset-y-1.5 w-[calc(33.333%-0.5rem)] bg-[#1a1f2e] rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-white/10 transition-all duration-300 ease-out z-0"
+                    style={{ 
+                      transform: `translateX(${tab === 'growtopia' ? '0%' : tab === 'crypto' ? '100%' : '200%'})`, 
+                      left: tab === 'crypto' ? '0.5rem' : tab === 'withdraw' ? '0.875rem' : '0.125rem' 
+                    }} 
+                  />
+
                   <button
                     onClick={() => setTab('growtopia')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all relative z-10 ${tab === 'growtopia' ? 'text-white' : 'text-[#7a819c] hover:text-white'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all relative z-10 ${tab === 'growtopia' ? 'text-white' : 'text-[#7a819c] hover:text-white hover:bg-white/5'}`}
                   >
-                    <Gamepad2 size={16} />
-                    Growtopia Bot
+                    <Gamepad2 size={16} className={tab === 'growtopia' ? 'text-indigo-400' : ''} />
+                    Growtopia
                   </button>
                   <button
                     onClick={() => setTab('crypto')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all relative z-10 ${tab === 'crypto' ? 'text-white' : 'text-[#7a819c] hover:text-white'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all relative z-10 ${tab === 'crypto' ? 'text-white' : 'text-[#7a819c] hover:text-white hover:bg-white/5'}`}
                   >
-                    <Coins size={16} />
+                    <Coins size={16} className={tab === 'crypto' ? 'text-emerald-400' : ''} />
                     Crypto
                   </button>
                   <button
                     onClick={() => setTab('withdraw')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all relative z-10 ${tab === 'withdraw' ? 'text-white' : 'text-[#7a819c] hover:text-white'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all relative z-10 ${tab === 'withdraw' ? 'text-white' : 'text-[#7a819c] hover:text-white hover:bg-white/5'}`}
                   >
-                    <ArrowRight size={16} />
+                    <ArrowRight size={16} className={tab === 'withdraw' ? 'text-rose-400' : ''} />
                     Withdraw
                   </button>
-                  
-                  {/* Tab Highlight Indicator */}
-                  <div 
-                    className="absolute inset-y-1.5 w-[calc(33.333%-0.375rem)] bg-[#1e2333] rounded-lg shadow-sm border border-white/5 transition-transform duration-300 ease-out z-0"
-                    style={{ 
-                      transform: `translateX(${tab === 'growtopia' ? '0%' : tab === 'crypto' ? '100%' : '200%'})`, 
-                      left: tab === 'crypto' ? '0.375rem' : tab === 'withdraw' ? '0.75rem' : '0.375rem' 
-                    }} 
-                  />
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -371,40 +379,48 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     ) : (
                       <div className="space-y-6">
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-[#7a819c] ml-1">Your GrowID</label>
-                          <input 
-                            type="text" 
-                            value={growId}
-                            onChange={(e) => setGrowId(e.target.value)}
-                            className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
-                            placeholder="e.g. JohnDoe123"
-                          />
+                          <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">Your GrowID</label>
+                          <div className="relative group">
+                            <input 
+                              type="text" 
+                              value={growId}
+                              onChange={(e) => setGrowId(e.target.value)}
+                              className="w-full bg-[#050609]/50 border border-white/5 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 rounded-2xl px-5 py-4 text-white placeholder-white/20 outline-none transition-all font-medium shadow-inner"
+                              placeholder="e.g. JohnDoe123"
+                            />
+                          </div>
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-[#7a819c] ml-1">Deposit Amount (DLs)</label>
-                          <input 
-                            type="number" 
-                            value={growAmount || ''}
-                            onChange={(e) => setGrowAmount(Number(e.target.value))}
-                            min="1"
-                            className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-indigo-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
-                            placeholder="e.g. 50"
-                          />
+                          <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">Deposit Amount (DLs)</label>
+                          <div className="relative group">
+                            <input 
+                              type="number" 
+                              value={growAmount || ''}
+                              onChange={(e) => setGrowAmount(Number(e.target.value))}
+                              min="1"
+                              className="w-full bg-[#050609]/50 border border-white/5 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 rounded-2xl px-5 py-4 text-white placeholder-white/20 outline-none transition-all font-medium shadow-inner text-lg"
+                              placeholder="50"
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-indigo-500/10 text-indigo-400 font-bold text-xs rounded-lg border border-indigo-500/20 pointer-events-none">
+                              DLs
+                            </div>
+                          </div>
                         </div>
                         
                         <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex gap-3 text-indigo-200">
                           <div className="mt-0.5"><CheckCircle2 size={16} className="text-indigo-400" /></div>
-                          <p className="text-sm leading-relaxed">Please ensure you type your exact in-game GrowID. You will be assigned a unique drop world.</p>
+                          <p className="text-sm leading-relaxed">Ensure you type your exact in-game GrowID. You will be assigned a unique drop world.</p>
                         </div>
 
                         <button 
                           onClick={handleGrowtopiaRequest}
                           disabled={!growId || loading}
-                          className="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] active:scale-[0.98]"
+                          className="group relative w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 disabled:grayscale text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_10px_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_15px_50px_-10px_rgba(79,70,229,0.6)] active:scale-[0.98] overflow-hidden border border-white/10"
                         >
-                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Generate Drop World'}
-                          {!loading && <ArrowRight size={20} />}
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                          {loading ? <Loader2 className="animate-spin relative z-10" size={20} /> : <span className="relative z-10">Generate Drop World</span>}
+                          {!loading && <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
                         </button>
                       </div>
                     )}
@@ -463,50 +479,53 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     ) : (
                       <div className="space-y-6">
                         {['ETH', 'USDT'].includes(cryptoCurrency) && (
-                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-500 font-bold mb-4">
-                            ⚠️ Send only on supported EVM networks: Mainnet, Arbitrum, Base, BSC, Optimism, Polygon. 
-                            <br/>DO NOT send via Tron (TRC20).
+                          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-500 font-bold mb-4 flex items-start gap-2">
+                            <span className="text-base leading-none">⚠️</span>
+                            <div>
+                              Send only on supported EVM networks: Mainnet, Arbitrum, Base, BSC, Optimism, Polygon. 
+                              <br/>DO NOT send via Tron (TRC20).
+                            </div>
                           </div>
                         )}
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
+                          <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider flex justify-between">
                             <span>Amount in USD</span>
-                            <span className="text-emerald-400 font-medium">{Math.floor((cryptoAmount / 2.6) * 100).toLocaleString()} DLs</span>
+                            <span className="text-emerald-400 font-black">{Math.floor((cryptoAmount / 2.6) * 100).toLocaleString()} DLs</span>
                           </label>
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                              <span className="text-white/40 font-bold">$</span>
+                          <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                              <span className="text-white/40 font-bold text-lg">$</span>
                             </div>
                             <input 
                               type="number" 
                               value={cryptoAmount || ''}
                               onChange={(e) => setCryptoAmount(Number(e.target.value))}
                               min="1"
-                              className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-emerald-500 rounded-xl pl-8 pr-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-bold text-lg"
+                              className="w-full bg-[#050609]/50 border border-white/5 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 rounded-2xl pl-10 pr-5 py-4 text-white placeholder-white/20 outline-none transition-all font-bold text-xl shadow-inner tracking-wider"
                               placeholder="0.00"
                             />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-[#7a819c] ml-1">Select Cryptocurrency</label>
+                          <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">Select Cryptocurrency</label>
                           <div className="grid grid-cols-2 gap-3">
                             {CRYPTO_OPTIONS.map((coin) => (
                               <button
                                 key={coin.id}
                                 onClick={() => setCryptoCurrency(coin.id)}
-                                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                                className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
                                   cryptoCurrency === coin.id 
-                                    ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
-                                    : 'border-white/5 bg-[#0c0e14] hover:bg-[#161a24] hover:border-white/10'
+                                    ? 'border-emerald-500/50 bg-emerald-500/10 shadow-[0_5px_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/20' 
+                                    : 'border-white/5 bg-[#050609]/50 hover:bg-white/5 shadow-inner'
                                 }`}
                               >
-                                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${coin.color} flex items-center justify-center font-black text-white text-sm shadow-inner`}>
+                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${coin.color} flex items-center justify-center font-black text-white text-base shadow-lg`}>
                                   {coin.icon}
                                 </div>
                                 <div className="text-left">
                                   <div className="font-bold text-white text-sm">{coin.name}</div>
-                                  <div className={`text-xs ${cryptoCurrency === coin.id ? 'text-emerald-400' : 'text-[#7a819c]'}`}>{coin.ticker}</div>
+                                  <div className={`text-xs font-bold ${cryptoCurrency === coin.id ? 'text-emerald-400' : 'text-[#7a819c]'}`}>{coin.ticker}</div>
                                 </div>
                               </button>
                             ))}
@@ -516,10 +535,11 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                         <button 
                           onClick={handleCryptoRequest}
                           disabled={cryptoAmount < 1 || loading}
-                          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-[#00c566] hover:from-[#00c566] hover:to-emerald-400 disabled:opacity-50 disabled:grayscale text-black rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:shadow-[0_0_30px_rgba(0,230,118,0.5)] active:scale-[0.98]"
+                          className="group relative w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 disabled:grayscale text-black rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.5)] hover:shadow-[0_15px_50px_-10px_rgba(16,185,129,0.6)] active:scale-[0.98] overflow-hidden border border-white/20"
                         >
-                          {loading ? <Loader2 className="animate-spin" size={20} /> : 'Generate Address'}
-                          {!loading && <ArrowRight size={20} />}
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/40 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                          {loading ? <Loader2 className="animate-spin relative z-10" size={20} /> : <span className="relative z-10">Generate Address</span>}
+                          {!loading && <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
                         </button>
                       </div>
                     )}
@@ -536,17 +556,17 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     className="space-y-6"
                   >
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-[#7a819c] ml-1">Withdrawal Method</label>
-                      <div className="flex bg-[#0c0e14] rounded-xl p-1.5 border border-white/5 relative">
+                      <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">Withdrawal Method</label>
+                      <div className="flex bg-[#050609]/50 rounded-2xl p-1.5 border border-white/[0.05] relative shadow-inner">
                         <button
                           onClick={() => setWithdrawMethod('crypto')}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${withdrawMethod === 'crypto' ? 'bg-[#1e2333] text-white' : 'text-[#7a819c] hover:text-white'}`}
+                          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all ${withdrawMethod === 'crypto' ? 'bg-[#1a1f2e] text-white shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-white/10' : 'text-[#7a819c] hover:text-white hover:bg-white/5'}`}
                         >
                           Crypto
                         </button>
                         <button
                           onClick={() => setWithdrawMethod('growtopia')}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all ${withdrawMethod === 'growtopia' ? 'bg-[#1e2333] text-white' : 'text-[#7a819c] hover:text-white'}`}
+                          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all ${withdrawMethod === 'growtopia' ? 'bg-[#1a1f2e] text-white shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-white/10' : 'text-[#7a819c] hover:text-white hover:bg-white/5'}`}
                         >
                           Growtopia In-Game
                         </button>
@@ -554,27 +574,32 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-[#7a819c] ml-1">Amount (DLs)</label>
-                      <input 
-                        type="number" 
-                        value={withdrawAmount || ''}
-                        onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-                        min="50"
-                        className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-red-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-bold text-lg"
-                        placeholder="Min 50"
-                      />
-                      <p className="text-[10px] text-[#7a819c] ml-1 uppercase font-bold tracking-wider">Minimum withdrawal: 50 DLs</p>
+                      <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">Amount (DLs)</label>
+                      <div className="relative group">
+                        <input 
+                          type="number" 
+                          value={withdrawAmount || ''}
+                          onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                          min="50"
+                          className="w-full bg-[#050609]/50 border border-white/5 focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/20 rounded-2xl px-5 py-4 text-white placeholder-white/20 outline-none transition-all font-bold text-lg shadow-inner"
+                          placeholder="Min 50"
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-rose-500/10 text-rose-400 font-bold text-xs rounded-lg border border-rose-500/20 pointer-events-none">
+                          DLs
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[#7a819c] ml-2 uppercase font-bold tracking-wider">Minimum withdrawal: 50 DLs</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-sm font-bold text-[#7a819c] ml-1">
+                      <label className="text-xs font-bold text-[#7a819c] ml-2 uppercase tracking-wider">
                         {withdrawMethod === 'crypto' ? 'Litecoin (LTC) Address' : 'GrowID & World Name'}
                       </label>
                       <input 
                         type="text" 
                         value={withdrawAddress}
                         onChange={(e) => setWithdrawAddress(e.target.value)}
-                        className="w-full bg-[#0c0e14] border-2 border-transparent focus:border-red-500 rounded-xl px-4 py-3.5 text-white placeholder-white/20 outline-none transition-all font-medium"
+                        className="w-full bg-[#050609]/50 border border-white/5 focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/20 rounded-2xl px-5 py-4 text-white placeholder-white/20 outline-none transition-all font-medium shadow-inner"
                         placeholder={withdrawMethod === 'crypto' ? 'Enter LTC address...' : 'e.g. JohnDoe123 | BUYGEMS'}
                       />
                     </div>
@@ -582,10 +607,11 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     <button 
                       onClick={handleWithdrawRequest}
                       disabled={withdrawAmount < 50 || !withdrawAddress || loading}
-                      className="w-full py-4 bg-gradient-to-r from-red-500 to-[#e11d48] hover:from-[#e11d48] hover:to-red-400 disabled:opacity-50 disabled:grayscale text-white rounded-xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:shadow-[0_0_30px_rgba(225,29,72,0.5)] active:scale-[0.98]"
+                      className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 disabled:opacity-50 disabled:grayscale text-white rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 shadow-[0_10px_40px_-10px_rgba(225,29,72,0.5)] hover:shadow-[0_15px_50px_-10px_rgba(225,29,72,0.6)] active:scale-[0.98] overflow-hidden border border-white/10"
                     >
-                      {loading ? <Loader2 className="animate-spin" size={20} /> : 'Request Withdrawal'}
-                      {!loading && <ArrowRight size={20} />}
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                      {loading ? <Loader2 className="animate-spin relative z-10" size={20} /> : <span className="relative z-10">Request Withdrawal</span>}
+                      {!loading && <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />}
                     </button>
                   </motion.div>
                 )}
