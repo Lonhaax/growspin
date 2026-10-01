@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/auth';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Wallet, Gamepad2, Coins, CheckCircle2, ArrowRight, Copy, ExternalLink, Loader2, CreditCard, Apple, Landmark, LockIcon } from 'lucide-react';
+import QRCode from 'react-qr-code';
 
 interface DepositIntent {
   id: number;
@@ -378,9 +379,12 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                     </div>
                   </div>
                   
-                  <div className="bg-[#0c0e14] p-4 rounded-xl border border-[#232938] mb-6 flex flex-col gap-2">
-                    <p className="text-[#7a819c] text-xs font-bold uppercase">To Address</p>
-                    <span className="text-white font-mono break-all text-sm">{invoice.pay_address}</span>
+                  <div className="bg-[#0c0e14] p-4 rounded-xl border border-[#232938] mb-6 flex flex-col gap-2 items-center">
+                    <p className="text-[#7a819c] text-xs font-bold uppercase w-full text-left">Scan or Copy Address</p>
+                    <div className="bg-white p-3 rounded-xl mb-2 mt-2 inline-block">
+                      <QRCode value={invoice.pay_address} size={150} level="M" />
+                    </div>
+                    <span className="text-white font-mono break-all text-sm w-full">{invoice.pay_address}</span>
                     <button 
                       onClick={() => copyToClipboard(invoice.pay_address)}
                       className="mt-2 text-blue-400 hover:text-blue-300 text-sm font-bold flex items-center justify-center gap-2"
