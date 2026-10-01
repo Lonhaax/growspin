@@ -37,7 +37,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
 
   // Withdraw State
   const [withdrawAmount, setWithdrawAmount] = useState<number>(50);
-  const [withdrawMethod, setWithdrawMethod] = useState<'crypto'|'growtopia'>('crypto');
+  const [withdrawMethod, setWithdrawMethod] = useState<string>('');
   const [withdrawAddress, setWithdrawAddress] = useState('');
 
   // Growtopia State
@@ -61,6 +61,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
     if (isOpen) {
       setTab('crypto');
       setCryptoCurrency('');
+      setWithdrawMethod('');
       setIntent(null);
       setInvoice(null);
       setError('');
@@ -248,7 +249,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
             {/* Top Tabs */}
             <div className="flex items-center gap-6 mb-8 border-b border-[#232938] pb-4">
               <button onClick={() => { setTab('crypto'); setCryptoCurrency(''); }} className={`text-sm font-bold transition-colors ${tab !== 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Deposit</button>
-              <button onClick={() => setTab('withdraw')} className={`text-sm font-bold transition-colors ${tab === 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Withdraw</button>
+              <button onClick={() => { setTab('withdraw'); setWithdrawMethod(''); }} className={`text-sm font-bold transition-colors ${tab === 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Withdraw</button>
               <button className="text-sm font-bold text-[#7a819c] hover:text-white transition-colors">Tip</button>
               <button className="text-sm font-bold text-[#7a819c] hover:text-white transition-colors">Exchange</button>
             </div>
@@ -493,8 +494,45 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                   </button>
                 </div>
               </div>
+            ) : tab === 'withdraw' && !withdrawMethod ? (
+              /* Withdraw Method Selection Menu */
+              <div className="space-y-8">
+                {/* In Game */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-white">In Game</h3>
+                  <button 
+                    onClick={() => setWithdrawMethod('growtopia')}
+                    className="flex items-center gap-3 bg-[#171c28] hover:bg-[#1e2434] transition-colors p-4 rounded-xl w-1/2 border border-[#232938]"
+                  >
+                    <Gamepad2 className="text-blue-400" size={24} />
+                    <span className="text-white font-bold text-sm">Growtopia</span>
+                  </button>
+                </div>
+
+                {/* Crypto */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-white">Crypto</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {CRYPTO_OPTIONS.map((coin) => (
+                      <button
+                        key={coin.id}
+                        onClick={() => setWithdrawMethod(coin.id)}
+                        className={`flex items-center gap-3 p-4 rounded-xl border transition-colors bg-[#171c28] border-[#232938] hover:bg-[#1e2434]`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${coin.color} bg-[#11141d]`}>
+                          {coin.icon}
+                        </div>
+                        <span className="text-white font-bold text-sm">{coin.ticker}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="space-y-6">
+                <button onClick={() => setWithdrawMethod('')} className="text-sm text-[#7a819c] hover:text-white flex items-center gap-2 mb-4">
+                   &larr; Back to Methods
+                </button>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#7a819c] ml-1">Amount (DLs)</label>
                   <input 
