@@ -409,7 +409,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
                     <span>Amount in USD</span>
-                    <span className="text-emerald-400 font-bold">{Math.floor((cryptoAmount / 2.6) * 100).toLocaleString()} DLs</span>
+                    <span className="text-emerald-400 font-bold">{Math.floor((cryptoAmount / 3.35) * 100).toLocaleString()} DLs</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -546,7 +546,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
                   <label className="text-sm font-bold text-[#7a819c] ml-1 flex justify-between">
                     <span>Amount (DLs)</span>
                     {withdrawMethod !== 'growtopia' && (
-                      <span className="text-emerald-400 font-bold">≈ ${(withdrawAmount / 2.6).toFixed(2)} USD</span>
+                      <span className="text-emerald-400 font-bold">≈ ${(withdrawAmount / 100 * 3.35).toFixed(2)} USD</span>
                     )}
                   </label>
                   <input 
