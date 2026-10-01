@@ -314,7 +314,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
 
                     <div className="flex gap-3">
                       <button 
-                        onClick={handleCancelRequest}
+                        onClick={handleCancelDeposit}
                         className="flex-1 py-4 bg-[#171c28] hover:bg-red-500/10 text-red-400 rounded-xl font-bold transition-colors border border-red-500/20"
                       >
                         Cancel
