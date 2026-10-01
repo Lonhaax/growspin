@@ -59,6 +59,8 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
   // Reset state when opened
   useEffect(() => {
     if (isOpen) {
+      setTab('crypto');
+      setCryptoCurrency('');
       setIntent(null);
       setInvoice(null);
       setError('');
@@ -245,7 +247,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
           <div className="p-6">
             {/* Top Tabs */}
             <div className="flex items-center gap-6 mb-8 border-b border-[#232938] pb-4">
-              <button onClick={() => setTab('growtopia')} className={`text-sm font-bold transition-colors ${tab !== 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Deposit</button>
+              <button onClick={() => { setTab('crypto'); setCryptoCurrency(''); }} className={`text-sm font-bold transition-colors ${tab !== 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Deposit</button>
               <button onClick={() => setTab('withdraw')} className={`text-sm font-bold transition-colors ${tab === 'withdraw' ? 'text-white border-b-2 border-white pb-4 -mb-[18px]' : 'text-[#7a819c] hover:text-white'}`}>Withdraw</button>
               <button className="text-sm font-bold text-[#7a819c] hover:text-white transition-colors">Tip</button>
               <button className="text-sm font-bold text-[#7a819c] hover:text-white transition-colors">Exchange</button>
@@ -287,7 +289,7 @@ export default function DepositModal({ isOpen, onClose }: { isOpen: boolean; onC
             ) : tab === 'growtopia' ? (
               /* Growtopia Deposit Form */
               <div className="space-y-6">
-                <button onClick={() => setTab('crypto')} className="text-sm text-[#7a819c] hover:text-white flex items-center gap-2 mb-4">
+                <button onClick={() => { setTab('crypto'); setCryptoCurrency(''); }} className="text-sm text-[#7a819c] hover:text-white flex items-center gap-2 mb-4">
                    &larr; Back to Methods
                 </button>
                 {intent ? (
