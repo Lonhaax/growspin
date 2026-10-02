@@ -175,13 +175,15 @@ export default function JackpotPage() {
              </button>
           </div>
           
-          <button
-              onClick={handleRoll}
-              disabled={loading || rolling || !gameState || gameState.participants.length === 0}
-              className="w-full py-4 bg-[#15181f] border border-[#2a2d3a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all disabled:opacity-50 shadow-lg"
-          >
-              ADMIN: FORCE ROLL
-          </button>
+          {user?.role === 'admin' && (
+            <button
+                onClick={handleRoll}
+                disabled={loading || rolling || !gameState || gameState.participants.length === 0}
+                className="w-full py-4 bg-[#15181f] border border-[#2a2d3a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all disabled:opacity-50 shadow-lg"
+            >
+                ADMIN: FORCE ROLL
+            </button>
+          )}
         </div>
 
         {/* RIGHT: Spinner & Participants */}

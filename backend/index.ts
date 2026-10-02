@@ -2920,7 +2920,7 @@ app.post('/api/jackpot/join', requireAuth, requireNotFrozen, async (req: AuthReq
 });
 
 // POST /api/jackpot/roll
-app.post('/api/jackpot/roll', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+app.post('/api/jackpot/roll', requireAuth, requireAdmin, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const round = await tx.jackpotRound.findFirst({ where: { status: 'waiting' }, include: { entries: true } });
