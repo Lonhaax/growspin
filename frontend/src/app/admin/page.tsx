@@ -11,7 +11,7 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 export default function AdminPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,6 +23,9 @@ export default function AdminPage() {
   const [newFilterWord, setNewFilterWord] = useState("");
   const [depositLogs, setDepositLogs] = useState<any[]>([]);
   const [cryptoDepositLogs, setCryptoDepositLogs] = useState<any[]>([]);
+  
+  const [affiliates, setAffiliates] = useState<any[]>([]);
+  const [affiliatesLoading, setAffiliatesLoading] = useState(false);
 
   // Users state
   const [users, setUsers] = useState<any[]>([]);
@@ -60,6 +63,15 @@ export default function AdminPage() {
       if (res.ok) setWithdrawals(await res.json());
     } catch (e) {}
     setWithdrawalsLoading(false);
+  };
+
+  const fetchAffiliates = async () => {
+    setAffiliatesLoading(true);
+    try {
+      const res = await apiFetch('/admin/affiliates');
+      if (res.ok) setAffiliates(await res.json());
+    } catch (e) {}
+    setAffiliatesLoading(false);
   };
 
   const fetchChat = async () => {
@@ -101,6 +113,7 @@ export default function AdminPage() {
       fetchWithdrawals();
       fetchChat();
       fetchDeposits();
+      fetchAffiliates();
 
       const fetchBots = async () => {
         try {
@@ -564,6 +577,17 @@ export default function AdminPage() {
           >
             <ArrowDownToLine size={15} />
             <span>Deposit Ledger</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("affiliates")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "affiliates"
+                ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Users size={15} />
+            <span>Affiliates</span>
           </button>
         </div>
       </div>
@@ -1703,6 +1727,61 @@ export default function AdminPage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: AFFILIATES */}
+      {activeTab === "affiliates" && (
+        <div className="space-y-6">
+          <div className="bg-[#131620] border border-[#222738] rounded-2xl shadow-xl overflow-hidden">
+            <div className="p-5 border-b border-[#222738] flex items-center justify-between">
+              <h3 className="text-white font-black flex items-center gap-2">
+                <Users className="text-emerald-400" size={18} /> Affiliate Network
+              </h3>
+              <button onClick={fetchAffiliates} className="bg-[#1a1e2b] hover:bg-[#252a3d] text-white p-2 rounded-lg transition-colors">
+                <RefreshCw size={14} className={affiliatesLoading ? "animate-spin" : ""} />
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#1a1e2b] text-[#7a819c] font-black uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="px-6 py-4">Affiliate Username</th>
+                    <th className="px-6 py-4">Affiliate Code</th>
+                    <th className="px-6 py-4">Referred Players</th>
+                    <th className="px-6 py-4">Current Unclaimed Earnings</th>
+                    <th className="px-6 py-4 text-right">Created At</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#222738]">
+                  {affiliates.map((aff) => (
+                    <tr key={aff.id} className="hover:bg-[#1a1e2b]/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-white">{aff.username}</td>
+                      <td className="px-6 py-4">
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-xs font-black uppercase tracking-widest">
+                          {aff.affiliateCode}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-bold text-cyan-400">{aff.referredCount}</td>
+                      <td className="px-6 py-4">
+                        <DLCurrency amount={aff.affiliateEarnings} />
+                      </td>
+                      <td className="px-6 py-4 text-right text-[#7a819c] text-xs font-medium">
+                        {new Date(aff.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {affiliates.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-[#7a819c] font-black text-sm">
+                        No affiliates found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

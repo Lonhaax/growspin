@@ -3524,6 +3524,33 @@ app.post('/api/admin/chat/rain', requireAuth, requireAdmin, async (req: AuthRequ
   }
 });
 
+// GET /api/admin/affiliates - List all affiliates
+app.get('/api/admin/affiliates', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const affiliates = await prisma.user.findMany({
+      where: { affiliateCode: { not: null } },
+      select: {
+        id: true,
+        username: true,
+        affiliateCode: true,
+        affiliateEarnings: true,
+        createdAt: true,
+      },
+      orderBy: { affiliateEarnings: 'desc' }
+    });
+
+    // Manually count referrals for each affiliate since there's no FK relation
+    const enriched = await Promise.all(affiliates.map(async (aff) => {
+      const count = await prisma.user.count({ where: { referredBy: aff.affiliateCode } });
+      return { ...aff, referredCount: count };
+    }));
+
+    res.json(enriched);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/admin/users - List players with search & pagination
 app.get('/api/admin/users', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
