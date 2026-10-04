@@ -19,6 +19,19 @@ import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
 
 const bip32Instance = bip32.BIP32Factory(ecc);
+
+// Affiliate reward helper
+async function processAffiliateReward(tx: any, referredBy: string | null | undefined, wagerAmount: number) {
+  if (!referredBy) return;
+  const affiliateReward = Math.floor(wagerAmount * 0.01);
+  if (affiliateReward > 0) {
+    await tx.user.updateMany({
+      where: { affiliateCode: referredBy },
+      data: { affiliateEarnings: { increment: affiliateReward } }
+    });
+  }
+}
+
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Caddy) to parse X-Forwarded-For
 const httpServer = http.createServer(app);
@@ -1399,6 +1412,7 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = Math.floor(amount * getVIPRakebackPercentage(user.totalWagered)); // dynamic rakeback
+        await processAffiliateReward(tx, user.referredBy, amount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -1466,6 +1480,7 @@ app.post('/api/play/crash', requireAuth, requireNotFrozen, async (req: AuthReque
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = amount * getVIPRakebackPercentage(user.totalWagered);
+        await processAffiliateReward(tx, user.referredBy, amount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -1531,6 +1546,7 @@ app.post('/api/play/dice', requireAuth, requireNotFrozen, async (req: AuthReques
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = Math.floor(amount * getVIPRakebackPercentage(user.totalWagered));
+        await processAffiliateReward(tx, user.referredBy, amount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -1610,6 +1626,7 @@ app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRe
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = Math.floor(amount * getVIPRakebackPercentage(user.totalWagered));
+        await processAffiliateReward(tx, user.referredBy, amount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -1742,6 +1759,7 @@ app.post('/api/play/mines/click', requireAuth, requireNotFrozen, async (req: Aut
           const newXp = user!.xp + game.betAmount;
           const newLevel = calculateLevel(newXp);
           const rakebackAmount = Math.floor(game.betAmount * getVIPRakebackPercentage(user!.totalWagered));
+          await processAffiliateReward(tx, user!.referredBy, game.betAmount);
 
           const updatedUser = await tx.user.update({
             where: { id: userId },
@@ -1829,6 +1847,7 @@ app.post('/api/play/mines/cashout', requireAuth, requireNotFrozen, async (req: A
         const newXp = user!.xp + game.betAmount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = Math.floor(game.betAmount * getVIPRakebackPercentage(user!.totalWagered));
+        await processAffiliateReward(tx, user!.referredBy, game.betAmount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -1906,6 +1925,7 @@ app.post('/api/play/plinko', requireAuth, requireNotFrozen, async (req: AuthRequ
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = amount * getVIPRakebackPercentage(user.totalWagered);
+        await processAffiliateReward(tx, user.referredBy, amount);
 
         const updatedUser = await tx.user.update({
           where: { id: userId },
@@ -2262,6 +2282,7 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
             const newXp = user.xp + selectedCase.price;
             const newLevel = calculateLevel(newXp);
             const rakebackAmount = isBorrow ? 0 : Math.floor(selectedCase.price * getVIPRakebackPercentage(user.totalWagered));
+            if (!isBorrow) await processAffiliateReward(tx, user.referredBy, selectedCase.price);
 
             // Create the item in inventory
             const createdItem = await tx.userItem.create({
@@ -2614,6 +2635,7 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
             rakebackBalance: { increment: Math.floor(entryFee * getVIPRakebackPercentage(user.totalWagered)) }
           }
         });
+        await processAffiliateReward(tx, user.referredBy, entryFee);
 
         const battle = await tx.battle.create({
           data: {
@@ -2677,6 +2699,7 @@ app.post('/api/battles/join', requireAuth, requireNotFrozen, async (req: AuthReq
           rakebackBalance: { increment: Math.floor(battle.entryFee * getVIPRakebackPercentage(user.totalWagered)) }
         }
       });
+      await processAffiliateReward(tx, user.referredBy, battle.entryFee);
 
       const nextPosition = battle.participants.length + 1;
 
@@ -2994,6 +3017,7 @@ app.post('/api/jackpot/join', requireAuth, requireNotFrozen, async (req: AuthReq
           rakebackBalance: { increment: Math.floor(amount * getVIPRakebackPercentage(user.totalWagered)) }
         }
       });
+      await processAffiliateReward(tx, user.referredBy, amount);
 
       const currentTotal = round.totalPotValue;
       const ticketMin = currentTotal;
@@ -4417,6 +4441,7 @@ app.all('/api/bgaming/callback/:sessionId', async (req: Request, res: Response) 
           const newXp = u.xp + finalBetAmount;
           const newLevel = calculateLevel(newXp);
           const rakebackAmount = Math.floor(finalBetAmount * getVIPRakebackPercentage(u.totalWagered));
+          await processAffiliateReward(tx, u.referredBy, finalBetAmount);
 
           const updated = await tx.user.update({
             where: { id: userId },
