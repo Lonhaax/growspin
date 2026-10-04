@@ -59,12 +59,12 @@ export default function Home() {
   ];
 
   const CASINO_ORIGINALS = [
-    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", bg: "bg-gradient-to-b from-[#f59e0b] to-[#b45309]" },
-    { name: "Mines", href: "/mines", image: "/mines.png", bg: "bg-gradient-to-b from-[#ef4444] to-[#991b1b]" },
-    { name: "Roulette", href: "/roulette", image: "/roulette.png", bg: "bg-gradient-to-b from-[#f87171] to-[#b91c1c]" },
-    { name: "Crash", href: "/crash", image: "/crash.png", bg: "bg-gradient-to-b from-[#8b5cf6] to-[#5b21b6]" },
-    { name: "Plinko", href: "/plinko", image: "/plinko.png", bg: "bg-gradient-to-b from-[#ec4899] to-[#9d174d]" },
-    { name: "Dice", href: "/dice", image: "/dice.png", bg: "bg-gradient-to-b from-[#3b82f6] to-[#1e3a8a]" },
+    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", color: "#f59e0b" },
+    { name: "Mines", href: "/mines", image: "/mines.png", color: "#ef4444" },
+    { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
+    { name: "Crash", href: "/crash", image: "/crash.png", color: "#8b5cf6" },
+    { name: "Plinko", href: "/plinko", image: "/plinko.png", color: "#ec4899" },
+    { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
   ];
 
   return (
@@ -207,24 +207,15 @@ export default function Home() {
             <Link
               key={game.name}
               href={game.href}
-              className={`group relative rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[3/4] ${game.bg}`}
+              className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[3/4] bg-[#12141c] border-2"
+              style={{ borderColor: game.color }}
             >
-              <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay pointer-events-none" />
-
-              {/* Central Thumbnail */}
-              <div className="absolute inset-x-0 top-0 bottom-[44px] flex items-center justify-center p-4">
-                <img 
-                  src={game.image} 
-                  alt={game.name} 
-                  className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1"
-                />
-              </div>
-
-              {/* Text Bottom */}
-              <div className="absolute inset-x-0 bottom-0 pb-3 text-center flex flex-col items-center justify-end z-10">
-                <h3 className="text-white font-black text-lg uppercase tracking-wide leading-none drop-shadow-md">{game.name}</h3>
-                <span className="text-[9px] text-white/90 font-bold tracking-wider mt-1 drop-shadow-md">GrowSpin Originals</span>
-              </div>
+              <img 
+                src={game.image} 
+                alt={game.name} 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </Link>
           ))}
         </div>
