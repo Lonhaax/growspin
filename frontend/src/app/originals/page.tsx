@@ -1,29 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Gamepad2,
-  Coins,
-  Bomb,
-  CircleDot,
-  Dices,
-  PackageOpen,
-  AlignEndHorizontal,
-  Swords,
-  Activity,
-  ArrowRight,
-} from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 
 export default function OriginalsPage() {
   const ORIGINALS_GAMES = [
-    { name: "Unbox Cases", href: "/cases", icon: PackageOpen, color: "text-cyan-400", desc: "Spin curated cases for rare artifacts" },
-    { name: "Case Battles", href: "/battles", icon: Swords, color: "text-red-400", desc: "Up to 4 players. Winner takes all loot" },
-    { name: "Coinflip", href: "/coinflip", icon: Coins, color: "text-yellow-400", desc: "50/50 Double or Nothing" },
-    { name: "Mines", href: "/mines", icon: Bomb, color: "text-red-400", desc: "Uncover gems, dodge mines" },
-    { name: "Roulette", href: "/roulette", icon: CircleDot, color: "text-emerald-400", desc: "Classic 14x Red/Black/Green" },
-    { name: "Crash", href: "/crash", icon: Activity, color: "text-blue-400", desc: "Cash out before the rocket crashes" },
-    { name: "Plinko", href: "/plinko", icon: AlignEndHorizontal, color: "text-pink-400", desc: "Drop balls for massive multipliers" },
-    { name: "Dice", href: "/dice", icon: Dices, color: "text-purple-400", desc: "Adjust your target and roll over" },
+    { name: "Unbox Cases", href: "/cases", image: "/cases.png", bg: "bg-gradient-to-b from-[#14b8a6] to-[#0f766e]" },
+    { name: "Case Battles", href: "/battles", image: "/battles.png", bg: "bg-gradient-to-b from-[#f43f5e] to-[#be123c]" },
+    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", bg: "bg-gradient-to-b from-[#f59e0b] to-[#b45309]" },
+    { name: "Mines", href: "/mines", image: "/mines.png", bg: "bg-gradient-to-b from-[#ef4444] to-[#991b1b]" },
+    { name: "Roulette", href: "/roulette", image: "/roulette.png", bg: "bg-gradient-to-b from-[#f87171] to-[#b91c1c]" },
+    { name: "Crash", href: "/crash", image: "/crash.png", bg: "bg-gradient-to-b from-[#8b5cf6] to-[#5b21b6]" },
+    { name: "Plinko", href: "/plinko", image: "/plinko.png", bg: "bg-gradient-to-b from-[#ec4899] to-[#9d174d]" },
+    { name: "Dice", href: "/dice", image: "/dice.png", bg: "bg-gradient-to-b from-[#3b82f6] to-[#1e3a8a]" },
   ];
 
   return (
@@ -47,32 +36,31 @@ export default function OriginalsPage() {
       </div>
 
       {/* Games Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {ORIGINALS_GAMES.map((game) => {
-          const Icon = game.icon;
-          return (
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+        {ORIGINALS_GAMES.map((game) => (
             <Link
               key={game.name}
               href={game.href}
-              className="group relative bg-[#12141c] border border-[#1f2433] hover:border-[#2e364c] rounded-2xl p-6 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#161a24] shadow-lg overflow-hidden"
+              className={`group relative rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[3/4] ${game.bg}`}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-              
-              <div className="w-16 h-16 rounded-2xl bg-[#191d2a] border border-[#282f42] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-inner relative z-10">
-                <Icon size={32} className={game.color} />
+              <div className="absolute inset-0 opacity-[0.03] bg-[url('/noise.png')] mix-blend-overlay pointer-events-none" />
+
+              {/* Central Thumbnail */}
+              <div className="absolute inset-x-0 top-0 bottom-[44px] flex items-center justify-center p-4">
+                <img 
+                  src={game.image} 
+                  alt={game.name} 
+                  className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1"
+                />
               </div>
-              
-              <h3 className="text-lg font-black text-white group-hover:text-cyan-300 transition-colors relative z-10 flex items-center gap-2">
-                {game.name}
-                <ArrowRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-              </h3>
-              
-              <p className="text-xs text-[#69708a] font-medium mt-2 leading-relaxed relative z-10">
-                {game.desc}
-              </p>
+
+              {/* Text Bottom */}
+              <div className="absolute inset-x-0 bottom-0 pb-3 text-center flex flex-col items-center justify-end z-10">
+                <h3 className="text-white font-black text-lg uppercase tracking-wide leading-none drop-shadow-md">{game.name}</h3>
+                <span className="text-[9px] text-white/90 font-bold tracking-wider mt-1 drop-shadow-md">GrowSpin Originals</span>
+              </div>
             </Link>
-          );
-        })}
+        ))}
       </div>
     </div>
   );
