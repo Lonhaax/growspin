@@ -35,69 +35,45 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-24">
       {/* Top Main Hero Banner */}
-      <section className="relative w-full rounded-2xl overflow-hidden border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-gradient-to-r from-[#0d121c] to-[#121927] min-h-[260px] flex items-center">
-        {/* Mock background image */}
-        <div className="absolute inset-0 opacity-40 bg-[url('/banner-bg.png')] bg-cover bg-center pointer-events-none mix-blend-screen" />
-        
-        <div className="relative z-10 p-8 sm:p-12 max-w-2xl">
-          <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2">Welcome to</div>
-          <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
-            GrowSpin
-          </h1>
-          <p className="text-[#878eab] font-medium text-sm sm:text-base mb-8 max-w-md">
-            Provably-fair Growtopia games — sign up and start playing.
-          </p>
-          <Link href="/cases" className="inline-flex items-center gap-2 px-6 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-lg transition-colors shadow-lg">
-            Get started <ArrowRight size={18} className="ml-1" />
-          </Link>
-        </div>
+      <section className="relative w-full rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-[#1a1e2b] min-h-[200px] sm:min-h-[260px] flex items-center cursor-pointer group">
+        <img 
+          src="/main-banner.png" 
+          alt="Welcome to GrowSpin" 
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" 
+          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/1200x300/1a1e2b/0ea5e9?text=Welcome+Banner' }}
+        />
       </section>
 
       {/* Sub Promo Banners */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
         {/* Rakeback */}
-        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#1b2233] to-[#0c0e14] p-6 min-h-[180px] group cursor-pointer hover:border-amber-500/50 transition-colors shadow-md">
-          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/rakeback-bg.png')" }} />
-          <div className="relative z-10">
-            <div className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5 drop-shadow-sm">Rakeback</div>
-            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">0.25% back on every bet</h3>
-            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
-              Rakeback builds up on every single bet you place — win or lose. Claim it whenever you want.
-            </p>
-            <div className="text-amber-500 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-              Claim rakeback <ArrowRight size={14} />
-            </div>
-          </div>
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+          <img 
+            src="/rakeback.png" 
+            alt="Rakeback" 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Rakeback' }}
+          />
         </div>
 
         {/* Affiliate */}
-        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#12261f] to-[#0a0c10] p-6 min-h-[180px] group cursor-pointer hover:border-emerald-500/50 transition-colors shadow-md">
-          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/affiliate-bg.png')" }} />
-          <div className="relative z-10">
-            <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 drop-shadow-sm">Affiliate</div>
-            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">Earn up to 1% of every bet</h3>
-            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
-              Invite your friends and earn a cut of everything they wager, for as long as they play.
-            </p>
-            <div className="text-emerald-500 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-              Start earning <ArrowRight size={14} />
-            </div>
-          </div>
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+          <img 
+            src="/affiliate.png" 
+            alt="Affiliate" 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Affiliate' }}
+          />
         </div>
 
         {/* Free to Play */}
-        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#201c38] to-[#0a0c10] p-6 min-h-[180px] group cursor-pointer hover:border-indigo-400/50 transition-colors shadow-md">
-          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/free-bg.png')" }} />
-          <div className="relative z-10">
-            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5 drop-shadow-sm">Free to Play</div>
-            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">Free rewards in Discord</h3>
-            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
-              Daily reward cases, giveaways and drops — start playing without depositing a thing.
-            </p>
-            <div className="text-indigo-400 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
-              Join Discord <ArrowRight size={14} />
-            </div>
-          </div>
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+          <img 
+            src="/free.png" 
+            alt="Free to Play" 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Free+to+Play' }}
+          />
         </div>
       </section>
 
