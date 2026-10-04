@@ -59,12 +59,12 @@ export default function Home() {
   ];
 
   const CASINO_ORIGINALS = [
-    { name: "Coinflip", href: "/coinflip", icon: Coins, color: "text-yellow-400", desc: "50/50 Double or Nothing" },
-    { name: "Mines", href: "/mines", icon: Bomb, color: "text-red-400", desc: "Uncover gems, dodge mines" },
-    { name: "Roulette", href: "/roulette", icon: CircleDot, color: "text-emerald-400", desc: "Classic 14x Red/Black/Green" },
-    { name: "Crash", href: "/crash", icon: Activity, color: "text-blue-400", desc: "Cash out before the rocket crashes" },
-    { name: "Plinko", href: "/plinko", icon: AlignEndHorizontal, color: "text-pink-400", desc: "Drop balls for massive multipliers" },
-    { name: "Dice", href: "/dice", icon: Dices, color: "text-purple-400", desc: "Adjust your target and roll over" },
+    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png" },
+    { name: "Mines", href: "/mines", image: "/mines.png" },
+    { name: "Roulette", href: "/roulette", image: "/roulette.png" },
+    { name: "Crash", href: "/crash", image: "/crash.png" },
+    { name: "Plinko", href: "/plinko", image: "/plinko.png" },
+    { name: "Dice", href: "/dice", image: "/dice.png" },
   ];
 
   return (
@@ -203,22 +203,20 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CASINO_ORIGINALS.map((game) => {
-            const Icon = game.icon;
-            return (
-              <Link
-                key={game.name}
-                href={game.href}
-                className="group relative bg-[#12141c] border border-[#1f2433] hover:border-[#2e364c] rounded-2xl p-4 flex flex-col items-center text-center transition-all duration-200 hover:-translate-y-1 hover:bg-[#161a24] shadow-md"
-              >
-                <div className="w-14 h-14 rounded-xl bg-[#191d2a] border border-[#282f42] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-inner">
-                  <Icon size={26} className={game.color} />
-                </div>
-                <h3 className="text-sm font-black text-white group-hover:text-cyan-300 transition-colors">{game.name}</h3>
-                <p className="text-[10px] text-[#69708a] font-medium mt-1 leading-tight line-clamp-2">{game.desc}</p>
-              </Link>
-            );
-          })}
+          {CASINO_ORIGINALS.map((game) => (
+            <Link
+              key={game.name}
+              href={game.href}
+              className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[4/5] bg-[#12141c] border border-[#1f2433] hover:border-cyan-500/50"
+            >
+              <img 
+                src={game.image} 
+                alt={game.name} 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </Link>
+          ))}
         </div>
       </section>
       {/* Live Bets Feed */}
