@@ -3125,35 +3125,19 @@ app.post('/api/admin/items', requireAuth, requireAdmin, async (req: AuthRequest,
     const existing = await prisma.adminItem.findUnique({ where: { name } });
     if (existing) return res.status(400).json({ error: 'Item already exists' });
 
-    // Fetch Image
+    // Use the provided image URL directly
     let imageUrl = req.body.customImageUrl || '';
 
     if (!imageUrl) {
       return res.status(400).json({ error: 'Fandom API is blocked. You must provide a direct Image URL.' });
     }
 
-    // Download image
-    const imageFilename = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
-    const imagePath = path.join(__dirname, '../frontend/public/items', imageFilename);
-    
-    // Ensure dir exists
-    fs.mkdirSync(path.join(__dirname, '../frontend/public/items'), { recursive: true });
-
-    const imgStream = await axios.get(imageUrl, { responseType: 'stream', headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const writer = fs.createWriteStream(imagePath);
-    imgStream.data.pipe(writer);
-
-    await new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(true));
-      writer.on('error', reject);
-    });
-
     const item = await prisma.adminItem.create({
       data: {
         name,
         value,
         color: color || '#ffffff',
-        imageUrl: `/items/${imageFilename}`
+        imageUrl: imageUrl
       }
     });
 
