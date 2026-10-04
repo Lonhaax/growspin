@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getAccessToken } from "@/lib/auth";
-import { Sparkles, Play, Maximize2, Minimize2, X, RefreshCw, ShieldCheck, Flame, Coins } from "lucide-react";
+import { Sparkles, Play, Maximize2, Minimize2, X, RefreshCw } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 
 interface SlotGame {
@@ -101,30 +101,9 @@ export default function SlotsPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-32">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950/40 via-[#151922] to-cyan-950/40 border border-emerald-500/20 p-8 shadow-2xl">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black mb-4">
-            <Sparkles size={14} /> Official BGaming Slots Provider
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-3">
-            Real Vegas Slots with <span className="text-emerald-400">Diamond Locks</span>
-          </h1>
-          <p className="text-sm text-[#878eab] leading-relaxed mb-6">
-            Play iconic high-RTP slots directly on GrowSpin. Bets and winnings seamlessly settle into your Diamond Lock balance in real-time.
-          </p>
-          <div className="flex items-center gap-4 text-xs font-bold text-[#7a819c]">
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <ShieldCheck size={16} /> Provably Fair Engine
-            </div>
-            <span>•</span>
-            <div className="flex items-center gap-1.5 text-amber-400">
-              <Coins size={16} /> Instant DL Settlements
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="max-w-screen-2xl mx-auto pb-32">
+      {/* Title */}
+      <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide mb-6">Slots</h1>
 
       {/* Active Game Modal / Container */}
       {activeGame && (
@@ -188,78 +167,83 @@ export default function SlotsPage() {
         </div>
       )}
 
-      {/* Slots Grid */}
+      {/* Slots Filters & Grid */}
       <div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-[#13161f] p-4 rounded-2xl border border-[#202535]">
-          <div className="flex flex-wrap items-center gap-2">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${selectedCategory === category ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-[#191d29] text-[#7a819c] hover:text-white hover:bg-[#232838]'}`}
-              >
-                {category}
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            placeholder="Search for Game..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#1b1f2b] border border-[#282d3e] rounded-lg px-4 py-3.5 text-sm font-medium text-white placeholder-[#5a627a] focus:outline-none focus:border-cyan-500/50 transition-colors shadow-inner"
+          />
+        </div>
+
+        {/* Filters Toolbar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-sm font-bold text-[#878eab]">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span>Filter by</span>
+              <button className="bg-[#1b1f2b] border border-[#282d3e] rounded-md px-3 py-1.5 flex items-center gap-2 hover:bg-[#242938] transition-colors">
+                <span className="text-white">Providers</span>
+                <span className="text-[#5a627a] text-[10px]">▼</span>
               </button>
-            ))}
+            </div>
           </div>
-          <div className="relative w-full md:w-64">
-            <input
-              type="text"
-              placeholder="Search games..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0a0c10] border border-[#232838] rounded-xl px-4 py-2 text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-emerald-500/50 transition-colors"
-            />
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span>Sort by</span>
+              <button className="bg-[#1b1f2b] border border-[#282d3e] rounded-md px-3 py-1.5 flex items-center gap-2 hover:bg-[#242938] transition-colors">
+                <span className="text-white">Popular</span>
+                <span className="text-[#5a627a] text-[10px]">▼</span>
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Toggle DLs */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-9 h-5 bg-cyan-500 rounded-full flex items-center p-0.5 cursor-pointer shadow-inner">
+            <div className="w-4 h-4 bg-white rounded-full translate-x-4 shadow-sm" />
+          </div>
+          <span className="text-sm font-bold text-white tracking-wide">Only games that support DLs</span>
         </div>
 
         {loading ? (
           <div className="text-center py-20 text-[#7a819c] font-bold animate-pulse">Loading games...</div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-9 gap-2.5">
             {filteredGames.length === 0 ? (
               <div className="col-span-full text-center py-12 text-[#7a819c] font-bold">No games found.</div>
             ) : filteredGames.map(game => (
               <div
                 key={game.id}
                 onClick={() => handleLaunchGame(game)}
-                className="group relative bg-[#13161f] border border-[#202535] hover:border-emerald-500/50 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] flex flex-col"
+                className="group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl aspect-[3/4] bg-[#1a1e2b]"
               >
-                {/* Thumbnail */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#1a1e2b]">
-                  <img
-                    src={game.image}
-                    alt={game.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://placehold.co/400x300/1e293b/10b981?text=${encodeURIComponent(game.name)}`;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#13161f] via-transparent to-transparent opacity-80" />
-
-                  {/* Play Overlay Button */}
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.8)] scale-90 group-hover:scale-100 transition-transform">
-                      <Play fill="currentColor" size={20} className="ml-1" />
-                    </div>
-                  </div>
-
-                  {/* Provider Tag */}
-                  <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-black text-emerald-400">
-                    BGAMING
+                {/* BGaming Thumbnail Image (these images usually contain the text natively) */}
+                <img
+                  src={game.image}
+                  alt={game.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://placehold.co/400x533/1e293b/10b981?text=${encodeURIComponent(game.name)}`;
+                  }}
+                />
+                
+                {/* Subtle dark gradient overlay on hover */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                  <div className="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.8)] scale-90 group-hover:scale-100 transition-transform">
+                    <Play fill="currentColor" size={16} className="ml-0.5" />
                   </div>
                 </div>
 
-                {/* Info Footer */}
-                <div className="p-3.5 flex flex-col justify-between flex-1">
-                  <div className="font-black text-white text-xs sm:text-sm truncate group-hover:text-emerald-400 transition-colors">
-                    {game.name}
-                  </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#202535] text-[10px] text-[#7a819c] font-bold">
-                    <span>96.5% RTP</span>
-                    <span className="text-emerald-400">DL Currency</span>
-                  </div>
+                {/* Top Right Info/Lock Icon (Mocking BetDice style) */}
+                <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#191d29]/80 backdrop-blur-sm rounded-sm flex items-center justify-center border border-white/10 shadow-sm z-10 text-[9px] text-cyan-400 font-black">
+                  i
                 </div>
               </div>
             ))}
