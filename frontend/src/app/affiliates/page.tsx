@@ -233,7 +233,7 @@ export default function AffiliatesPage() {
             <div className="bg-[#121927] border border-emerald-500/30 rounded-xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.05)] flex flex-col justify-between">
               <div>
                 <div className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-1">Available Earnings</div>
-                <div className="text-3xl font-black text-white">{formatCurrency(stats?.earnings || 0)} <span className="text-emerald-500 text-xl">DLs</span></div>
+                <div className="text-3xl font-black text-white">{formatCurrency((stats?.earnings || 0) / 100)} <span className="text-emerald-500 text-xl">DLs</span></div>
               </div>
               <button
                 onClick={handleClaim}
