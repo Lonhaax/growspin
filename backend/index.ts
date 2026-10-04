@@ -943,7 +943,7 @@ app.post('/api/affiliates/code', requireAuth, async (req: AuthRequest, res: Resp
     }
 
     await prisma.user.update({
-      where: { id: req.user!.id },
+      where: { id: req.userId! },
       data: { affiliateCode: code.toLowerCase() }
     });
 
@@ -958,7 +958,7 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
   if (!code) return res.status(400).json({ error: 'No code provided' });
 
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
     if (user?.referredBy) {
       return res.status(400).json({ error: 'You have already applied a referral code.' });
     }
@@ -968,12 +968,12 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
       return res.status(400).json({ error: 'Invalid referral code.' });
     }
 
-    if (referrer.id === req.user!.id) {
+    if (referrer.id === req.userId!) {
       return res.status(400).json({ error: 'You cannot refer yourself.' });
     }
 
     await prisma.user.update({
-      where: { id: req.user!.id },
+      where: { id: req.userId! },
       data: { referredBy: referrer.affiliateCode }
     });
 
@@ -985,7 +985,7 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
 
 app.get('/api/affiliates/stats', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
     const code = user?.affiliateCode;
     let referredCount = 0;
     
@@ -1006,8 +1006,8 @@ app.get('/api/affiliates/stats', requireAuth, async (req: AuthRequest, res: Resp
 
 app.post('/api/affiliates/claim', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const result = await withUserLock(req.user!.id, async () => {
-      const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    const result = await withUserLock(req.userId!, async () => {
+      const user = await prisma.user.findUnique({ where: { id: req.userId! } });
       if (!user) throw new Error('User not found');
       
       const claimAmount = user.affiliateEarnings;
