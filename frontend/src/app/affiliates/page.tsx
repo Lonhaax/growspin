@@ -16,7 +16,7 @@ interface AffiliateStats {
 }
 
 export default function AffiliatesPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [stats, setStats] = useState<AffiliateStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [newCode, setNewCode] = useState("");
@@ -142,7 +142,8 @@ export default function AffiliatesPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccess(`Successfully claimed ${formatCurrency(data.claimed)} DLs!`);
+        setSuccess(`Successfully claimed ${formatCurrency(data.claimed / 100)} DLs!`);
+        refreshUser();
         fetchStats();
       } else {
         setError(data.error || "Failed to claim earnings.");
