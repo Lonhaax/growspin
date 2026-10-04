@@ -3199,9 +3199,32 @@ app.post('/api/admin/cases', requireAuth, requireAdmin, async (req: AuthRequest,
 // POST /api/admin/cases/generate
 app.post('/api/admin/cases/generate', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
-    if (items.length < 5) {
-      return res.status(400).json({ error: 'Please add at least 5 items to the database first.' });
+    let items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
+    
+    // Auto-bootstrap default items if empty
+    if (items.length < 10) {
+      const defaultItems = [
+        { name: "Dirt Seed", value: 1, color: "#8B4513", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/32/y-offset/0/window-width/32/window-height/32?format=webp" },
+        { name: "World Lock", value: 1, color: "#FFD700", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/3872/y-offset/0/window-width/32/window-height/32?format=webp" },
+        { name: "Angel Wings", value: 50, color: "#FFFFFF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/384/y-offset/32/window-width/32/window-height/32?format=webp" },
+        { name: "Diamond Lock", value: 100, color: "#00FFFF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/64/y-offset/224/window-width/32/window-height/32?format=webp" },
+        { name: "Golden Pickaxe", value: 500, color: "#DAA520", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/160/y-offset/128/window-width/32/window-height/32?format=webp" },
+        { name: "Da Vinci Wings", value: 2500, color: "#C0C0C0", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1760/y-offset/704/window-width/32/window-height/32?format=webp" },
+        { name: "Rayman's Fist", value: 5000, color: "#FFA500", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1664/y-offset/672/window-width/32/window-height/32?format=webp" },
+        { name: "Magplant 5000", value: 8000, color: "#00FF00", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/96/y-offset/704/window-width/32/window-height/32?format=webp" },
+        { name: "Blue Gem Lock", value: 10000, color: "#0000FF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/2752/y-offset/736/window-width/32/window-height/32?format=webp" },
+        { name: "Ghon's Cloak", value: 20000, color: "#FF00FF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/2912/y-offset/1088/window-width/32/window-height/32?format=webp" }
+      ];
+
+      for (const di of defaultItems) {
+        const exists = await prisma.adminItem.findUnique({ where: { name: di.name } });
+        if (!exists) {
+          await prisma.adminItem.create({ data: di });
+        }
+      }
+      
+      // Reload items after bootstrapping
+      items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
     }
 
     // Split items into tiers
@@ -3209,22 +3232,29 @@ app.post('/api/admin/cases/generate', requireAuth, requireAdmin, async (req: Aut
     const midTier = items.slice(Math.floor(items.length / 3), Math.floor((items.length / 3) * 2));
     const highTier = items.slice(Math.floor((items.length / 3) * 2));
 
-    const themes = [
-      { name: "Dirt Seed Box", mainItems: lowTier, rareItems: midTier, extremeItems: highTier },
-      { name: "World Lock Safe", mainItems: midTier, rareItems: highTier, extremeItems: lowTier },
-      { name: "Diamond Lock Vault", mainItems: highTier, rareItems: midTier, extremeItems: lowTier },
-      { name: "BGL Stash", mainItems: highTier, rareItems: highTier, extremeItems: midTier }
-    ];
-
     const generatedCases = [];
 
-    for (const theme of themes) {
+    // Let's create 4 tiers of cases based on value chunks
+    const tiers = [
+      { prefix: "Starter ", mainItems: lowTier, rareItems: midTier, extremeItems: highTier },
+      { prefix: "Advanced ", mainItems: midTier, rareItems: highTier, extremeItems: lowTier },
+      { prefix: "Elite ", mainItems: highTier, rareItems: midTier, extremeItems: lowTier },
+      { prefix: "God ", mainItems: highTier, rareItems: highTier, extremeItems: midTier }
+    ];
+
+    for (const tier of tiers) {
       // Pick random items for this case
       const selectedItems = [
-        ...theme.mainItems.sort(() => 0.5 - Math.random()).slice(0, 3),
-        ...theme.rareItems.sort(() => 0.5 - Math.random()).slice(0, 2),
-        ...theme.extremeItems.sort(() => 0.5 - Math.random()).slice(0, 1)
+        ...tier.mainItems.sort(() => 0.5 - Math.random()).slice(0, 3),
+        ...tier.rareItems.sort(() => 0.5 - Math.random()).slice(0, 2),
+        ...tier.extremeItems.sort(() => 0.5 - Math.random()).slice(0, 1)
       ].filter(Boolean);
+
+      if (selectedItems.length === 0) continue;
+
+      // Find the most valuable item in this selection to name the case after it
+      const topItem = selectedItems.reduce((prev, current) => (prev.value > current.value) ? prev : current);
+      const caseName = `${tier.prefix}${topItem.name} Box`;
 
       // Inverse weighting to assign probabilities (higher value = exponentially lower chance)
       let rawWeights = selectedItems.map(item => ({
@@ -3259,7 +3289,7 @@ app.post('/api/admin/cases/generate', requireAuth, requireAdmin, async (req: Aut
 
       const newCase = await prisma.case.create({
         data: {
-          name: theme.name,
+          name: caseName,
           price: finalPriceCents,
           image: defaultImage,
           items: {
