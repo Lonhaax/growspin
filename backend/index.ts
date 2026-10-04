@@ -3595,7 +3595,7 @@ app.get('/api/admin/affiliates', requireAuth, requireAdmin, async (req: AuthRequ
 // POST /api/admin/affiliates/:id/ban - Delete code and lock account
 app.post('/api/admin/affiliates/:id/ban', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const affiliateId = parseInt(req.params.id);
+    const affiliateId = parseInt(req.params.id as string);
     const user = await prisma.user.findUnique({ where: { id: affiliateId } });
     if (!user || !user.affiliateCode) throw new Error("Affiliate not found");
 
