@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { LiveBetsFeed } from "@/components/ui/LiveBetsFeed";
 import {
@@ -33,62 +32,72 @@ export default function Home() {
     { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
   ];
 
-  const PROMO_BANNERS = [
-    { id: 1, image: "/banner1.png", fallbackBg: "from-blue-600 to-purple-600", title: "Welcome Bonus", subtitle: "100% Match up to 100 DLs" },
-    { id: 2, image: "/banner2.png", fallbackBg: "from-emerald-600 to-cyan-600", title: "Daily Race", subtitle: "Win your share of 50 DLs daily" },
-    { id: 3, image: "/banner3.png", fallbackBg: "from-orange-500 to-red-600", title: "New Game Released", subtitle: "Try the new PvP Case Battles" }
-  ];
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        // If we've reached the end, scroll back to the start
-        if (scrollLeft + clientWidth >= scrollWidth - 10) {
-          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          // Scroll by roughly the width of one banner
-          scrollRef.current.scrollBy({ left: clientWidth * 0.33, behavior: "smooth" });
-        }
-      }
-    }, 4000); // Scroll every 4 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="max-w-7xl mx-auto space-y-12 pb-24">
-      {/* Promotional Banners Carousel */}
-      <section className="relative w-full -mt-4">
-        <div 
-          ref={scrollRef}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-1 scroll-smooth"
-        >
-          {PROMO_BANNERS.map((banner) => (
-            <div 
-              key={banner.id} 
-              className={`min-w-[85%] md:min-w-[48%] lg:min-w-[32.5%] snap-start shrink-0 rounded-2xl overflow-hidden aspect-[21/9] sm:aspect-[2.5/1] relative bg-gradient-to-r ${banner.fallbackBg} cursor-pointer group shadow-lg`}
-            >
-              {/* Optional image overlay */}
-              <img 
-                src={banner.image} 
-                alt={banner.title} 
-                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay group-hover:scale-105 transition-transform duration-500 opacity-50" 
-                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
-              />
-              
-              <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-center">
-                <h3 className="text-xl sm:text-2xl font-black text-white drop-shadow-md">{banner.title}</h3>
-                <p className="text-sm sm:text-base text-white/90 font-bold mt-1 drop-shadow-md">{banner.subtitle}</p>
-                <div className="mt-3 sm:mt-5">
-                  <span className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-white font-bold text-xs sm:text-sm transition-colors border border-white/20 inline-block">
-                    Read More
-                  </span>
-                </div>
-              </div>
+    <div className="max-w-7xl mx-auto space-y-6 pb-24">
+      {/* Top Main Hero Banner */}
+      <section className="relative w-full rounded-2xl overflow-hidden border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-gradient-to-r from-[#0d121c] to-[#121927] min-h-[260px] flex items-center">
+        {/* Mock background image */}
+        <div className="absolute inset-0 opacity-40 bg-[url('/banner-bg.png')] bg-cover bg-center pointer-events-none mix-blend-screen" />
+        
+        <div className="relative z-10 p-8 sm:p-12 max-w-2xl">
+          <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2">Welcome to</div>
+          <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
+            GrowSpin
+          </h1>
+          <p className="text-[#878eab] font-medium text-sm sm:text-base mb-8 max-w-md">
+            Provably-fair Growtopia games — sign up and start playing.
+          </p>
+          <Link href="/cases" className="inline-flex items-center gap-2 px-6 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-lg transition-colors shadow-lg">
+            Get started <ArrowRight size={18} className="ml-1" />
+          </Link>
+        </div>
+      </section>
+
+      {/* Sub Promo Banners */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+        {/* Rakeback */}
+        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#1b2233] to-[#0c0e14] p-6 min-h-[180px] group cursor-pointer hover:border-amber-500/50 transition-colors shadow-md">
+          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/rakeback-bg.png')" }} />
+          <div className="relative z-10">
+            <div className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5 drop-shadow-sm">Rakeback</div>
+            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">0.25% back on every bet</h3>
+            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
+              Rakeback builds up on every single bet you place — win or lose. Claim it whenever you want.
+            </p>
+            <div className="text-amber-500 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+              Claim rakeback <ArrowRight size={14} />
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Affiliate */}
+        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#12261f] to-[#0a0c10] p-6 min-h-[180px] group cursor-pointer hover:border-emerald-500/50 transition-colors shadow-md">
+          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/affiliate-bg.png')" }} />
+          <div className="relative z-10">
+            <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5 drop-shadow-sm">Affiliate</div>
+            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">Earn up to 1% of every bet</h3>
+            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
+              Invite your friends and earn a cut of everything they wager, for as long as they play.
+            </p>
+            <div className="text-emerald-500 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+              Start earning <ArrowRight size={14} />
+            </div>
+          </div>
+        </div>
+
+        {/* Free to Play */}
+        <div className="relative rounded-2xl overflow-hidden border border-[#232838] bg-gradient-to-br from-[#201c38] to-[#0a0c10] p-6 min-h-[180px] group cursor-pointer hover:border-indigo-400/50 transition-colors shadow-md">
+          <div className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-right group-hover:scale-105 transition-transform duration-500" style={{ backgroundImage: "url('/free-bg.png')" }} />
+          <div className="relative z-10">
+            <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1.5 drop-shadow-sm">Free to Play</div>
+            <h3 className="text-xl font-black text-white mb-2.5 drop-shadow-md">Free rewards in Discord</h3>
+            <p className="text-xs text-[#878eab] font-medium leading-relaxed mb-6 max-w-[220px]">
+              Daily reward cases, giveaways and drops — start playing without depositing a thing.
+            </p>
+            <div className="text-indigo-400 text-xs font-bold flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+              Join Discord <ArrowRight size={14} />
+            </div>
+          </div>
         </div>
       </section>
 
