@@ -8,15 +8,11 @@ import {
   Bomb,
   CircleDot,
   Dices,
-  PackageOpen,
   AlignEndHorizontal,
-  Swords,
   Flame,
   Activity,
-  Crown,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -36,81 +32,41 @@ export default function Home() {
     { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
   ];
 
+  const PROMO_BANNERS = [
+    { id: 1, image: "/banner1.png", fallbackBg: "from-blue-600 to-purple-600", title: "Welcome Bonus", subtitle: "100% Match up to 100 DLs" },
+    { id: 2, image: "/banner2.png", fallbackBg: "from-emerald-600 to-cyan-600", title: "Daily Race", subtitle: "Win your share of 50 DLs daily" },
+    { id: 3, image: "/banner3.png", fallbackBg: "from-orange-500 to-red-600", title: "New Game Released", subtitle: "Try the new PvP Case Battles" }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-24">
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#131620] to-[#0c0e14] border border-[#222738] p-6 md:p-8 shadow-2xl">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-accent-green/10 blur-[120px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="max-w-2xl space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 font-bold text-xs">
-              <img src="/dl.webp" alt="DL" className="w-4 h-4 object-contain" />
-              <span>Provably Fair Diamond Lock Casino</span>
-            </div>
-
-            <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight">
-              Unbox. Battle. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-emerald-400 to-accent-green">
-                Multiply Your DLs.
-              </span>
-            </h1>
-
-            <p className="text-[#878eab] text-base md:text-lg max-w-xl font-medium leading-relaxed">
-              Experience transparent, instant-action gaming. Compete in PvP Case Battles, unbox genuine Growtopia grails, or climb the VIP ladder for daily free rewards.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-              <Link
-                href="/cases"
-                className="px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-black rounded-xl shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2"
-              >
-                <span>Open Cases</span>
-                <PackageOpen size={18} />
-              </Link>
-              <Link
-                href="/battles"
-                className="px-6 py-3.5 bg-[#171a25] hover:bg-[#1f2332] text-white border border-[#2a2f42] font-black rounded-xl transition-all shadow-lg flex items-center gap-2"
-              >
-                <span>Create Battle</span>
-                <Swords size={18} />
-              </Link>
-
-            </div>
-          </div>
-
-          {/* Quick Stat Card */}
-          <div className="w-full lg:w-80 bg-[#151824]/90 backdrop-blur-md border border-[#262c3f] rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#202535]">
-              <span className="text-xs font-bold text-[#878eab] uppercase tracking-wider">Casino Live Status</span>
-              <span className="flex items-center gap-1.5 text-xs font-black text-accent-green">
-                <span className="w-2 h-2 rounded-full bg-accent-green animate-ping" />
-                ONLINE
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#0e1017] border border-[#1d2230]">
-                <span className="text-xs font-semibold text-[#878eab]">House Fairness</span>
-                <span className="text-xs font-black text-white flex items-center gap-1">
-                  <ShieldCheck size={14} className="text-cyan-400" /> 100% Verifiable
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#0e1017] border border-[#1d2230]">
-                <span className="text-xs font-semibold text-[#878eab]">Daily VIP Drop</span>
-                <span className="text-xs font-black text-amber-400 flex items-center gap-1">
-                  <Crown size={14} /> Tiered Rewards
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#0e1017] border border-[#1d2230]">
-                <span className="text-xs font-semibold text-[#878eab]">Native Currency</span>
-                <span className="text-xs font-black text-white flex items-center gap-1.5">
-                  <img src="/dl.webp" alt="DL" className="w-4 h-4 object-contain" /> Diamond Lock
-                </span>
+      {/* Promotional Banners Carousel */}
+      <section className="relative w-full -mt-4">
+        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-1">
+          {PROMO_BANNERS.map((banner) => (
+            <div 
+              key={banner.id} 
+              className={`min-w-[85%] md:min-w-[48%] lg:min-w-[32.5%] snap-start shrink-0 rounded-2xl overflow-hidden aspect-[21/9] sm:aspect-[2.5/1] relative bg-gradient-to-r ${banner.fallbackBg} cursor-pointer group shadow-lg`}
+            >
+              {/* Optional image overlay */}
+              <img 
+                src={banner.image} 
+                alt={banner.title} 
+                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay group-hover:scale-105 transition-transform duration-500 opacity-50" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+              />
+              
+              <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl font-black text-white drop-shadow-md">{banner.title}</h3>
+                <p className="text-sm sm:text-base text-white/90 font-bold mt-1 drop-shadow-md">{banner.subtitle}</p>
+                <div className="mt-3 sm:mt-5">
+                  <span className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-white font-bold text-xs sm:text-sm transition-colors border border-white/20 inline-block">
+                    Read More
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
