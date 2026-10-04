@@ -35,43 +35,52 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-24">
       {/* Top Main Hero Banner */}
-      <section className="relative w-full rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-[#1a1e2b] min-h-[200px] sm:min-h-[260px] flex items-center cursor-pointer group">
-        <img 
-          src="/main-banner.png" 
-          alt="Welcome to GrowSpin" 
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" 
-          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/1200x300/1a1e2b/0ea5e9?text=Welcome+Banner' }}
-        />
+      <section className="relative w-full rounded-2xl overflow-hidden border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-gradient-to-r from-[#0d121c] to-[#121927] min-h-[260px] flex items-center mb-6">
+        {/* Mock background image */}
+        <div className="absolute inset-0 opacity-40 bg-[url('/main-banner.png')] bg-cover bg-center pointer-events-none mix-blend-screen" />
+        
+        <div className="relative z-10 p-8 sm:p-12 max-w-2xl">
+          <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2">Welcome to</div>
+          <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
+            GrowSpin
+          </h1>
+          <p className="text-[#878eab] font-medium text-sm sm:text-base mb-8 max-w-md">
+            The Premier Growtopia Diamond Lock Casino
+          </p>
+          <Link href="/cases" className="inline-flex items-center gap-2 px-6 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-lg transition-colors shadow-lg">
+            Get started <ArrowRight size={18} className="ml-1" />
+          </Link>
+        </div>
       </section>
 
       {/* Sub Promo Banners */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
         {/* Rakeback */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 bg-[#1a1e2b] group">
           <img 
             src="/rakeback.png" 
             alt="Rakeback" 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Rakeback' }}
           />
         </div>
 
         {/* Affiliate */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 bg-[#1a1e2b] group">
           <img 
             src="/affiliate.png" 
             alt="Affiliate" 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Affiliate' }}
           />
         </div>
 
         {/* Free to Play */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 aspect-[2/1] sm:aspect-[2.2/1] bg-[#1a1e2b] group">
+        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 bg-[#1a1e2b] group">
           <img 
             src="/free.png" 
             alt="Free to Play" 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Free+to+Play' }}
           />
         </div>
