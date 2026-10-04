@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { withUserLock } from './utils/mutex';
 import axios from 'axios';
+import * as cheerio from 'cheerio';
 import crypto from 'crypto';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -3639,6 +3640,51 @@ app.post('/api/admin/affiliates/:id/unban', requireAuth, requireAdmin, async (re
     res.json({ success: true, message: "Affiliate account unlocked and reinstated." });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/scrape-sprite
+app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  const { itemName } = req.body;
+  if (!itemName) return res.status(400).json({ error: 'Item name is required' });
+
+  try {
+    // 1. Hit the Search API to find the exact page title
+    const searchRes = await axios.get(`https://growtopia.fandom.com/en/api/v1/SearchSuggestions/List?query=${encodeURIComponent(itemName)}`);
+    const items = searchRes.data?.items;
+    
+    if (!items || items.length === 0) {
+      return res.status(404).json({ error: 'Item not found on Fandom Wiki' });
+    }
+
+    const title = items[0].title;
+    
+    // 2. Fetch the page HTML
+    const pageRes = await axios.get(`https://growtopia.fandom.com/en/wiki/${encodeURIComponent(title)}`);
+    const $ = cheerio.load(pageRes.data);
+    
+    let imageUrl = '';
+    
+    // The python script looks for div.gtw-card and then div.card-header img src
+    const card = $('.gtw-card').first();
+    if (card.length > 0) {
+      imageUrl = card.find('.card-header img').attr('src') || '';
+    } else {
+      // Fallback: just try to find the first infobox image
+      imageUrl = $('.infobox img').first().attr('src') || '';
+    }
+
+    if (!imageUrl) {
+      return res.status(404).json({ error: 'Could not find sprite on the wiki page' });
+    }
+
+    // Clean up URL (sometimes fandom wiki appends revision tags we don't need)
+    const cleanUrl = imageUrl.split('/revision/')[0];
+    
+    res.json({ success: true, imageUrl: cleanUrl });
+  } catch (err: any) {
+    console.error("Sprite scrape error:", err.message);
+    res.status(500).json({ error: 'Failed to scrape sprite from Wiki.' });
   }
 });
 
