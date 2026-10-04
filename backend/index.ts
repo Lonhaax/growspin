@@ -8,7 +8,6 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { withUserLock } from './utils/mutex';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 import crypto from 'crypto';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -3661,17 +3660,21 @@ app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: Auth
     
     // 2. Fetch the page HTML
     const pageRes = await axios.get(`https://growtopia.fandom.com/en/wiki/${encodeURIComponent(title)}`);
-    const $ = cheerio.load(pageRes.data);
+    const html = pageRes.data;
     
     let imageUrl = '';
     
-    // The python script looks for div.gtw-card and then div.card-header img src
-    const card = $('.gtw-card').first();
-    if (card.length > 0) {
-      imageUrl = card.find('.card-header img').attr('src') || '';
+    // Using Regex to find the <div class="gtw-card"> and extract the image src from card-header
+    const cardMatch = html.match(/class="gtw-card"[\s\S]*?class="card-header"[\s\S]*?<img[^>]+src="([^"]+)"/i);
+    
+    if (cardMatch && cardMatch[1]) {
+      imageUrl = cardMatch[1];
     } else {
-      // Fallback: just try to find the first infobox image
-      imageUrl = $('.infobox img').first().attr('src') || '';
+      // Fallback: try to find the first infobox image
+      const fallbackMatch = html.match(/class="infobox[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"/i);
+      if (fallbackMatch && fallbackMatch[1]) {
+        imageUrl = fallbackMatch[1];
+      }
     }
 
     if (!imageUrl) {
