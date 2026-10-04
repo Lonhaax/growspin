@@ -3658,20 +3658,20 @@ app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: Auth
 
     const title = items[0].title;
     
-    // 2. Fetch the page HTML
-    const pageRes = await axios.get(`https://growtopia.fandom.com/en/wiki/${encodeURIComponent(title)}`);
-    const html = pageRes.data;
+    // 2. Fetch the page HTML via the parse API to bypass Cloudflare HTML blocks
+    const pageRes = await axios.get(`https://growtopia.fandom.com/api.php?action=parse&format=json&page=${encodeURIComponent(title)}&prop=text`);
+    const html = pageRes.data?.parse?.text?.['*'] || '';
     
     let imageUrl = '';
     
-    // Using Regex to find the <div class="gtw-card"> and extract the image src from card-header
-    const cardMatch = html.match(/class="gtw-card"[\s\S]*?class="card-header"[\s\S]*?<img[^>]+src="([^"]+)"/i);
+    // Using Regex to find the <div class="gtw-card..."> and extract the image src from card-header
+    const cardMatch = html.match(/class="[^"]*gtw-card[^"]*"[\s\S]*?class="[^"]*card-header[^"]*"[\s\S]*?<img[^>]+src="([^"]+)"/i);
     
     if (cardMatch && cardMatch[1]) {
       imageUrl = cardMatch[1];
     } else {
       // Fallback: try to find the first infobox image
-      const fallbackMatch = html.match(/class="infobox[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"/i);
+      const fallbackMatch = html.match(/class="[^"]*infobox[^"]*"[\s\S]*?<img[^>]+src="([^"]+)"/i);
       if (fallbackMatch && fallbackMatch[1]) {
         imageUrl = fallbackMatch[1];
       }
@@ -3681,8 +3681,8 @@ app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: Auth
       return res.status(404).json({ error: 'Could not find sprite on the wiki page' });
     }
 
-    // Clean up URL (sometimes fandom wiki appends revision tags we don't need)
-    const cleanUrl = imageUrl.split('/revision/')[0];
+    // Unescape HTML entities from JSON
+    const cleanUrl = imageUrl.replace(/&amp;/g, '&');
     
     res.json({ success: true, imageUrl: cleanUrl });
   } catch (err: any) {
