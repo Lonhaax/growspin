@@ -401,9 +401,10 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     // Auto-assign admin ONLY if it's the very first user on the site
     const userCount = await prisma.user.count();
     const role = (userCount === 0) ? 'admin' : 'user';
+    const lastIp = req.ip;
 
     const user = await prisma.user.create({
-      data: { username, passwordHash, role },
+      data: { username, passwordHash, role, lastIp },
     });
 
     const accessToken = generateAccessToken(user.id);
@@ -448,6 +449,12 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
+
+    // Update IP
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastIp: req.ip }
+    });
 
     // Prune expired tokens for this user
     await prisma.refreshToken.deleteMany({
@@ -983,6 +990,11 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
 
     if (referrer.id === req.userId!) {
       return res.status(400).json({ error: 'You cannot refer yourself.' });
+    }
+
+    const currentIp = req.ip || user?.lastIp;
+    if (referrer.lastIp && currentIp && referrer.lastIp === currentIp) {
+      return res.status(400).json({ error: 'You cannot refer an account on the same network.' });
     }
 
     await prisma.user.update({
