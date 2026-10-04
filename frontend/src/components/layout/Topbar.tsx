@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { useWallet } from "@/context/WalletContext";
 import { Wallet, Bell, MessageSquare, ChevronDown, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import { SoundManager } from "@/lib/audio";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
+  const { balance } = useWallet();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [rewardsOpen, setRewardsOpen] = useState(false);
@@ -108,7 +110,7 @@ export function Topbar() {
             {/* Wallet Group */}
             <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-1 h-9">
               <div className="px-3 flex items-center gap-2 border-r border-[#2a2d3a]">
-                <DLCurrency amount={user.mockBalance} size="sm" className="text-white" />
+                <DLCurrency amount={balance * 100} size="sm" className="text-white" />
               </div>
               <button 
                 onClick={() => setDepositOpen(true)}

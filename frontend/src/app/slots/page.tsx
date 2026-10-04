@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useWallet } from "@/context/WalletContext";
 import { getAccessToken } from "@/lib/auth";
 import { Sparkles, Play, Maximize2, Minimize2, X, RefreshCw } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
@@ -18,6 +19,7 @@ import { apiFetch, API_URL } from "@/lib/auth";
 
 export default function SlotsPage() {
   const { user, refreshUser, openAuthModal } = useAuth();
+  const { balance } = useWallet();
   const [games, setGames] = useState<SlotGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeGame, setActiveGame] = useState<SlotGame | null>(null);
@@ -123,7 +125,7 @@ export default function SlotsPage() {
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 bg-[#191d29] px-3.5 py-1.5 rounded-xl border border-[#2b3145]">
                 <span className="text-xs text-[#7a819c] font-bold">Balance:</span>
-                <DLCurrency amount={user?.mockBalance || 0} size="xs" className="text-emerald-400" />
+                <DLCurrency amount={balance * 100} size="xs" className="text-emerald-400" />
               </div>
 
               <button
