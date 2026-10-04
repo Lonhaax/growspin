@@ -56,34 +56,34 @@ export default function Home() {
       {/* Sub Promo Banners */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 items-start">
         {/* Rakeback */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
+        <Link href="/rewards" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
           <img 
             src="/rakeback.png" 
             alt="Rakeback" 
             className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Rakeback' }}
           />
-        </div>
+        </Link>
 
         {/* Affiliate */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
+        <Link href="/affiliates" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
           <img 
             src="/affiliate.png" 
             alt="Affiliate" 
             className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Affiliate' }}
           />
-        </div>
+        </Link>
 
         {/* Free to Play */}
-        <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
+        <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
           <img 
             src="/free.png" 
             alt="Free to Play" 
             className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Free+to+Play' }}
           />
-        </div>
+        </a>
       </section>
 
       {/* Unified Originals Grid */}
