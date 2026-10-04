@@ -3189,8 +3189,93 @@ app.post('/api/admin/cases', requireAuth, requireAdmin, async (req: AuthRequest,
       include: { items: true }
     });
     res.json(newCase);
+    res.json(newCase);
+  } catch (error) {
+    console.error("POST CASE ERROR:", error);
+    res.status(500).json({ error: 'Failed to create case' });
+  }
+});
+
+// POST /api/admin/cases/generate
+app.post('/api/admin/cases/generate', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
+    if (items.length < 5) {
+      return res.status(400).json({ error: 'Please add at least 5 items to the database first.' });
+    }
+
+    // Split items into tiers
+    const lowTier = items.slice(0, Math.max(1, Math.floor(items.length / 3)));
+    const midTier = items.slice(Math.floor(items.length / 3), Math.floor((items.length / 3) * 2));
+    const highTier = items.slice(Math.floor((items.length / 3) * 2));
+
+    const themes = [
+      { name: "Dirt Seed Box", mainItems: lowTier, rareItems: midTier, extremeItems: highTier },
+      { name: "World Lock Safe", mainItems: midTier, rareItems: highTier, extremeItems: lowTier },
+      { name: "Diamond Lock Vault", mainItems: highTier, rareItems: midTier, extremeItems: lowTier },
+      { name: "BGL Stash", mainItems: highTier, rareItems: highTier, extremeItems: midTier }
+    ];
+
+    const generatedCases = [];
+
+    for (const theme of themes) {
+      // Pick random items for this case
+      const selectedItems = [
+        ...theme.mainItems.sort(() => 0.5 - Math.random()).slice(0, 3),
+        ...theme.rareItems.sort(() => 0.5 - Math.random()).slice(0, 2),
+        ...theme.extremeItems.sort(() => 0.5 - Math.random()).slice(0, 1)
+      ].filter(Boolean);
+
+      // Inverse weighting to assign probabilities (higher value = exponentially lower chance)
+      let rawWeights = selectedItems.map(item => ({
+        item,
+        weight: 1 / Math.pow(item.value === 0 ? 1 : item.value, 1.2)
+      }));
+
+      const totalWeight = rawWeights.reduce((acc, curr) => acc + curr.weight, 0);
+      
+      let evCents = 0;
+      const caseItemsData = rawWeights.map(rw => {
+        const chance = Number(((rw.weight / totalWeight) * 100).toFixed(2));
+        evCents += (rw.item.value * (chance / 100));
+        return {
+          name: rw.item.name,
+          value: rw.item.value,
+          color: rw.item.color,
+          imageUrl: rw.item.imageUrl,
+          weight: chance
+        };
+      });
+
+      // Fix rounding errors so it equals exactly 100%
+      const currentTotal = caseItemsData.reduce((acc, curr) => acc + curr.weight, 0);
+      if (currentTotal !== 100) {
+        caseItemsData[0].weight = Number((caseItemsData[0].weight + (100 - currentTotal)).toFixed(2));
+      }
+
+      // Price = EV + 10% House Edge
+      const finalPriceCents = Math.max(1, Math.floor(evCents * 1.10));
+      const defaultImage = "https://static.wikia.nocookie.net/growtopia/images/b/be/Treasure_Chest.png/revision/latest/window-crop/width/32/x-offset/0/y-offset/0/window-width/32/window-height/32?format=webp";
+
+      const newCase = await prisma.case.create({
+        data: {
+          name: theme.name,
+          price: finalPriceCents,
+          image: defaultImage,
+          items: {
+            create: caseItemsData
+          }
+        },
+        include: { items: true }
+      });
+
+      generatedCases.push(newCase);
+    }
+
+    res.json(generatedCases);
   } catch (error: any) {
-    console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
+    console.error("GENERATE ERROR:", error);
+    res.status(500).json({ error: 'Failed to generate cases' });
   }
 });
 

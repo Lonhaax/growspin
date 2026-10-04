@@ -116,6 +116,25 @@ export default function AdvancedCaseCreator() {
     setIsSubmitting(false);
   };
 
+  const handleGenerateCases = async () => {
+    if (!window.confirm("This will instantly generate 4 Growtopia-themed cases based on your current items. Proceed?")) return;
+    setIsSubmitting(true);
+    try {
+      const res = await apiFetch("/admin/cases/generate", { method: "POST" });
+      if (res.ok) {
+        alert("Cases generated successfully!");
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to generate cases.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error generating cases.");
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="space-y-6">
       
@@ -125,8 +144,16 @@ export default function AdvancedCaseCreator() {
           <h2 className="text-xl font-black text-white flex items-center gap-2">
             <Box className="text-indigo-500" /> Create new case
           </h2>
-          <div className="flex items-center gap-3 bg-[#1e2333] px-3 py-1 rounded-full border border-[#202535]">
-            <span className="text-xs text-gray-400 font-bold">Items available</span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleGenerateCases}
+              disabled={isSubmitting}
+              className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-400 hover:to-fuchsia-500 text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
+            >
+              {isSubmitting ? "Generating..." : "⚡ 1-Click Generate Cases"}
+            </button>
+            <div className="flex items-center gap-3 bg-[#1e2333] px-3 py-1 rounded-full border border-[#202535]">
+              <span className="text-xs text-gray-400 font-bold">Items available</span>
             <span className="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full text-xs font-black">{selectedItems.length}/25</span>
           </div>
         </div>
