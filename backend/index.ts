@@ -3201,38 +3201,8 @@ app.post('/api/admin/cases/generate', requireAuth, requireAdmin, async (req: Aut
   try {
     let items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
     
-      const defaultItems = [
-        { name: "Dirt Seed", value: 1, color: "#8B4513", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/32/y-offset/0/window-width/32/window-height/32?format=webp" },
-        { name: "World Lock", value: 1, color: "#FFD700", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/3872/y-offset/0/window-width/32/window-height/32?format=webp" },
-        { name: "Diamond Lock", value: 100, color: "#00FFFF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/64/y-offset/224/window-width/32/window-height/32?format=webp" },
-        { name: "Blue Gem Lock", value: 10000, color: "#0000FF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/2752/y-offset/736/window-width/32/window-height/32?format=webp" },
-        
-        { name: "Angel Wings", value: 50, color: "#FFFFFF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/384/y-offset/32/window-width/32/window-height/32?format=webp" },
-        { name: "Devil Wings", value: 200, color: "#FF0000", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/352/y-offset/32/window-width/32/window-height/32?format=webp" },
-        { name: "Golden Pickaxe", value: 500, color: "#DAA520", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/160/y-offset/128/window-width/32/window-height/32?format=webp" },
-        
-        { name: "Da Vinci Wings", value: 2500, color: "#C0C0C0", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1760/y-offset/704/window-width/32/window-height/32?format=webp" },
-        { name: "Rayman's Fist", value: 5000, color: "#FFA500", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1664/y-offset/672/window-width/32/window-height/32?format=webp" },
-        { name: "Magplant 5000", value: 8000, color: "#00FF00", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/96/y-offset/704/window-width/32/window-height/32?format=webp" },
-        { name: "Ghon's Cloak", value: 20000, color: "#FF00FF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/2912/y-offset/1088/window-width/32/window-height/32?format=webp" },
-        
-        { name: "Fame & Fortune", value: 3000, color: "#FFD700", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1856/y-offset/640/window-width/32/window-height/32?format=webp" },
-        { name: "Cosmic Cape", value: 4000, color: "#800080", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/128/y-offset/1696/window-width/32/window-height/32?format=webp" },
-        { name: "Zeus' Lightning Bolt", value: 1500, color: "#FFFF00", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1056/y-offset/512/window-width/32/window-height/32?format=webp" },
-        { name: "Pineapple", value: 5, color: "#FFFF00", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/3424/y-offset/128/window-width/32/window-height/32?format=webp" },
-        { name: "Pinball Bumper", value: 2, color: "#FF00FF", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/3360/y-offset/32/window-width/32/window-height/32?format=webp" },
-        { name: "Chandelier", value: 3, color: "#FFD700", imageUrl: "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/1216/y-offset/32/window-width/32/window-height/32?format=webp" }
-      ];
-
-      for (const di of defaultItems) {
-        const exists = await prisma.adminItem.findUnique({ where: { name: di.name } });
-        if (!exists) {
-          await prisma.adminItem.create({ data: di });
-        }
-      }
-      
-      // Reload items after bootstrapping
-      items = await prisma.adminItem.findMany({ orderBy: { value: 'asc' } });
+    if (items.length < 3) {
+      return res.status(400).json({ error: 'Please add at least 3 items to the database first.' });
     }
 
     // Split items into tiers
