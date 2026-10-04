@@ -928,6 +928,107 @@ app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest
     res.status(400).json({ error: err.message });
   }
 });
+// ─── Affiliates ──────────────────────────────────────────────────────────────
+
+app.post('/api/affiliates/code', requireAuth, async (req: AuthRequest, res: Response) => {
+  const { code } = req.body;
+  if (!code || typeof code !== 'string' || code.length < 3 || code.length > 20) {
+    return res.status(400).json({ error: 'Code must be between 3 and 20 characters.' });
+  }
+
+  try {
+    const existing = await prisma.user.findUnique({ where: { affiliateCode: code.toLowerCase() } });
+    if (existing) {
+      return res.status(400).json({ error: 'This code is already taken.' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { affiliateCode: code.toLowerCase() }
+    });
+
+    res.json({ success: true, code: code.toLowerCase() });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to set code' });
+  }
+});
+
+app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Response) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'No code provided' });
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    if (user?.referredBy) {
+      return res.status(400).json({ error: 'You have already applied a referral code.' });
+    }
+
+    const referrer = await prisma.user.findUnique({ where: { affiliateCode: code.toLowerCase() } });
+    if (!referrer) {
+      return res.status(400).json({ error: 'Invalid referral code.' });
+    }
+
+    if (referrer.id === req.user!.id) {
+      return res.status(400).json({ error: 'You cannot refer yourself.' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { referredBy: referrer.affiliateCode }
+    });
+
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to apply code' });
+  }
+});
+
+app.get('/api/affiliates/stats', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    const code = user?.affiliateCode;
+    let referredCount = 0;
+    
+    if (code) {
+      referredCount = await prisma.user.count({ where: { referredBy: code } });
+    }
+
+    res.json({
+      success: true,
+      code,
+      earnings: user?.affiliateEarnings || 0,
+      referredCount
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+app.post('/api/affiliates/claim', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await withUserLock(req.user!.id, async () => {
+      const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+      if (!user) throw new Error('User not found');
+      
+      const claimAmount = user.affiliateEarnings;
+      if (claimAmount <= 0) {
+        throw new Error('No earnings to claim');
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          mockBalance: { increment: claimAmount },
+          affiliateEarnings: 0
+        }
+      });
+      return claimAmount;
+    });
+    res.json({ success: true, claimed: result });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 app.get('/api/user/me', requireAuth, async (req: AuthRequest, res: Response) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
