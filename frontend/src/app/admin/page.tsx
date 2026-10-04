@@ -75,11 +75,26 @@ export default function AdminPage() {
   };
 
   const handleBanAffiliate = async (id: number) => {
-    if (!confirm("Are you absolutely sure? This will delete their affiliate code, strip their referrals, and freeze their account.")) return;
+    if (!confirm("Are you absolutely sure? This will strip their referrals, zero their earnings, and freeze their account.")) return;
     try {
       const res = await apiFetch(`/admin/affiliates/${id}/ban`, { method: "POST" });
       if (res.ok) {
         setSuccess("Affiliate successfully banned and account locked.");
+        fetchAffiliates();
+      } else {
+        setError((await res.json()).error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const handleUnbanAffiliate = async (id: number) => {
+    if (!confirm("Reinstate this affiliate and unlock their account?")) return;
+    try {
+      const res = await apiFetch(`/admin/affiliates/${id}/unban`, { method: "POST" });
+      if (res.ok) {
+        setSuccess("Affiliate account unlocked and reinstated.");
         fetchAffiliates();
       } else {
         setError((await res.json()).error);
@@ -1804,13 +1819,21 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        {!aff.isFrozen && (
+                        {!aff.isFrozen ? (
                           <button
                             onClick={() => handleBanAffiliate(aff.id)}
                             className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition-colors"
-                            title="Ban Affiliate & Delete Code"
+                            title="Ban Affiliate"
                           >
                             <Trash2 size={16} />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUnbanAffiliate(aff.id)}
+                            className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 p-2 rounded-lg transition-colors"
+                            title="Reinstate Affiliate"
+                          >
+                            <Unlock size={16} />
                           </button>
                         )}
                       </td>

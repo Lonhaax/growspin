@@ -987,6 +987,9 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
     if (!referrer) {
       return res.status(400).json({ error: 'Invalid referral code.' });
     }
+    if (referrer.isFrozen) {
+      return res.status(400).json({ error: 'This affiliate code is currently suspended.' });
+    }
 
     if (referrer.id === req.userId!) {
       return res.status(400).json({ error: 'You cannot refer yourself.' });
@@ -3605,18 +3608,35 @@ app.post('/api/admin/affiliates/:id/ban', requireAuth, requireAdmin, async (req:
         where: { referredBy: user.affiliateCode },
         data: { referredBy: null }
       }),
-      // Lock account and delete code
+      // Lock account and zero earnings
       prisma.user.update({
         where: { id: affiliateId },
         data: {
-          affiliateCode: null,
           affiliateEarnings: 0,
           isFrozen: true
         }
       })
     ]);
 
-    res.json({ success: true, message: "Affiliate banned, code deleted, and account locked." });
+    res.json({ success: true, message: "Affiliate banned, referrals stripped, and account locked." });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/affiliates/:id/unban - Unlock account
+app.post('/api/admin/affiliates/:id/unban', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const affiliateId = parseInt(req.params.id as string);
+    const user = await prisma.user.findUnique({ where: { id: affiliateId } });
+    if (!user || !user.affiliateCode) throw new Error("Affiliate not found");
+
+    await prisma.user.update({
+      where: { id: affiliateId },
+      data: { isFrozen: false }
+    });
+
+    res.json({ success: true, message: "Affiliate account unlocked and reinstated." });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
