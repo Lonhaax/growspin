@@ -74,6 +74,21 @@ export default function AdminPage() {
     setAffiliatesLoading(false);
   };
 
+  const handleBanAffiliate = async (id: number) => {
+    if (!confirm("Are you absolutely sure? This will delete their affiliate code, strip their referrals, and freeze their account.")) return;
+    try {
+      const res = await apiFetch(`/admin/affiliates/${id}/ban`, { method: "POST" });
+      if (res.ok) {
+        setSuccess("Affiliate successfully banned and account locked.");
+        fetchAffiliates();
+      } else {
+        setError((await res.json()).error);
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
   const fetchChat = async () => {
     try {
       const [res1, res2] = await Promise.all([
@@ -1751,12 +1766,13 @@ export default function AdminPage() {
                     <th className="px-6 py-4">Affiliate Code</th>
                     <th className="px-6 py-4">Referred Players</th>
                     <th className="px-6 py-4">Current Unclaimed Earnings</th>
-                    <th className="px-6 py-4 text-right">Created At</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#222738]">
                   {affiliates.map((aff) => (
-                    <tr key={aff.id} className="hover:bg-[#1a1e2b]/50 transition-colors">
+                    <tr key={aff.id} className={`hover:bg-[#1a1e2b]/50 transition-colors ${aff.isSuspicious && !aff.isFrozen ? 'bg-red-500/5' : ''}`}>
                       <td className="px-6 py-4 font-bold text-white">{aff.username}</td>
                       <td className="px-6 py-4">
                         <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-xs font-black uppercase tracking-widest">
@@ -1767,8 +1783,36 @@ export default function AdminPage() {
                       <td className="px-6 py-4">
                         <DLCurrency amount={aff.affiliateEarnings} />
                       </td>
-                      <td className="px-6 py-4 text-right text-[#7a819c] text-xs font-medium">
-                        {new Date(aff.createdAt).toLocaleDateString()}
+                      <td className="px-6 py-4">
+                        {aff.isFrozen ? (
+                          <span className="text-[10px] font-black uppercase bg-red-500/10 text-red-500 px-2 py-1 rounded-md border border-red-500/20 flex items-center gap-1 w-max">
+                            <Lock size={12} /> Banned
+                          </span>
+                        ) : aff.isSuspicious ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-black uppercase bg-orange-500/10 text-orange-500 px-2 py-1 rounded-md border border-orange-500/20 flex items-center gap-1 w-max">
+                              <AlertTriangle size={12} /> Flagged
+                            </span>
+                            <div className="text-[9px] text-[#7a819c] max-w-[150px] leading-tight mt-1">
+                              {aff.abuseReasons?.join(", ")}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-md border border-emerald-500/20 flex items-center gap-1 w-max">
+                            <Check size={12} /> Clean
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {!aff.isFrozen && (
+                          <button
+                            onClick={() => handleBanAffiliate(aff.id)}
+                            className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition-colors"
+                            title="Ban Affiliate & Delete Code"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

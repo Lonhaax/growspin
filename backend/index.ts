@@ -3535,17 +3535,88 @@ app.get('/api/admin/affiliates', requireAuth, requireAdmin, async (req: AuthRequ
         affiliateCode: true,
         affiliateEarnings: true,
         createdAt: true,
+        lastIp: true,
+        isFrozen: true
       },
       orderBy: { affiliateEarnings: 'desc' }
     });
 
-    // Manually count referrals for each affiliate since there's no FK relation
     const enriched = await Promise.all(affiliates.map(async (aff) => {
-      const count = await prisma.user.count({ where: { referredBy: aff.affiliateCode } });
-      return { ...aff, referredCount: count };
+      const referred = await prisma.user.findMany({ 
+        where: { referredBy: aff.affiliateCode },
+        select: { lastIp: true, totalWagered: true }
+      });
+      
+      const count = referred.length;
+      let isSuspicious = false;
+      let abuseReasons: string[] = [];
+
+      if (count > 0) {
+        // Check 1: Same IP as affiliate
+        const sameIpAsAffiliate = referred.filter(r => r.lastIp && r.lastIp === aff.lastIp).length;
+        if (sameIpAsAffiliate > 0) {
+          isSuspicious = true;
+          abuseReasons.push(`${sameIpAsAffiliate} referrals match affiliate IP`);
+        }
+
+        // Check 2: Same IP between multiple referrals
+        const ipCounts: Record<string, number> = {};
+        referred.forEach(r => {
+          if (r.lastIp) ipCounts[r.lastIp] = (ipCounts[r.lastIp] || 0) + 1;
+        });
+        const sharedIps = Object.values(ipCounts).filter(c => c > 1).length;
+        if (sharedIps > 0) {
+          isSuspicious = true;
+          abuseReasons.push(`${sharedIps} IPs are shared across multiple referrals`);
+        }
+
+        // Check 3: High volume of 0 wager referrals
+        const zeroWager = referred.filter(r => r.totalWagered === 0).length;
+        if (count >= 5 && (zeroWager / count) > 0.8) {
+          isSuspicious = true;
+          abuseReasons.push(`${zeroWager}/${count} referrals have 0 wager volume (Botting/Faucet abuse)`);
+        }
+      }
+
+      return { 
+        ...aff, 
+        referredCount: count, 
+        isSuspicious,
+        abuseReasons
+      };
     }));
 
     res.json(enriched);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/affiliates/:id/ban - Delete code and lock account
+app.post('/api/admin/affiliates/:id/ban', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const affiliateId = parseInt(req.params.id);
+    const user = await prisma.user.findUnique({ where: { id: affiliateId } });
+    if (!user || !user.affiliateCode) throw new Error("Affiliate not found");
+
+    await prisma.$transaction([
+      // Strip referrals
+      prisma.user.updateMany({
+        where: { referredBy: user.affiliateCode },
+        data: { referredBy: null }
+      }),
+      // Lock account and delete code
+      prisma.user.update({
+        where: { id: affiliateId },
+        data: {
+          affiliateCode: null,
+          affiliateEarnings: 0,
+          isFrozen: true
+        }
+      })
+    ]);
+
+    res.json({ success: true, message: "Affiliate banned, code deleted, and account locked." });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
