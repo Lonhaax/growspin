@@ -22,43 +22,12 @@ import {
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const PVP_GAMES = [
-    {
-      name: "Case Battles",
-      href: "/battles",
-      desc: "Up to 4 players. Winner takes all loot.",
-      icon: Swords,
-      badge: "POPULAR",
-      badgeColor: "bg-red-500/20 text-red-400 border-red-500/30",
-      gradient: "from-red-500/20 via-orange-500/10 to-transparent",
-      accent: "text-red-400",
-      border: "hover:border-red-500/40",
-    },
-    {
-      name: "PvP Jackpot",
-      href: "/jackpot",
-      desc: "Pool DLs together. Highest tickets win the pot.",
-      icon: Flame,
-      badge: "LIVE POOL",
-      badgeColor: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-      gradient: "from-orange-500/20 via-amber-500/10 to-transparent",
-      accent: "text-orange-400",
-      border: "hover:border-orange-500/40",
-    },
-    {
-      name: "Unbox Cases",
-      href: "/cases",
-      desc: "Spin curated cases for rare Growtopia artifacts.",
-      icon: PackageOpen,
-      badge: "HOT",
-      badgeColor: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-      gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
-      accent: "text-cyan-400",
-      border: "hover:border-cyan-500/40",
-    },
-  ];
+  // Games merged into CASINO_ORIGINALS
 
   const CASINO_ORIGINALS = [
+    { name: "Case Battles", href: "/battles", image: "/battles.png", color: "#f43f5e" },
+    { name: "Cases", href: "/cases", image: "/cases.png", color: "#d946ef" },
+    { name: "PvP Jackpot", href: "/jackpot", image: "/jackpot.png", color: "#f97316" },
     { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", color: "#f59e0b" },
     { name: "Mines", href: "/mines", image: "/mines.png", color: "#ef4444" },
     { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
@@ -145,50 +114,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured: PVP & Unboxing */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Zap className="text-cyan-400" size={24} />
-              Featured PvP & Unboxing
-            </h2>
-            <p className="text-xs text-[#717894] mt-0.5 font-medium">High stakes multiplayer modes and custom case drops</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PVP_GAMES.map((game) => {
-            const Icon = game.icon;
-            return (
-              <Link
-                key={game.name}
-                href={game.href}
-                className={`group relative bg-[#131620] border border-[#222738] ${game.border} rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl overflow-hidden flex flex-col justify-between min-h-[160px]`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${game.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-
-                <div className="relative z-10 flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-[#191d2a] border border-[#2b3145] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Icon size={24} className={game.accent} />
-                  </div>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${game.badgeColor}`}>
-                    {game.badge}
-                  </span>
-                </div>
-
-                <div className="relative z-10 mt-4 space-y-1">
-                  <div className="text-lg font-black text-white flex items-center gap-2 group-hover:text-cyan-300 transition-colors">
-                    <span>{game.name}</span>
-                    <ArrowRight size={16} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                  </div>
-                  <p className="text-xs text-[#7f86a2] font-medium leading-relaxed">{game.desc}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {/* Unified Originals Grid */}
 
       {/* Casino Originals Grid */}
       <section className="space-y-4">
