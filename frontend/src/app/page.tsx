@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { LiveBetsFeed } from "@/components/ui/LiveBetsFeed";
 import {
@@ -37,12 +38,33 @@ export default function Home() {
     { id: 2, image: "/banner2.png", fallbackBg: "from-emerald-600 to-cyan-600", title: "Daily Race", subtitle: "Win your share of 50 DLs daily" },
     { id: 3, image: "/banner3.png", fallbackBg: "from-orange-500 to-red-600", title: "New Game Released", subtitle: "Try the new PvP Case Battles" }
   ];
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        // If we've reached the end, scroll back to the start
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          // Scroll by roughly the width of one banner
+          scrollRef.current.scrollBy({ left: clientWidth * 0.33, behavior: "smooth" });
+        }
+      }
+    }, 4000); // Scroll every 4 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-24">
       {/* Promotional Banners Carousel */}
       <section className="relative w-full -mt-4">
-        <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-1">
+        <div 
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-1 scroll-smooth"
+        >
           {PROMO_BANNERS.map((banner) => (
             <div 
               key={banner.id} 
