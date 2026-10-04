@@ -3648,9 +3648,9 @@ app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: Auth
   if (!itemName) return res.status(400).json({ error: 'Item name is required' });
 
   try {
-    // 1. Hit the Search API to find the exact page title
-    const searchRes = await axios.get(`https://growtopia.fandom.com/en/api/v1/SearchSuggestions/List?query=${encodeURIComponent(itemName)}`);
-    const items = searchRes.data?.items;
+    // 1. Hit the Search API to find the exact page title (using api.php to avoid Cloudflare 403 on v1 API)
+    const searchRes = await axios.get(`https://growtopia.fandom.com/api.php?action=query&list=search&srsearch=${encodeURIComponent(itemName)}&format=json`);
+    const items = searchRes.data?.query?.search;
     
     if (!items || items.length === 0) {
       return res.status(404).json({ error: 'Item not found on Fandom Wiki' });
