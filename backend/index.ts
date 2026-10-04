@@ -949,7 +949,7 @@ app.post('/api/affiliates/code', requireAuth, async (req: AuthRequest, res: Resp
 
     res.json({ success: true, code: code.toLowerCase() });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to set code' });
+    res.status(500).json({ error: 'Failed to set code: ' + err.message });
   }
 });
 
@@ -979,7 +979,7 @@ app.post('/api/affiliates/apply', requireAuth, async (req: AuthRequest, res: Res
 
     res.json({ success: true });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to apply code' });
+    res.status(500).json({ error: 'Failed to apply code: ' + err.message });
   }
 });
 
@@ -1000,7 +1000,7 @@ app.get('/api/affiliates/stats', requireAuth, async (req: AuthRequest, res: Resp
       referredCount
     });
   } catch (err: any) {
-    res.status(500).json({ error: 'Failed to get stats' });
+    res.status(500).json({ error: 'Failed to get stats: ' + err.message });
   }
 });
 

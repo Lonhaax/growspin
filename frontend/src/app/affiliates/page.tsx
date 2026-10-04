@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Users, Link as LinkIcon, Gift, ArrowRight, CheckCircle2, ChevronRight, AlertCircle, Copy, Loader2, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/auth";
 
 function formatCurrency(val: number) {
   return val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -29,7 +30,7 @@ export default function AffiliatesPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("/api/affiliates/stats");
+      const res = await apiFetch("/affiliates/stats");
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -60,9 +61,8 @@ export default function AffiliatesPage() {
     }
     setSettingCode(true);
     try {
-      const res = await fetch("/api/affiliates/code", {
+      const res = await apiFetch("/affiliates/code", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: newCode }),
       });
       const data = await res.json();
@@ -88,9 +88,8 @@ export default function AffiliatesPage() {
     }
     setApplyingCode(true);
     try {
-      const res = await fetch("/api/affiliates/apply", {
+      const res = await apiFetch("/affiliates/apply", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: applyCode }),
       });
       const data = await res.json();
@@ -112,7 +111,7 @@ export default function AffiliatesPage() {
     if (!stats || stats.earnings <= 0) return;
     setClaiming(true);
     try {
-      const res = await fetch("/api/affiliates/claim", {
+      const res = await apiFetch("/affiliates/claim", {
         method: "POST",
       });
       const data = await res.json();
