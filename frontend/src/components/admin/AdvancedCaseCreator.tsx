@@ -154,7 +154,8 @@ export default function AdvancedCaseCreator() {
             </button>
             <div className="flex items-center gap-3 bg-[#1e2333] px-3 py-1 rounded-full border border-[#202535]">
               <span className="text-xs text-gray-400 font-bold">Items available</span>
-            <span className="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full text-xs font-black">{selectedItems.length}/25</span>
+              <span className="bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full text-xs font-black">{selectedItems.length}/25</span>
+            </div>
           </div>
         </div>
 
