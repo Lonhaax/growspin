@@ -3687,7 +3687,11 @@ app.post('/api/admin/scrape-sprite', requireAuth, requireAdmin, async (req: Auth
     res.json({ success: true, imageUrl: cleanUrl });
   } catch (err: any) {
     console.error("Sprite scrape error:", err.message);
-    res.status(500).json({ error: 'Failed to scrape sprite from Wiki.' });
+    if (err.response) {
+      console.error("Fandom API response:", err.response.status, err.response.data);
+      return res.status(500).json({ error: `Fandom API returned ${err.response.status}: ${err.message}` });
+    }
+    res.status(500).json({ error: `Scrape failed: ${err.message}` });
   }
 });
 

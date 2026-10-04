@@ -31,7 +31,8 @@ export default function ItemManager() {
         const data = await res.json();
         setCustomImageUrl(data.imageUrl);
       } else {
-        alert("Could not find image on Wiki automatically. Please paste the direct URL.");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error: ${errData.error || "Could not find image on Wiki automatically."} Please paste the direct URL.`);
       }
     } catch (e: any) {
       alert("Error fetching from Wiki: " + e.message);
