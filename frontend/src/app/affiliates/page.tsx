@@ -65,6 +65,19 @@ export default function AffiliatesPage() {
         method: "POST",
         body: JSON.stringify({ code: newCode }),
       });
+      
+      if (!res.ok) {
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          setError(data.error || `Error ${res.status}: Failed to set code`);
+        } catch {
+          setError(`Error ${res.status}: ${text.substring(0, 50)}...`);
+        }
+        setSettingCode(false);
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         setSuccess("Affiliate code created successfully!");
@@ -72,8 +85,8 @@ export default function AffiliatesPage() {
       } else {
         setError(data.error || "Failed to set code.");
       }
-    } catch (err) {
-      setError("An error occurred.");
+    } catch (err: any) {
+      setError(`Network error: ${err.message || 'An error occurred'}`);
     } finally {
       setSettingCode(false);
     }
@@ -92,14 +105,27 @@ export default function AffiliatesPage() {
         method: "POST",
         body: JSON.stringify({ code: applyCode }),
       });
+      
+      if (!res.ok) {
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          setError(data.error || `Error ${res.status}: Failed to apply code`);
+        } catch {
+          setError(`Error ${res.status}: ${text.substring(0, 50)}...`);
+        }
+        setApplyingCode(false);
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         setSuccess("Referral code applied successfully!");
       } else {
         setError(data.error || "Failed to apply code.");
       }
-    } catch (err) {
-      setError("An error occurred.");
+    } catch (err: any) {
+      setError(`Network error: ${err.message || 'An error occurred'}`);
     } finally {
       setApplyingCode(false);
     }
