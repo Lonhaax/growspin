@@ -1338,12 +1338,14 @@ app.post('/api/vip/claim-case', requireAuth, requireNotFrozen, async (req: AuthR
         });
 
         // Announce in chat
-        await tx.chatMessage.create({
-          data: {
-            userId,
-            content: `🎁 Unboxed a ${winningItem.name} ($${(winningItem.value / 100).toFixed(2)}) from the Daily ${tier.name} Case!`
-          }
-        });
+        if (winningItem.value >= 500000) {
+          await tx.chatMessage.create({
+            data: {
+              userId,
+              content: `🎁 Unboxed a ${winningItem.name} ($${(winningItem.value / 100).toFixed(2)}) from the Daily ${tier.name} Case!`
+            }
+          });
+        }
 
         return {
           winningItem,
@@ -2347,7 +2349,7 @@ app.post('/api/cases/open', async (req: Request, res: Response) => {
               },
             });
 
-            if (winningItem.value >= 10000) {
+            if (winningItem.value >= 500000) {
               await tx.chatMessage.create({
                 data: {
                   userId,
@@ -4723,7 +4725,7 @@ app.all('/api/bgaming/callback/:sessionId', async (req: Request, res: Response) 
             }
           });
 
-          if (winAmount >= 10000) {
+          if (winAmount >= 500000) {
             await tx.chatMessage.create({
               data: {
                 userId,
@@ -4828,7 +4830,7 @@ setInterval(async () => {
 
     if (recentMessages.length === 0) return;
 
-    const totalRainAmount = 1000 * Math.floor(Math.random() * 5 + 1); // 1,000 to 5,000 cents (10 to 50 DLs)
+    const totalRainAmount = Math.floor(Math.random() * 901) + 100; // 100 to 1,000 cents (1 to 10 DLs)
     
     // Trigger the automated rain drop via the bot system
     try {

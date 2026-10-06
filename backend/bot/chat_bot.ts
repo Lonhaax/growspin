@@ -21,7 +21,7 @@ export function startChatBot(io: any) {
             if (Math.random() > 0.05) return;
 
             const randomQ = TRIVIA_POOL[Math.floor(Math.random() * TRIVIA_POOL.length)];
-            const reward = Math.floor(Math.random() * 500) + 500; // 500 to 1000 DLs (cents)
+            const reward = Math.floor(Math.random() * 901) + 100; // 100 to 1000 cents (1 to 10 DLs)
             
             activeTrivia = { question: randomQ.q, answer: randomQ.a.toLowerCase(), reward };
 
