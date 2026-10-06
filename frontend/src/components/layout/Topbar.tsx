@@ -11,10 +11,12 @@ import { DLCurrency } from "@/components/ui/DLCurrency";
 import DepositModal from "@/components/deposit/DepositModal";
 import RewardsModal from "@/components/rewards/RewardsModal";
 import { SoundManager } from "@/lib/audio";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
   const { balance } = useWallet();
+  const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [rewardsOpen, setRewardsOpen] = useState(false);
@@ -179,8 +181,12 @@ export function Topbar() {
                           setClaiming(true);
                           try {
                             const res = await apiFetch("/user/faucet", { method: "POST" });
-                            if (res.ok) await refreshUser();
-                            else alert((await res.json()).error);
+                            if (res.ok) {
+                              await refreshUser();
+                              showSuccess("Claimed Daily Faucet!");
+                            } else {
+                              showError((await res.json()).error);
+                            }
                           } finally {
                             setClaiming(false);
                             setDropdownOpen(false);
@@ -229,6 +235,7 @@ export function Topbar() {
         <RewardsModal isOpen={rewardsOpen} onClose={() => { setRewardsOpen(false); refreshUser(); }} />
       </>
     )}
+    <CustomModal config={modalConfig} setConfig={setModalConfig} />
     </>
   );
 }

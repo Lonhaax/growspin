@@ -7,6 +7,8 @@ import { apiFetch } from "@/lib/auth";
 
 type GTItem = { id: number; name: string; value: number; color: string; imageUrl: string; };
 
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
+
 export default function AdvancedCaseCreator() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("name-asc");
@@ -17,6 +19,7 @@ export default function AdvancedCaseCreator() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [items, setItems] = useState<GTItem[]>([]);
+  const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
 
   React.useEffect(() => {
     const loadItems = async () => {
@@ -60,22 +63,6 @@ export default function AdvancedCaseCreator() {
   // EV = sum(item_value * (item_chance / 100))
   const expectedValue = selectedItems.reduce((acc, curr) => acc + (curr.item.value * (curr.chance || 0) / 100), 0);
   const suggestedPrice = expectedValue * 1.05; // 5% house edge on cases
-
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    type: "alert" | "confirm";
-    onConfirm?: () => void;
-  }>({ isOpen: false, title: "", message: "", type: "alert" });
-
-  const showAlert = (message: string, title = "Notice") => {
-    setModalConfig({ isOpen: true, title, message, type: "alert" });
-  };
-
-  const showConfirm = (message: string, onConfirm: () => void, title = "Confirmation") => {
-    setModalConfig({ isOpen: true, title, message, type: "confirm", onConfirm });
-  };
 
   const executeCreateCase = async (finalPrice: number) => {
     setIsSubmitting(true);
@@ -170,40 +157,7 @@ export default function AdvancedCaseCreator() {
     <div className="space-y-6 relative">
       
       {/* Integrated Modal UI */}
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#13161f] border border-[#202535] p-6 rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-black text-white mb-2 flex items-center gap-2">
-              {modalConfig.type === 'confirm' ? <AlertTriangle className="text-yellow-500" /> : <Box className="text-indigo-500" />}
-              {modalConfig.title}
-            </h3>
-            <p className="text-gray-300 text-sm mb-6 leading-relaxed">
-              {modalConfig.message}
-            </p>
-            <div className="flex gap-3 justify-end">
-              {modalConfig.type === 'confirm' && (
-                <button 
-                  onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}
-                  className="px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-[#202535] transition-colors"
-                >
-                  Cancel
-                </button>
-              )}
-              <button 
-                onClick={() => {
-                  setModalConfig({ ...modalConfig, isOpen: false });
-                  if (modalConfig.type === 'confirm' && modalConfig.onConfirm) {
-                    modalConfig.onConfirm();
-                  }
-                }}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-colors"
-              >
-                {modalConfig.type === 'confirm' ? 'Confirm' : 'OK'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
       
       {/* SECTION 1: Item Selection Grid */}
       <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">

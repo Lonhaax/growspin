@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Search, Database } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import { apiFetch } from "@/lib/auth";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function ItemManager() {
   const [items, setItems] = useState<any[]>([]);
@@ -16,6 +17,8 @@ export default function ItemManager() {
   const [customImageUrl, setCustomImageUrl] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isFetchingWiki, setIsFetchingWiki] = useState(false);
+
+  const { modalConfig, setModalConfig, showAlert, showConfirm, showError, showSuccess } = useCustomModal();
 
   const fetchFromWiki = async () => {
     if (!newItemName) return;
@@ -32,10 +35,10 @@ export default function ItemManager() {
         setCustomImageUrl(data.imageUrl);
       } else {
         const errData = await res.json().catch(() => ({}));
-        alert(`Error: ${errData.error || "Could not find image on Wiki automatically."} Please paste the direct URL.`);
+        showError(`Error: ${errData.error || "Could not find image on Wiki automatically."} Please paste the direct URL.`);
       }
     } catch (e: any) {
-      alert("Error fetching from Wiki: " + e.message);
+      showError("Error fetching from Wiki: " + e.message);
     }
     
     setIsFetchingWiki(false);
@@ -56,7 +59,7 @@ export default function ItemManager() {
   };
 
   const handleAddItem = async () => {
-    if (!newItemName || !newItemValue) return alert("Please fill all fields");
+    if (!newItemName || !newItemValue) return showAlert("Please fill all fields");
     
     setIsAdding(true);
     try {
@@ -76,20 +79,19 @@ export default function ItemManager() {
         setNewItemValue("");
         setCustomImageUrl("");
         fetchItems();
+        showSuccess("Item added successfully!");
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to add item");
+        showError(data.error || "Failed to add item");
       }
     } catch (e) {
       console.error(e);
-      alert("Error adding item");
+      showError("Error adding item");
     }
     setIsAdding(false);
   };
 
-  const handleDeleteItem = async (id: number) => {
-    if (!window.confirm("Delete this item? Cases using it will break if you don't remove it from them first.")) return;
-    
+  const executeDelete = async (id: number) => {
     try {
       const res = await apiFetch(`/admin/items/${id}`, { method: "DELETE" });
       if (res.ok) fetchItems();
@@ -98,10 +100,18 @@ export default function ItemManager() {
     }
   };
 
+  const handleDeleteItem = (id: number) => {
+    showConfirm(
+      "Delete this item? Cases using it will break if you don't remove it from them first.",
+      () => executeDelete(id)
+    );
+  };
+
   const filteredItems = items.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
       
       {/* Add Item Panel */}
       <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">

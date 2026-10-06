@@ -9,8 +9,11 @@ import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
+
 export default function AdminPage() {
   const { user } = useAuth();
+  const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
   const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -306,7 +309,7 @@ export default function AdminPage() {
     const amountStr = prompt("Enter amount of DLs to drop in Chat Rain:", "1000");
     if (!amountStr) return;
     const amount = parseInt(amountStr);
-    if (isNaN(amount) || amount <= 0) return alert("Invalid amount.");
+    if (isNaN(amount) || amount <= 0) return showAlert("Invalid amount.");
     
     setLoading(true); setError(""); setSuccess("");
     try {
@@ -382,11 +385,11 @@ export default function AdminPage() {
     const target = prompt("Enter Target RTP % (e.g. 92):", "92");
     if (!target) return;
     const targetRtp = parseFloat(target);
-    if (isNaN(targetRtp) || targetRtp <= 0) return alert("Invalid RTP.");
+    if (isNaN(targetRtp) || targetRtp <= 0) return showAlert("Invalid RTP.");
     
     const parsedPrice = parseFloat(editingCase.price) || 0;
-    if (parsedPrice <= 0) return alert("Please set a case price first.");
-    if (editingCase.items.length < 2) return alert("You need at least 2 items to balance.");
+    if (parsedPrice <= 0) return showAlert("Please set a case price first.");
+    if (editingCase.items.length < 2) return showAlert("You need at least 2 items to balance.");
     
     const targetEV = (targetRtp / 100) * parsedPrice;
     
@@ -395,7 +398,7 @@ export default function AdminPage() {
     const maxV = Math.max(...values);
     
     if (targetEV <= minV || targetEV >= maxV) {
-      return alert(`Cannot balance to ${targetRtp}% RTP.\nThe Target Average Value is $${targetEV.toFixed(2)}.\nBut your items range from $${minV.toFixed(2)} to $${maxV.toFixed(2)}.\nPlease add more items or change the case price.`);
+      return showAlert(`Cannot balance to ${targetRtp}% RTP.\nThe Target Average Value is $${targetEV.toFixed(2)}.\nBut your items range from $${minV.toFixed(2)} to $${maxV.toFixed(2)}.\nPlease add more items or change the case price.`);
     }
 
     let low = -25, high = 25;
@@ -475,6 +478,7 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-32">
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6 bg-[#131620] p-5 rounded-2xl border border-[#222738] shadow-xl">

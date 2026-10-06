@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
-const index_1 = require("../index");
+const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 // Claim Rakeback
-router.post('/rakeback/claim', index_1.requireAuth, async (req, res) => {
+router.post('/rakeback/claim', auth_1.requireAuth, async (req, res) => {
     try {
         const userId = req.user.id;
         const result = await prisma.$transaction(async (tx) => {
@@ -41,7 +41,7 @@ router.post('/rakeback/claim', index_1.requireAuth, async (req, res) => {
     }
 });
 // Claim Affiliate Earnings
-router.post('/affiliate/claim', index_1.requireAuth, async (req, res) => {
+router.post('/affiliate/claim', auth_1.requireAuth, async (req, res) => {
     try {
         const userId = req.user.id;
         const result = await prisma.$transaction(async (tx) => {
@@ -73,7 +73,7 @@ router.post('/affiliate/claim', index_1.requireAuth, async (req, res) => {
     }
 });
 // Set Affiliate Code
-router.post('/affiliate/set', index_1.requireAuth, async (req, res) => {
+router.post('/affiliate/set', auth_1.requireAuth, async (req, res) => {
     try {
         const userId = req.user.id;
         const { code } = req.body;
