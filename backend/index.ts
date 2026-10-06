@@ -4904,8 +4904,25 @@ setIoInstance(io);
 startChatBot(io);
 startCryptoWatcher();
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
   console.log(`\n✅ Server running on http://0.0.0.0:${PORT}`);
+
+  // Seed daily cases if they don't exist
+  const tiers = ['daily_bronze', 'daily_silver', 'daily_gold', 'daily_platinum', 'daily_diamond'];
+  for (const t of tiers) {
+    const exists = await prisma.case.findFirst({ where: { type: t } });
+    if (!exists) {
+      await prisma.case.create({
+        data: {
+          name: t.replace('daily_', '').charAt(0).toUpperCase() + t.replace('daily_', '').slice(1) + ' Daily',
+          price: 0,
+          type: t,
+          image: ''
+        }
+      });
+      console.log(`Seeded daily case: ${t}`);
+    }
+  }
 
   if (DISCORD_WEBHOOK_URL) {
     axios.post(DISCORD_WEBHOOK_URL, {
