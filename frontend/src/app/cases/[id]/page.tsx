@@ -142,6 +142,7 @@ function HorizontalSpinner({ spinData, fallbackStrip, onComplete, containerW, ca
                 <img 
                   src={item.imageUrl} 
                   alt={item.name} 
+                  referrerPolicy="no-referrer"
                   className={`w-20 h-20 object-contain transition-all duration-300 ${isWinner ? 'scale-125 drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] z-20' : 'opacity-80 drop-shadow-md'}`} 
                 />
               ) : (
@@ -457,6 +458,7 @@ export default function CaseOpenPage() {
                     <img 
                       src={item.imageUrl} 
                       alt={item.name} 
+                      referrerPolicy="no-referrer"
                       className="w-16 h-16 object-contain drop-shadow-md transition-transform group-hover:scale-110" 
                     />
                   ) : (
