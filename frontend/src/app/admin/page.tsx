@@ -395,6 +395,16 @@ export default function AdminPage() {
         throw new Error((await res.json()).error);
       }
     } catch (e: any) { setError(e.message); }
+  const [itemSearchCache, setItemSearchCache] = useState<any[]>([]);
+
+  const handleSearchGrowtopia = async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch(`/admin/growtopia/search?q=${encodeURIComponent(searchTerm)}`);
+      if (res.ok) {
+        setItemSearchCache(await res.json());
+      }
+    } catch (e) { }
     setLoading(false);
   };
 
@@ -1366,6 +1376,24 @@ export default function AdminPage() {
                 ))}
               </div>
 
+              <h4 className="text-white font-bold mb-4 border-t border-[#2a2d3a] pt-6">Add Items via Growtopia Search</h4>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Growtopia Wiki..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
+                <button onClick={handleSearchGrowtopia} className="bg-accent-blue text-white px-4 py-2 rounded-xl font-bold text-sm">Search</button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 max-h-48 overflow-y-auto">
+                {itemSearchCache.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+                  >
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+
               {editingCase.items.length > 0 && (() => {
                 const totalWeight = editingCase.items.reduce((acc: number, item: any) => acc + (parseFloat(item.weight) || 0), 0);
                 const ev = totalWeight > 0 ? editingCase.items.reduce((acc: number, item: any) => acc + ((parseFloat(item.weight) || 0) / totalWeight) * ((parseFloat(item.value) || 0) * 100), 0) : 0;
@@ -1536,6 +1564,24 @@ export default function AdminPage() {
                   <button
                     key={i}
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+                  >
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <h4 className="text-white font-bold mb-4 border-t border-[#2a2d3a] pt-6">Add Items via Growtopia Search</h4>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Growtopia Wiki..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
+                <button onClick={handleSearchGrowtopia} className="bg-accent-blue text-white px-4 py-2 rounded-xl font-bold text-sm">Search</button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 max-h-48 overflow-y-auto">
+                {itemSearchCache.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl} className="w-8 h-8 object-contain" />
