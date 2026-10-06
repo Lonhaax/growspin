@@ -112,10 +112,6 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
         >
           {strip.map((item, i) => (
             <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative select-none will-change-transform" style={{ height: `${CARD_SIZE}px` }}>
-              <div 
-                className="absolute inset-0 opacity-40" 
-                style={{ background: `radial-gradient(circle at center, ${item.color || "#3b82f6"} 0%, transparent 70%)` }} 
-              />
               <div className="relative z-10 h-20 flex items-center justify-center mb-1">
                 {item.name === 'Lucky Star' ? (
                   <div className="w-16 h-16 relative flex items-center justify-center">
