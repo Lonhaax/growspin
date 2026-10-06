@@ -444,8 +444,8 @@ export default function CaseOpenPage() {
                 key={i} 
  className="bg-[#0f121a] border border-[#1a1f2e] rounded-xl p-3 flex flex-col relative transition-all group"
                 style={{ 
-                  borderTopColor: parseFloat(percentage) < 10 ? item.color : '#2a2d3a', 
-                  borderTopWidth: parseFloat(percentage) < 10 ? '2px' : '1px' 
+                  borderTopColor: item.color || '#2a2d3a', 
+                  borderTopWidth: '2px' 
                 }}
               >
                 {/* Info Icon top right */}
@@ -467,7 +467,7 @@ export default function CaseOpenPage() {
                 </div>
                 
                 <div className="mt-auto">
-                  <div className="text-[11px] font-bold text-white mb-2 text-center" title={item.name}>
+                  <div className="text-[11px] font-bold mb-2 text-center truncate" title={item.name} style={{ color: item.color || '#ffffff' }}>
                     {item.name}
                   </div>
                   <div className="flex items-center justify-between mt-1">
@@ -475,7 +475,7 @@ export default function CaseOpenPage() {
                       <span className="text-white text-[10px] font-bold">{(item.value / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       <Lock size={9} className="text-blue-300 fill-blue-300/20" />
                     </div>
-                    <span className="text-[10px] font-bold" style={{ color: parseFloat(percentage) < 10 ? item.color : '#646b85' }}>{percentage}%</span>
+                    <span className="text-[10px] font-bold" style={{ color: item.color || '#646b85' }}>{percentage}%</span>
                   </div>
                 </div>
               </div>

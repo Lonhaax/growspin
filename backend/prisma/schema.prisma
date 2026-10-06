@@ -8,34 +8,34 @@ datasource db {
 }
 
 model User {
-  id              Int             @id @default(autoincrement())
-  username        String          @unique
-  passwordHash    String
-  role            String          @default("user") // "user" or "admin"
-  mockBalance     Int             @default(1000)
-  level           Int             @default(1)
-  xp              Int             @default(0)
-  rakebackBalance Int             @default(0)
-  totalWagered    Int             @default(0)
-  debt            Int             @default(0)
-  debtCreatedAt   DateTime?
-  isFrozen        Boolean         @default(false)
-  lastFaucetClaim DateTime?
-  createdAt       DateTime        @default(now())
-  lastIp          String?         // Added for anti-abuse tracking
-  affiliateCode   String?         @unique
-  referredBy      String?
-  affiliateEarnings Int           @default(0)
-  transactions    Transaction[]
-  refreshTokens   RefreshToken[]
-  inventory       UserItem[]
-  chatMessages    ChatMessage[]
-  provablyFair    ProvablyFair[]
-  minesGames      MinesGame[]
-  dailyClaims     DailyClaim[]
-  isChatBanned    Boolean         @default(false)
-  depositIntents  DepositIntent[]
-  cryptoInvoices  CryptoInvoice[]
+  id                 Int                 @id @default(autoincrement())
+  username           String              @unique
+  passwordHash       String
+  role               String              @default("user")
+  mockBalance        Int                 @default(1000)
+  level              Int                 @default(1)
+  xp                 Int                 @default(0)
+  rakebackBalance    Int                 @default(0)
+  totalWagered       Int                 @default(0)
+  lastFaucetClaim    DateTime?
+  createdAt          DateTime            @default(now())
+  debt               Int                 @default(0)
+  debtCreatedAt      DateTime?
+  isFrozen           Boolean             @default(false)
+  affiliateCode      String?             @unique
+  affiliateEarnings  Int                 @default(0)
+  referredBy         String?
+  isChatBanned       Boolean             @default(false)
+  lastIp             String?
+  chatMessages       ChatMessage[]
+  cryptoInvoices     CryptoInvoice[]
+  dailyClaims        DailyClaim[]
+  depositIntents     DepositIntent[]
+  minesGames         MinesGame[]
+  provablyFair       ProvablyFair[]
+  refreshTokens      RefreshToken[]
+  transactions       Transaction[]
+  inventory          UserItem[]
   withdrawalRequests WithdrawalRequest[]
 }
 
@@ -53,6 +53,8 @@ model Transaction {
   result    String
   timestamp DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Transaction_userId_fkey")
 }
 
 model RefreshToken {
@@ -61,53 +63,55 @@ model RefreshToken {
   userId    Int
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "RefreshToken_userId_fkey")
 }
 
 model Battle {
-  id               Int      @id @default(autoincrement())
-  caseIds          String   @db.Text // JSON string of case IDs
-  mode             String   @default("normal") // "normal", "crazy", "terminal"
-  targetPlayerCount Int     @default(2) // 2, 3, or 4 players
-  entryFee         Int
-  status           String   @default("waiting") // "waiting", "running", "finished"
-  winnerId         String? // Could be "bot-X" or userId as string
-  totalPotValue Int      @default(0)
-  createdAt     DateTime @default(now())
-
-  participants BattleParticipant[]
+  id                Int                 @id @default(autoincrement())
+  caseIds           String              @db.Text
+  mode              String              @default("normal")
+  entryFee          Int
+  status            String              @default("waiting")
+  winnerId          String?
+  totalPotValue     Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  targetPlayerCount Int                 @default(2)
+  participants      BattleParticipant[]
 }
 
 model BattleParticipant {
   id        Int    @id @default(autoincrement())
   battleId  Int
-  userId    String // "bot-1", "bot-2", or actual numeric userId converted to string for simplicity
+  userId    String
   lootTotal Int    @default(0)
-  position  Int // 1, 2, 3, 4 (seat number)
+  position  Int
+  battle    Battle @relation(fields: [battleId], references: [id])
 
-  battle Battle @relation(fields: [battleId], references: [id])
+  @@index([battleId], map: "BattleParticipant_battleId_fkey")
 }
 
 model JackpotRound {
-  id            Int       @id @default(autoincrement())
-  status        String    @default("waiting") // "waiting", "spinning", "finished"
-  totalPotValue Int       @default(0)
+  id            Int            @id @default(autoincrement())
+  status        String         @default("waiting")
+  totalPotValue Int            @default(0)
   winnerId      String?
   winningTicket Int?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime       @default(now())
   finishedAt    DateTime?
-
-  entries JackpotEntry[]
+  entries       JackpotEntry[]
 }
 
 model JackpotEntry {
-  id        Int    @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   roundId   Int
-  userId    String // could be bot
+  userId    String
   amount    Int
   ticketMin Int
   ticketMax Int
+  round     JackpotRound @relation(fields: [roundId], references: [id])
 
-  round JackpotRound @relation(fields: [roundId], references: [id])
+  @@index([roundId], map: "JackpotEntry_roundId_fkey")
 }
 
 model UserItem {
@@ -117,12 +121,13 @@ model UserItem {
   value       Int
   color       String
   imageUrl    String?  @db.Text
-  status      String   @default("inventory") // inventory, sold, wagered, borrowed
+  status      String   @default("inventory")
+  createdAt   DateTime @default(now())
   isBorrowed  Boolean  @default(false)
   borrowPrice Int      @default(0)
-  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "UserItem_userId_fkey")
 }
 
 model ChatMessage {
@@ -130,21 +135,23 @@ model ChatMessage {
   userId    Int
   content   String   @db.Text
   timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "ChatMessage_userId_fkey")
 }
 
 model ProvablyFair {
   id         Int      @id @default(autoincrement())
   userId     Int
-  serverSeed String   @db.Text // the actual secret seed
-  serverHash String // the hashed version shown to user before play
-  clientSeed String   @db.Text // the user-provided seed
-  nonce      Int      @default(0) // increments per game
-  active     Boolean  @default(true) // is this the current active seed pair?
+  serverSeed String   @db.Text
+  serverHash String
+  clientSeed String   @db.Text
+  nonce      Int      @default(0)
+  active     Boolean  @default(true)
   createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "ProvablyFair_userId_fkey")
 }
 
 model MinesGame {
@@ -152,40 +159,41 @@ model MinesGame {
   userId        Int
   betAmount     Int
   minesCount    Int
-  boardState    String   @db.Text // JSON string of the grid: e.g. [0,1,0,0,2,...] where 0=hidden, 1=safe, 2=mine
-  mineLocations String   @db.Text // JSON string of indices where mines are
-  status        String   @default("playing") // playing, cashed_out, blown_up
-  multiplier    Float    @default(1.0)
+  boardState    String   @db.Text
+  mineLocations String   @db.Text
+  status        String   @default("playing")
+  multiplier    Float    @default(1)
   profit        Int      @default(0)
   createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "MinesGame_userId_fkey")
 }
 
 model Case {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   name      String
   price     Int
-  image     String?  @db.Text
-  active    Boolean  @default(true)
-  type      String   @default("normal") // normal, daily_bronze, daily_silver, daily_gold, daily_platinum, daily_diamond
-  createdAt DateTime @default(now())
-
-  items CaseItem[]
+  image     String?    @db.Text
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  type      String     @default("normal")
+  items     CaseItem[]
 }
 
 model CaseItem {
-  id          Int      @id @default(autoincrement())
-  caseId      Int
-  name        String
-  value       Int
-  color       String
-  weight      Float
-  image       String?  @db.Text
-  imageUrl    String?  @db.Text
+  id              Int     @id @default(autoincrement())
+  caseId          Int
+  name            String
+  value           Int
+  color           String
+  weight          Float
+  image           String? @db.Text
+  imageUrl        String? @db.Text
   isLuckyStarItem Boolean @default(false)
-  
-  case        Case     @relation(fields: [caseId], references: [id])
+  case            Case    @relation(fields: [caseId], references: [id])
+
+  @@index([caseId], map: "CaseItem_caseId_fkey")
 }
 
 model SiteSettings {
@@ -198,25 +206,24 @@ model SiteSettings {
   coinflipEnabled       Boolean  @default(true)
   rouletteEnabled       Boolean  @default(true)
   minesEnabled          Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+  maxBorrowLimit        Int      @default(100000)
   borrowEnabled         Boolean  @default(true)
-  maxBorrowLimit        Int      @default(100000) // Default 1,000 DLs (100,000 cents)
   slotsEnabled          Boolean  @default(true)
   slotsHouseEdge        Float    @default(0.05)
   casinoPot             Int      @default(0)
-  xpBase                Int      @default(1000) // Controls level curve: Math.sqrt(xp / xpBase) + 1
-  updatedAt             DateTime @updatedAt
+  xpBase                Int      @default(1000)
 }
 
 model DailyClaim {
   id          Int      @id @default(autoincrement())
   userId      Int
-  tier        String // "bronze", "silver", "gold", "platinum", "diamond"
+  tier        String
   claimedAt   DateTime @default(now())
   rewardName  String
   rewardValue Int
   rewardColor String
-
-  user User @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, tier])
 }
@@ -227,25 +234,27 @@ model DepositIntent {
   growId    String
   worldName String
   botName   String
-  status    String   @default("PENDING") // PENDING, COMPLETED, FAILED
-  amount    Int      @default(0) // In subunits (cents)
+  status    String   @default("PENDING")
+  amount    Int      @default(0)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "DepositIntent_userId_fkey")
 }
 
 model CryptoInvoice {
-  id             Int      @id @default(autoincrement())
-  userId         Int
-  paymentId      String   @unique
-  address        String?  @db.Text
-  status         String   @default("waiting") // waiting, finished, failed
-  payAmount      Float
-  payCurrency    String
-  dlsCredited    Int
-  createdAt      DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  paymentId   String   @unique
+  status      String   @default("waiting")
+  payAmount   Float
+  payCurrency String
+  dlsCredited Int
+  createdAt   DateTime @default(now())
+  address     String?  @db.Text
+  user        User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "CryptoInvoice_userId_fkey")
 }
 
 model AdminItem {
@@ -261,11 +270,12 @@ model WithdrawalRequest {
   id        Int      @id @default(autoincrement())
   userId    Int
   amount    Int
-  method    String   @default("crypto") // "crypto", "growtopia"
+  method    String   @default("crypto")
   address   String   @db.Text
-  status    String   @default("pending") // "pending", "approved", "rejected"
+  status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 
-  user User @relation(fields: [userId], references: [id])
+  @@index([userId], map: "WithdrawalRequest_userId_fkey")
 }
