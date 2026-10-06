@@ -4815,13 +4815,18 @@ app.get('/api/proxy-image', async (req: Request, res: Response) => {
   }
 
   try {
-    const response = await axios.get(imageUrl, {
-      headers: {
-        'Referer': 'https://growtopia.fandom.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
-      responseType: 'arraybuffer'
+    // Fandom enabled strict Cloudflare datacenter blocking, so we route through wsrv.nl image proxy
+    const cleanUrl = imageUrl.replace(/^https?:\/\//, '');
+    const wsrvUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}`;
+    
+    const response = await axios.get(wsrvUrl, {
+      responseType: 'arraybuffer',
+      validateStatus: () => true // Don't throw on error
     });
+
+    if (response.status !== 200) {
+      return res.status(response.status).send('Proxy upstream error');
+    }
 
     if (response.headers['content-type']) {
       res.setHeader('Content-Type', response.headers['content-type'] as string);
