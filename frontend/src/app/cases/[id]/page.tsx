@@ -140,9 +140,8 @@ function HorizontalSpinner({ spinData, fallbackStrip, onComplete, containerW, ca
                 <Star size={72} className={`text-blue-500 fill-blue-500 transition-all animate-[spin_3s_linear_infinite] ${isWinner ? 'scale-125 drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-20' : 'opacity-80'}`} />
               ) : item.imageUrl ? (
                 <img 
-                  src={item.imageUrl} 
+                  src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} 
                   alt={item.name} 
-                  referrerPolicy="no-referrer"
                   className={`w-20 h-20 object-contain transition-all duration-300 ${isWinner ? 'scale-125 drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] z-20' : 'opacity-80 drop-shadow-md'}`} 
                 />
               ) : (
@@ -456,9 +455,8 @@ export default function CaseOpenPage() {
                 <div className="w-full aspect-square relative flex items-center justify-center mt-2 mb-3">
                   {item.imageUrl ? (
                     <img 
-                      src={item.imageUrl} 
+                      src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} 
                       alt={item.name} 
-                      referrerPolicy="no-referrer"
                       className="w-16 h-16 object-contain drop-shadow-md transition-transform group-hover:scale-110" 
                     />
                   ) : (

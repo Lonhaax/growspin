@@ -4808,6 +4808,41 @@ app.all('/api/bgaming/callback/:sessionId', async (req: Request, res: Response) 
 });
 
 // Seed default case if none exists
+app.get('/api/proxy-image', async (req: Request, res: Response) => {
+  const imageUrl = req.query.url as string;
+  if (!imageUrl) {
+    return res.status(400).send('Missing url');
+  }
+
+  try {
+    const fetchResponse = await fetch(imageUrl, {
+      headers: {
+        'Referer': 'https://growtopia.fandom.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+
+    if (!fetchResponse.ok) {
+      return res.status(fetchResponse.status).send('Failed to fetch image');
+    }
+
+    const contentType = fetchResponse.headers.get('content-type');
+    if (contentType) {
+      res.setHeader('Content-Type', contentType);
+    }
+    
+    // Cache the proxied image for 1 year to save bandwidth
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+    const arrayBuffer = await fetchResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Proxy image error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 async function seedDefaultCase() {
   const settingsCount = await prisma.siteSettings.count();
   if (settingsCount === 0) {
