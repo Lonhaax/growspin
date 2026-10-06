@@ -395,6 +395,9 @@ export default function AdminPage() {
         throw new Error((await res.json()).error);
       }
     } catch (e: any) { setError(e.message); }
+    setLoading(false);
+  };
+
   const [itemSearchCache, setItemSearchCache] = useState<any[]>([]);
 
   const handleSearchGrowtopia = async () => {
