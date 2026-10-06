@@ -125,7 +125,7 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
                     </svg>
                   </div>
                 ) : item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="max-h-16 max-w-[80px] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.6)]" />
+                  <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} alt={item.name} className="max-h-16 max-w-[80px] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.6)]" />
                 ) : (
                   <PackageOpen size={48} style={{ color: item.color || "#3b82f6" }} className="drop-shadow-xl opacity-90" />
                 )}
@@ -383,14 +383,24 @@ export default function BattlesPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setActiveBattle(data); setView("battle"); setRoundResults([]); setRolling(false); setFinalWinner(null); refreshUser();
+      setActiveBattle(data); setView("battle"); setRoundResults([]); setRolling(false); setFinalWinner(null); setCurrentRound(0); refreshUser();
     } catch (e: any) { setError(e.message); } finally { setLoading(false); }
+  };
+
+  const handleWatch = async (battleId: number) => {
+    try {
+      const res = await apiFetch(`/battles/${battleId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setActiveBattle(data); setView("battle"); setRoundResults([]); setRolling(false); setFinalWinner(data.winnerId || null); setCurrentRound(0);
+    } catch (e) {}
   };
 
   const handleCallBots = async (count: number) => {
     setLoading(true);
     try {
-      const res = await apiFetch("/battles/call-bots", { method: "POST", body: JSON.stringify({ battleId: activeBattle.id, botCount: count }) });
+      const spotsLeft = (activeBattle.targetPlayerCount || 2) - activeBattle.participants.length;
+      const res = await apiFetch("/battles/call-bots", { method: "POST", body: JSON.stringify({ battleId: activeBattle.id, botCount: Math.min(count, spotsLeft) }) });
       const data = await res.json();
       if (res.ok) setActiveBattle(data);
     } catch (e) {}
@@ -525,14 +535,20 @@ export default function BattlesPage() {
                 const m = getModeDetails(b.mode);
                 let parsedCaseIds: string[] = [];
                 try { parsedCaseIds = JSON.parse(b.caseIds); } catch(e) {}
-                const maxPlayers = b.mode === "2v2" ? 4 : (b.mode === "3v3" ? 6 : (b.playerCount || 4));
+                const maxPlayers = b.targetPlayerCount || 2;
+                const isFull = b.participants.length >= maxPlayers;
+                const isRunning = b.status === 'running';
+                const isFinished = b.status === 'finished';
+                const isWaiting = b.status === 'waiting';
+                const alreadyIn = user && b.participants.find((p: any) => p.userId === user.id.toString());
 
                 return (
                   <motion.div 
                     key={b.id} 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="group bg-[#1a1d24] border border-[#2a2d3a] hover:border-[#3a3d4a] rounded-xl p-4 flex items-center justify-between transition-all"
+                    onClick={() => (isRunning || isFinished) ? handleWatch(b.id) : undefined}
+                    className={`group bg-[#1a1d24] border border-[#2a2d3a] hover:border-[#3a3d4a] rounded-xl p-4 flex items-center justify-between transition-all ${isRunning || isFinished ? 'cursor-pointer' : ''}`}
                   >
                     <div className="flex items-center gap-8 w-full">
                       {/* Left: Mode & Players */}
@@ -540,7 +556,7 @@ export default function BattlesPage() {
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-white text-[11px] font-black uppercase tracking-wider">{b.mode === 'normal' ? 'Normal' : b.mode}</span>
                           {b.mode !== 'normal' && (
-                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${m.bg} ${m.color}`}>80%</span>
+                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${m.bg} ${m.color}`}>{b.mode}</span>
                           )}
                         </div>
                         <div className="flex items-center justify-center gap-1">
@@ -562,15 +578,12 @@ export default function BattlesPage() {
                         {parsedCaseIds.slice(0, 10).map((cid, i) => {
                           const c = availableCases.find(x => x.id.toString() === cid);
                           return (
-                            <div key={i} className="w-10 h-10 bg-[#15181f] border border-[#2a2d3a] rounded-lg flex items-center justify-center p-1 relative group/case cursor-pointer">
+                            <div key={i} className="w-10 h-10 bg-[#15181f] border border-[#2a2d3a] rounded-lg flex items-center justify-center p-1 relative">
                               {c?.image ? (
                                 <img src={c.image} className="max-w-full max-h-full object-contain" />
                               ) : (
                                 <PackageOpen size={20} className="text-[#4d5366]" />
                               )}
-                              <div className="absolute top-0 right-0 w-3 h-3 bg-green-500/20 text-green-500 rounded-bl flex items-center justify-center text-[8px] font-bold">
-                                1
-                              </div>
                             </div>
                           );
                         })}
@@ -581,28 +594,46 @@ export default function BattlesPage() {
                         )}
                       </div>
 
-                      {/* Right: Cost & Status */}
+                      {/* Right: Cost & Action */}
                       <div className="flex items-center gap-8 shrink-0">
                         <div className="flex flex-col items-center">
                           <span className="text-[10px] text-[#7a819c] font-black uppercase tracking-widest mb-1">Battle Cost</span>
-                          <span className="text-white font-black text-sm flex items-center gap-1">
-                            <DLCurrency amount={b.entryFee} size="sm" className="text-white" />
-                          </span>
+                          <DLCurrency amount={b.entryFee} size="sm" className="text-white font-black" />
                         </div>
                         
                         <div className="w-[120px] text-center">
-                          {b.status === "waiting" ? (
+                          {isWaiting && !isFull && !alreadyIn ? (
                             <button
-                              onClick={() => handleJoin(b.id)}
-                              disabled={loading || b.participants.length >= maxPlayers}
+                              onClick={(e) => { e.stopPropagation(); handleJoin(b.id); }}
+                              disabled={loading}
                               className="w-full py-2.5 bg-[#1c7ced] hover:bg-[#186dc4] text-white font-black rounded-lg transition-all disabled:opacity-50 text-xs shadow-[0_0_10px_rgba(28,124,237,0.2)]"
                             >
                               Join
                             </button>
-                          ) : b.status === "finished" ? (
-                            <span className="text-[#7a819c] font-bold text-sm">Finished</span>
+                          ) : isWaiting && alreadyIn ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleWatch(b.id); }}
+                              disabled={loading}
+                              className="w-full py-2.5 bg-[#22c55e]/20 hover:bg-[#22c55e]/30 text-[#22c55e] font-black rounded-lg transition-all text-xs border border-[#22c55e]/30"
+                            >
+                              Return
+                            </button>
+                          ) : isWaiting && isFull ? (
+                            <span className="text-[#7a819c] font-bold text-xs">Full</span>
+                          ) : isRunning ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleWatch(b.id); }}
+                              className="w-full py-2.5 bg-[#a855f7]/20 hover:bg-[#a855f7]/30 text-[#a855f7] font-black rounded-lg transition-all text-xs border border-[#a855f7]/30"
+                            >
+                              👁 Watch
+                            </button>
                           ) : (
-                            <span className="text-white font-bold text-sm">Round 1 of {parsedCaseIds.length}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleWatch(b.id); }}
+                              className="w-full py-2.5 bg-[#2a2d3a] hover:bg-[#3a3d4a] text-[#7a819c] font-black rounded-lg transition-all text-xs"
+                            >
+                              View
+                            </button>
                           )}
                         </div>
                       </div>
@@ -1062,11 +1093,6 @@ export default function BattlesPage() {
                                 {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : p.userId[0]}
                               </div>
                               <div className="text-white text-xs font-bold truncate max-w-[80px] mr-1">{p.userId}</div>
-                              {targetItemForSpin && (
-                                <div className="absolute top-10 text-red-500 z-50 text-[10px]">
-                                  Debug: {JSON.stringify({ hitLS: (targetItemForSpin as any)._hitLuckyStar, hasActual: !!(targetItemForSpin as any)._actualWinItem })}
-                                </div>
-                              )}
                               <div className="flex items-center gap-1 font-black text-xs text-white">
                                 <DLCurrency amount={currentLootValue} size="sm" className="text-white" />
                               </div>
@@ -1090,7 +1116,7 @@ export default function BattlesPage() {
                                       {/* Actual item fades in */}
                                       <div className="absolute inset-0 flex items-center justify-center animate-in fade-in zoom-in duration-[1000ms] delay-500 fill-mode-both z-10">
                                         {(targetItemForSpin as any)._actualWinItem.imageUrl ? (
-                                          <img src={(targetItemForSpin as any)._actualWinItem.imageUrl} alt="" className="max-w-full max-h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]" />
+                                          <img src={(targetItemForSpin as any)._actualWinItem.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent((targetItemForSpin as any)._actualWinItem.imageUrl.replace(/^https?:\/\//, ''))}` : (targetItemForSpin as any)._actualWinItem.imageUrl} alt="" className="max-w-full max-h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]" />
                                         ) : (
                                           <div className="w-16 h-16 rounded-full" style={{ backgroundColor: (targetItemForSpin as any)._actualWinItem.color || '#3b82f6', boxShadow: `0 0 30px ${(targetItemForSpin as any)._actualWinItem.color || '#3b82f6'}` }} />
                                         )}
@@ -1103,7 +1129,7 @@ export default function BattlesPage() {
                                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                         </svg>
                                       ) : targetItemForSpin.imageUrl ? (
-                                        <img src={targetItemForSpin.imageUrl} alt="" className="max-w-full max-h-full object-contain" />
+                                        <img src={targetItemForSpin.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(targetItemForSpin.imageUrl.replace(/^https?:\/\//, ''))}` : targetItemForSpin.imageUrl} alt="" className="max-w-full max-h-full object-contain" />
                                       ) : (
                                         <div className="w-16 h-16 rounded-full" style={{ backgroundColor: targetItemForSpin.color || '#3b82f6', boxShadow: `0 0 30px ${targetItemForSpin.color || '#3b82f6'}` }} />
                                       )}
@@ -1179,7 +1205,7 @@ export default function BattlesPage() {
                               >
                                 <div className="flex items-center gap-3 overflow-hidden">
                                   {displayItem.imageUrl ? (
-                                    <img src={displayItem.imageUrl} alt="" className="w-8 h-8 object-contain drop-shadow-md" />
+                                    <img src={displayItem.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(displayItem.imageUrl.replace(/^https?:\/\//, ''))}` : displayItem.imageUrl} alt="" className="w-8 h-8 object-contain drop-shadow-md" />
                                   ) : (
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: displayItem.color || "#3b82f6", boxShadow: `0 0 10px ${displayItem.color}` }} />
                                   )}
@@ -1200,7 +1226,7 @@ export default function BattlesPage() {
                   })}
                   
                   {/* Empty slots */}
-                  {Array.from({ length: 4 - activeBattle.participants.length }).map((_, i) => (
+                  {Array.from({ length: Math.max(0, (activeBattle.targetPlayerCount || 2) - activeBattle.participants.length) }).map((_, i) => (
                     <div key={`empty-${i}`} className="bg-[#15181f]/50 border border-dashed border-[#2a2d3a] rounded-xl flex flex-col items-center justify-center p-8 opacity-50 min-h-[200px]">
                       <div className="w-12 h-12 rounded-lg bg-[#1a1d24] border border-[#2a2d3a] flex items-center justify-center mb-3">
                         <Users size={20} className="text-[#4d5366]" />
@@ -1213,13 +1239,15 @@ export default function BattlesPage() {
                 {/* CONTROLS */}
                 {activeBattle.status === "waiting" && (
                   <div className="flex flex-col sm:flex-row gap-4 justify-end mt-4">
-                    <button
-                      onClick={() => handleCallBots(4 - activeBattle.participants.length)}
-                      disabled={loading}
-                      className="px-6 py-3 bg-[#1a1d24] text-white font-black rounded-lg border border-[#2a2d3a] hover:bg-[#2a2d3a] transition-all flex items-center justify-center gap-2 shadow-lg text-sm"
-                    >
-                      <Bot size={18} className="text-[#a0a5b8]" /> Call Bots
-                    </button>
+                    {activeBattle.participants.length < (activeBattle.targetPlayerCount || 2) && (
+                      <button
+                        onClick={() => handleCallBots((activeBattle.targetPlayerCount || 2) - activeBattle.participants.length)}
+                        disabled={loading}
+                        className="px-6 py-3 bg-[#1a1d24] text-white font-black rounded-lg border border-[#2a2d3a] hover:bg-[#2a2d3a] transition-all flex items-center justify-center gap-2 shadow-lg text-sm"
+                      >
+                        <Bot size={18} className="text-[#a0a5b8]" /> Call Bots
+                      </button>
+                    )}
                     {activeBattle.participants.find((p: any) => p.userId === user?.id.toString())?.position === 1 && (
                       <button
                         onClick={handleStart}
@@ -1227,6 +1255,15 @@ export default function BattlesPage() {
                         className="px-8 py-3 bg-[#1c7ced] hover:bg-[#186dc4] text-white font-black rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-[0_0_15px_rgba(28,124,237,0.3)]"
                       >
                         Start Battle <ArrowRight size={18} />
+                      </button>
+                    )}
+                    {!activeBattle.participants.find((p: any) => p.userId === user?.id.toString()) && (
+                      <button
+                        onClick={() => handleJoin(activeBattle.id)}
+                        disabled={loading || activeBattle.participants.length >= (activeBattle.targetPlayerCount || 2)}
+                        className="px-8 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-black font-black rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+                      >
+                        Join Battle <ArrowRight size={18} />
                       </button>
                     )}
                   </div>
