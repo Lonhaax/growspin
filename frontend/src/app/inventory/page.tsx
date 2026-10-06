@@ -244,7 +244,7 @@ export default function InventoryPage() {
                     style={{ background: `linear-gradient(135deg, ${item.color}40, transparent)` }}
                   >
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="max-w-full max-h-full object-contain" />
+                      <img src={item.imageUrl.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} alt={item.name} className="max-w-full max-h-full object-contain" />
                     ) : (
                       <Package size={32} style={{ color: item.color }} />
                     )}
