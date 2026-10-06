@@ -143,7 +143,7 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
               </div>
               <div 
                 className="w-full max-w-full h-40 relative rounded-xl border-2 border-white/10 bg-[#07090d] shadow-inner overflow-hidden mb-12"
-                ref={el => el && setContainerW(el.clientWidth)}
+                ref={(el) => { if (el) setContainerW(el.clientWidth); }}
               >
                 <HorizontalSpinner 
                   spinData={spinData} 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare, MicOff } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare, MicOff, Gift } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
@@ -14,7 +14,7 @@ import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 export default function AdminPage() {
   const { user } = useAuth();
   const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm, showPrompt } = useCustomModal();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "daily_cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
