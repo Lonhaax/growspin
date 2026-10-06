@@ -77,6 +77,7 @@ model Battle {
   totalPotValue     Int                 @default(0)
   createdAt         DateTime            @default(now())
   targetPlayerCount Int                 @default(2)
+  format            String              @default("1v1")
   participants      BattleParticipant[]
 }
 

@@ -2635,14 +2635,15 @@ app.get('/api/battles/:id', async (req: Request, res: Response) => {
 
 // POST /api/battles/create
 app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { caseIds, mode, playerCount } = req.body;
+  const { caseIds, mode, playerCount, format } = req.body;
   const userId = req.userId!;
 
   if (!Array.isArray(caseIds) || caseIds.length === 0 || caseIds.length > 50) {
     return res.status(400).json({ error: 'Invalid caseIds array. Max 50 cases.' });
   }
   if (!['normal', 'crazy', 'terminal'].includes(mode)) return res.status(400).json({ error: 'Invalid mode' });
-  if (![2, 3, 4].includes(playerCount)) return res.status(400).json({ error: 'Invalid player count' });
+  if (![2, 3, 4, 6].includes(playerCount)) return res.status(400).json({ error: 'Invalid player count' });
+  const finalFormat = format || (playerCount === 2 ? '1v1' : playerCount === 3 ? '1v1v1' : playerCount === 4 ? '1v1v1v1' : '1v1v1v1v1v1');
 
   try {
     const result = await withUserLock(userId, async () => {
@@ -2680,6 +2681,7 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
           data: {
             caseIds: JSON.stringify(caseIds),
             mode,
+            format: finalFormat,
             targetPlayerCount: playerCount,
             entryFee,
             status: 'waiting',
@@ -2914,81 +2916,104 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         });
       }
 
-      // Determine winner
-      let winnerId = battle.participants[0].userId;
-      let tiedPlayers: string[] = [];
-      let isTie = false;
+      // Determine winner using teams
+      let teamSize = 1;
+      if (battle.format === '2v2' || battle.format === '2v2v2') teamSize = 2;
+      if (battle.format === '3v3') teamSize = 3;
 
-      const pStatsArr = Object.values(participantStats);
+      const teamStats: Record<number, { total: number, lastPull: number, members: string[] }> = {};
+      
+      battle.participants.forEach(p => {
+        const tId = Math.floor((p.position - 1) / teamSize);
+        if (!teamStats[tId]) teamStats[tId] = { total: 0, lastPull: 0, members: [] };
+        teamStats[tId].total += participantStats[p.id].total;
+        teamStats[tId].lastPull += participantStats[p.id].lastPull;
+        teamStats[tId].members.push(p.userId);
+      });
+
+      const tStatsArr = Object.entries(teamStats);
+      let winningTeamIds: string[] = [];
+
       if (battle.mode === 'crazy') {
-        // Lowest overall wins
-        const minLoot = Math.min(...pStatsArr.map(s => s.total));
-        const tied = pStatsArr.filter(s => s.total === minLoot);
-        tiedPlayers = tied.map(s => s.userId);
+        const minLoot = Math.min(...tStatsArr.map(([, s]) => s.total));
+        winningTeamIds = tStatsArr.filter(([, s]) => s.total === minLoot).map(([id]) => id);
       } else if (battle.mode === 'terminal') {
-        // Highest last pull wins. If tie, fallback to highest total.
-        const maxLast = Math.max(...pStatsArr.map(s => s.lastPull));
-        const tiedLast = pStatsArr.filter(s => s.lastPull === maxLast);
+        const maxLast = Math.max(...tStatsArr.map(([, s]) => s.lastPull));
+        const tiedLast = tStatsArr.filter(([, s]) => s.lastPull === maxLast);
         if (tiedLast.length > 1) {
-          const maxTotal = Math.max(...tiedLast.map(s => s.total));
-          const tiedTotal = tiedLast.filter(s => s.total === maxTotal);
-          tiedPlayers = tiedTotal.map(s => s.userId);
+          const maxTotal = Math.max(...tiedLast.map(([, s]) => s.total));
+          winningTeamIds = tiedLast.filter(([, s]) => s.total === maxTotal).map(([id]) => id);
         } else {
-          tiedPlayers = [tiedLast[0].userId];
+          winningTeamIds = tiedLast.map(([id]) => id);
         }
       } else {
-        // Normal: Highest overall wins
-        const maxLoot = Math.max(...pStatsArr.map(s => s.total));
-        const tied = pStatsArr.filter(s => s.total === maxLoot);
-        tiedPlayers = tied.map(s => s.userId);
+        const maxTotal = Math.max(...tStatsArr.map(([, s]) => s.total));
+        winningTeamIds = tStatsArr.filter(([, s]) => s.total === maxTotal).map(([id]) => id);
       }
 
-      if (tiedPlayers.length > 1) {
+      let isTie = false;
+      let tiedPlayers: string[] = [];
+      let winningTeamId = winningTeamIds[0];
+
+      if (winningTeamIds.length > 1) {
         isTie = true;
-        // Randomly pick a winner from the tied players
-        winnerId = tiedPlayers[Math.floor(Math.random() * tiedPlayers.length)];
-      } else {
-        winnerId = tiedPlayers[0];
+        tiedPlayers = winningTeamIds.flatMap(tId => teamStats[parseInt(tId)].members);
+        winningTeamId = winningTeamIds[Math.floor(Math.random() * winningTeamIds.length)];
       }
+
+      const winningMembers = teamStats[parseInt(winningTeamId)].members;
+      const winnerIdStr = winningMembers.join(',');
 
       await tx.battle.update({
         where: { id: battleId },
-        data: { status: 'finished', winnerId, totalPotValue }
+        data: { status: 'finished', winnerId: winnerIdStr, totalPotValue }
       });
 
-      // Award all unboxed items to the winner's inventory so they don't get raw DLs after the battle spins.
-      // If they choose to sell, they can sell from their inventory for DLs.
-      if (!winnerId.startsWith('bot-')) {
-        const winnerIntId = parseInt(winnerId);
-        const allItemsWon: any[] = [];
-        rounds.forEach(round => {
-          round.forEach((roll: any) => {
-            const itemToAward = roll.hitLuckyStar && roll.actualWinItem ? roll.actualWinItem : roll.item;
-            if (itemToAward && itemToAward.id !== -999) {
-              allItemsWon.push(itemToAward);
-            }
-          });
-        });
+      // Award items: each winner gets their own items + the items of the losers in the same team sub-slot.
+      // Sub-slot is `(position - 1) % teamSize`
+      for (const p of battle.participants) {
+        if (winningMembers.includes(p.userId) && !p.userId.startsWith('bot-')) {
+          const winnerIntId = parseInt(p.userId);
+          const subSlot = (p.position - 1) % teamSize;
+          
+          // Find all rolls that belong to this sub-slot (from any team)
+          const slotRolls: any[] = [];
+          const slotParticipants = battle.participants.filter(bp => (bp.position - 1) % teamSize === subSlot);
+          const slotParticipantIds = slotParticipants.map(bp => bp.id);
 
-        if (allItemsWon.length > 0) {
-          await tx.userItem.createMany({
-            data: allItemsWon.map(item => ({
-              userId: winnerIntId,
-              name: item.name,
-              value: item.value,
-              color: item.color,
-              imageUrl: item.imageUrl || null,
-              status: 'inventory'
-            }))
+          rounds.forEach(round => {
+            round.forEach((roll: any) => {
+              if (slotParticipantIds.includes(roll.participantId)) {
+                const itemToAward = roll.hitLuckyStar && roll.actualWinItem ? roll.actualWinItem : roll.item;
+                if (itemToAward && itemToAward.id !== -999) {
+                  slotRolls.push(itemToAward);
+                }
+              }
+            });
           });
+
+          if (slotRolls.length > 0) {
+            await tx.userItem.createMany({
+              data: slotRolls.map(item => ({
+                userId: winnerIntId,
+                name: item.name,
+                value: item.value,
+                color: item.color,
+                imageUrl: item.imageUrl || null,
+                status: 'inventory'
+              }))
+            });
+          }
         }
       }
 
-      return { battleId, rounds, winnerId, totalPotValue, mode: battle.mode, isTie, tiedPlayers, entryFee: battle.entryFee, numPlayers: battle.participants.length };
+      return { battleId, rounds, winnerId: winnerIdStr, totalPotValue, mode: battle.mode, format: battle.format, isTie, tiedPlayers, entryFee: battle.entryFee, numPlayers: battle.participants.length, teamStats };
     });
 
-    if (!result.winnerId.startsWith('bot-')) {
-      const winnerUser = await prisma.user.findUnique({ where: { id: parseInt(result.winnerId) } });
+    // We can emit live bets for the first non-bot winner
+    const firstHumanWinner = result.winnerId.split(',').find(id => !id.startsWith('bot-'));
+    if (firstHumanWinner) {
+      const winnerUser = await prisma.user.findUnique({ where: { id: parseInt(firstHumanWinner) } });
       if (winnerUser) {
         emitLiveBet(io, { 
           user: winnerUser.username, 

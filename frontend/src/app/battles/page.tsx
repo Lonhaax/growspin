@@ -230,12 +230,14 @@ export default function BattlesPage() {
   const [activeBattle, setActiveBattle] = useState<any>(null);
   
   const [createMode, setCreateMode] = useState("normal"); // normal, crazy, terminal
+  const [createFormat, setCreateFormat] = useState("1v1");
   const [createPlayers, setCreatePlayers] = useState(2);
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
   const [callAllBots, setCallAllBots] = useState(false);
   
   // Modals
   const [isCaseModalOpen, setIsCaseModalOpen] = useState(false);
+  const [isFormatDropdownOpen, setIsFormatDropdownOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -352,7 +354,7 @@ export default function BattlesPage() {
     try {
       const res = await apiFetch("/battles/create", {
         method: "POST",
-        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createMode, playerCount: createPlayers })
+        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createMode, playerCount: createPlayers, format: createFormat })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -773,34 +775,61 @@ export default function BattlesPage() {
                                 </div>
                             </div>
                             
-                            <div className="bg-[#1a1d24] border border-[#2a2d3a] rounded-lg p-2.5 flex items-center justify-between cursor-pointer hover:bg-[#2a2d3a] transition-colors mb-3">
-                                <div className="flex items-center gap-2 text-[#7a819c] font-black text-sm">
-                                  <UserIcon size={14} /> x <UserIcon size={14} />
+                            <div className="relative mb-3">
+                                <div 
+                                  onClick={() => setIsFormatDropdownOpen(!isFormatDropdownOpen)}
+                                  className="bg-[#1a1d24] border border-[#2a2d3a] rounded-lg p-2.5 flex items-center justify-between cursor-pointer hover:bg-[#2a2d3a] transition-colors"
+                                >
+                                    <div className="flex items-center gap-2 text-[#7a819c] font-black text-sm">
+                                      <Users size={14} /> {createFormat.toUpperCase()}
+                                    </div>
+                                    <ChevronLeft size={16} className={`text-[#4d5366] transition-transform ${isFormatDropdownOpen ? 'rotate-90' : 'rotate-[-90deg]'}`} />
                                 </div>
-                                <ChevronLeft size={16} className="rotate-[-90deg] text-[#4d5366]" />
+                                
+                                {isFormatDropdownOpen && (
+                                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1d24] border border-[#2a2d3a] rounded-lg shadow-xl z-50 overflow-hidden">
+                                    {[
+                                      { id: '1v1', players: 2 },
+                                      { id: '1v1v1', players: 3 },
+                                      { id: '1v1v1v1', players: 4 },
+                                      { id: '2v2', players: 4 },
+                                      { id: '1v1v1v1v1v1', players: 6 },
+                                      { id: '2v2v2', players: 6 },
+                                      { id: '3v3', players: 6 },
+                                    ].map(f => (
+                                      <div 
+                                        key={f.id}
+                                        onClick={() => { setCreateFormat(f.id); setCreatePlayers(f.players); setIsFormatDropdownOpen(false); }}
+                                        className="px-3 py-2 text-[#7a819c] font-black text-xs hover:bg-[#2a2d3a] hover:text-white cursor-pointer transition-colors"
+                                      >
+                                        {f.id.toUpperCase()}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 mb-4">
+                            <div className={`grid gap-2 mb-4 ${createPlayers === 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                                 {/* Slot 1: You */}
-                                <div className="bg-[#1a1d24] border border-[#1c7ced]/30 rounded-lg p-3 flex items-center gap-3 relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 bottom-0 w-1 bg-[#1c7ced]" />
-                                    <div className="w-8 h-8 rounded bg-[#1c7ced]/20 text-[#1c7ced] flex items-center justify-center">
-                                        <UserIcon size={16} />
+                                <div className="bg-[#1a1d24] border border-[#1c7ced]/30 rounded-lg p-2 flex flex-col sm:flex-row items-center sm:items-start gap-2 relative overflow-hidden text-center sm:text-left">
+                                    <div className="absolute top-0 left-0 sm:bottom-0 sm:w-1 w-full h-1 sm:h-auto bg-[#1c7ced]" />
+                                    <div className="w-6 h-6 rounded bg-[#1c7ced]/20 text-[#1c7ced] flex items-center justify-center shrink-0">
+                                        <UserIcon size={12} />
                                     </div>
-                                    <div>
-                                        <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-wider mb-0.5">Slot 1</div>
-                                        <div className="text-white text-[11px] font-bold">You</div>
+                                    <div className="min-w-0">
+                                        <div className="text-[9px] text-[#7a819c] font-black uppercase tracking-wider mb-0.5">Slot 1</div>
+                                        <div className="text-white text-[10px] font-bold truncate max-w-full">You</div>
                                     </div>
                                 </div>
-                                {/* Slot 2 */}
+                                {/* Other Slots */}
                                 {Array.from({length: createPlayers - 1}).map((_, i) => (
-                                    <div key={i} className="bg-[#1a1d24] border border-[#2a2d3a] rounded-lg p-3 flex items-center gap-3 opacity-70">
-                                        <div className="w-8 h-8 rounded bg-[#2a2d3a] text-[#4d5366] flex items-center justify-center">
-                                            <UserIcon size={16} />
+                                    <div key={i} className="bg-[#1a1d24] border border-[#2a2d3a] rounded-lg p-2 flex flex-col sm:flex-row items-center sm:items-start gap-2 opacity-70 text-center sm:text-left">
+                                        <div className="w-6 h-6 rounded bg-[#2a2d3a] text-[#4d5366] flex items-center justify-center shrink-0">
+                                            <UserIcon size={12} />
                                         </div>
-                                        <div>
-                                            <div className="text-[10px] text-[#7a819c] font-black uppercase tracking-wider mb-0.5">Slot {i+2}</div>
-                                            <div className="text-[#7a819c] text-[11px] font-bold">Empty</div>
+                                        <div className="min-w-0">
+                                            <div className="text-[9px] text-[#7a819c] font-black uppercase tracking-wider mb-0.5">Slot {i+2}</div>
+                                            <div className="text-[#7a819c] text-[10px] font-bold truncate max-w-full">Empty</div>
                                         </div>
                                     </div>
                                 ))}
@@ -1035,20 +1064,31 @@ export default function BattlesPage() {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                     </div>
 
-                    {/* Vertical Divider for Teams */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#2a2d3a]/50 z-20 pointer-events-none" />
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#15181f] border border-[#2a2d3a] rounded flex items-center justify-center z-30 shadow-md">
-                      <Swords size={14} className="text-[#4d5366]" />
-                    </div>
+                    {/* Dividers for Teams */}
+                    {(() => {
+                      const format = activeBattle.format || '1v1';
+                      let teamSize = 1;
+                      if (format === '2v2' || format === '2v2v2') teamSize = 2;
+                      if (format === '3v3') teamSize = 3;
+                      const numTeams = Math.ceil((activeBattle.targetPlayerCount || 2) / teamSize);
+                      return Array.from({ length: Math.max(0, numTeams - 1) }).map((_, i) => (
+                        <div key={i} className="absolute inset-0 pointer-events-none z-20">
+                          <div className="absolute top-0 bottom-0 w-[1px] bg-[#2a2d3a]/50" style={{ left: `${((i + 1) / numTeams) * 100}%` }} />
+                          <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-[#15181f] border border-[#2a2d3a] rounded flex items-center justify-center shadow-md pointer-events-auto" style={{ left: `${((i + 1) / numTeams) * 100}%` }}>
+                            <Swords size={14} className="text-[#4d5366]" />
+                          </div>
+                        </div>
+                      ));
+                    })()}
 
                     {/* Players */}
                     <div 
                       className="w-full grid relative z-10" 
-                      style={{ gridTemplateColumns: `repeat(${activeBattle.participants.length || 2}, minmax(0, 1fr))` }}
+                      style={{ gridTemplateColumns: `repeat(${activeBattle.targetPlayerCount || 2}, minmax(0, 1fr))` }}
                     >
                       {activeBattle.participants.map((p: any, idx: number) => {
                         const isBot = p.userId.startsWith('bot-');
-                        const isWinner = finalWinner === p.userId;
+                        const isWinner = finalWinner && finalWinner.split(',').includes(p.userId.toString());
                         
                         let targetItemForSpin = null;
                         let currentCaseItemsPool: any[] = [];
@@ -1147,7 +1187,7 @@ export default function BattlesPage() {
                       })}
                       
                       {/* Empty slots for missing participants to maintain grid */}
-                      {Array.from({ length: Math.max(0, (activeBattle.participants.length > 2 ? 4 : 2) - activeBattle.participants.length) }).map((_, i) => (
+                      {Array.from({ length: Math.max(0, (activeBattle.targetPlayerCount || 2) - activeBattle.participants.length) }).map((_, i) => (
                         <div key={`empty-${i}`} className="relative flex flex-col items-center justify-center pt-6 opacity-30">
                           <Users size={32} className="text-[#4d5366]" />
                         </div>
@@ -1157,10 +1197,13 @@ export default function BattlesPage() {
                 </div>
 
                 {/* PLAYER HISTORY GRID */}
-                <div className={`grid gap-4 ${activeBattle.participants.length > 2 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2'}`}>
+                <div 
+                  className="grid gap-4" 
+                  style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${activeBattle.targetPlayerCount > 4 ? '150px' : '200px'}, 1fr))` }}
+                >
                   {activeBattle.participants.map((p: any, idx: number) => {
                     const isBot = p.userId.startsWith('bot-');
-                    const isWinner = finalWinner === p.userId;
+                    const isWinner = finalWinner && finalWinner.split(',').includes(p.userId.toString());
                     
                         let currentLootValue = 0;
                         if (roundResults.length > 0) {
