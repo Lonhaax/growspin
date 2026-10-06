@@ -44,7 +44,7 @@ export default function AdminPage() {
 
   const [cases, setCases] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [itemSearchCache, setItemSearchCache] = useState<any[]>([]);
+  const [adminItems, setAdminItems] = useState<any[]>([]);
 
   // Editing Case state
   const [editingCase, setEditingCase] = useState<any>(null);
@@ -141,6 +141,8 @@ export default function AdminPage() {
       if (res.ok) setSettings(await res.json());
       const resCases = await apiFetch("/admin/cases");
       if (resCases.ok) setCases(await resCases.json());
+      const resItems = await apiFetch("/admin/items");
+      if (resItems.ok) setAdminItems(await resItems.json());
     } catch (e) { }
   };
 
@@ -396,17 +398,6 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleSearchGrowtopia = async () => {
-    setLoading(true);
-    try {
-      const res = await apiFetch(`/admin/growtopia/search?q=${encodeURIComponent(searchTerm)}`);
-      if (res.ok) {
-        setItemSearchCache(await res.json());
-      }
-    } catch (e) { }
-    setLoading(false);
-  };
-
   const executeAutoBalance = (target: string) => {
     const targetRtp = parseFloat(target);
     if (isNaN(targetRtp) || targetRtp <= 0) return showAlert("Invalid RTP.");
@@ -481,14 +472,14 @@ export default function AdminPage() {
 
       if (isCreatingCase) {
         const res = await apiFetch("/admin/cases", { method: "POST", body: JSON.stringify(payload) });
-        if (res.ok) { setSuccess("Case created!"); setIsCreatingCase(false); setEditingCase(null); fetchSettings(); }
+        if (res.ok) { showSuccess("Case created!"); setIsCreatingCase(false); setEditingCase(null); fetchSettings(); }
         else throw new Error((await res.json()).error);
       } else {
         const res = await apiFetch(`/admin/cases/${editingCase.id}`, { method: "PUT", body: JSON.stringify(payload) });
-        if (res.ok) { setSuccess("Case updated!"); setEditingCase(null); fetchSettings(); }
+        if (res.ok) { showSuccess("Case updated!"); setEditingCase(null); fetchSettings(); }
         else throw new Error((await res.json()).error);
       }
-    } catch (e: any) { setError(e.message); }
+    } catch (e: any) { showError(e.message); }
     setLoading(false);
   };
 
@@ -1358,16 +1349,15 @@ export default function AdminPage() {
             </div>
 
             <div className="border-t border-[#2a2d3a] pt-6">
-              <h4 className="text-white font-bold mb-4">Add Items via Growtopia Search</h4>
+              <h4 className="text-white font-bold mb-4">Add Items from Database</h4>
               <div className="flex gap-2 mb-4">
-                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Growtopia Wiki..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
-                <button onClick={handleSearchGrowtopia} className="bg-accent-blue text-white px-4 py-2 rounded-xl font-bold text-sm">Search</button>
+                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search saved items..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 max-h-48 overflow-y-auto">
-                {itemSearchCache.map((item, i) => (
+                {adminItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 50).map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl} className="w-8 h-8 object-contain" />
@@ -1537,16 +1527,15 @@ export default function AdminPage() {
             </div>
 
             <div className="border-t border-[#2a2d3a] pt-6">
-              <h4 className="text-white font-bold mb-4">Add Items via Growtopia Search</h4>
+              <h4 className="text-white font-bold mb-4">Add Items from Database</h4>
               <div className="flex gap-2 mb-4">
-                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Growtopia Wiki..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
-                <button onClick={handleSearchGrowtopia} className="bg-accent-blue text-white px-4 py-2 rounded-xl font-bold text-sm">Search</button>
+                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search saved items..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 max-h-48 overflow-y-auto">
-                {itemSearchCache.map((item, i) => (
+                {adminItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 50).map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl} className="w-8 h-8 object-contain" />
