@@ -4815,30 +4815,24 @@ app.get('/api/proxy-image', async (req: Request, res: Response) => {
   }
 
   try {
-    const fetchResponse = await fetch(imageUrl, {
+    const response = await axios.get(imageUrl, {
       headers: {
         'Referer': 'https://growtopia.fandom.com/',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      },
+      responseType: 'arraybuffer'
     });
 
-    if (!fetchResponse.ok) {
-      return res.status(fetchResponse.status).send('Failed to fetch image');
-    }
-
-    const contentType = fetchResponse.headers.get('content-type');
-    if (contentType) {
-      res.setHeader('Content-Type', contentType);
+    if (response.headers['content-type']) {
+      res.setHeader('Content-Type', response.headers['content-type'] as string);
     }
     
     // Cache the proxied image for 1 year to save bandwidth
     res.setHeader('Cache-Control', 'public, max-age=31536000');
 
-    const arrayBuffer = await fetchResponse.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    res.send(buffer);
-  } catch (error) {
-    console.error('Proxy image error:', error);
+    res.send(response.data);
+  } catch (error: any) {
+    console.error('Proxy image error:', error.message || error);
     res.status(500).send('Internal Server Error');
   }
 });
