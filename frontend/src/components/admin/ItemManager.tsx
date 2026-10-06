@@ -227,7 +227,7 @@ export default function ItemManager() {
                 
                 <div className="w-12 h-12 mb-3 relative">
                   <div className="absolute inset-0 opacity-20 blur-xl" style={{ backgroundColor: item.color }}></div>
-                  <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
+                  <img src={item.imageUrl} alt={item.name} referrerPolicy="no-referrer" className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="text-[10px] text-gray-300 font-bold text-center leading-tight mb-1">{item.name}</div>
                 <div className="text-[10px] font-black" style={{ color: item.color }}>

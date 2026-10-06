@@ -1373,7 +1373,7 @@ export default function AdminPage() {
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1391,7 +1391,7 @@ export default function AdminPage() {
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1475,7 +1475,7 @@ export default function AdminPage() {
                   return (
                     <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-[#15181f] p-3 rounded-xl border border-[#2a2d3a]">
                       <div className="flex items-center gap-2 w-full sm:flex-1">
-                        <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-8 h-8 object-contain bg-[#1f222b] rounded-lg p-1" />
+                        <img src={item.imageUrl} className="w-8 h-8 object-contain bg-[#1f222b] rounded-lg p-1" />
                         <input type="text" value={item.name} onChange={e => { const newItems = [...editingCase.items]; newItems[i].name = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="flex-1 bg-transparent border-b border-[#2a2d3a] text-xs text-white p-1 focus:border-accent-blue outline-none" />
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1569,7 +1569,7 @@ export default function AdminPage() {
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1587,7 +1587,7 @@ export default function AdminPage() {
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
                     className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1599,7 +1599,7 @@ export default function AdminPage() {
                   const probability = totalWeight > 0 ? ((parseFloat(item.weight) || 0) / totalWeight) * 100 : 0;
                   return (
                     <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#15181f] p-4 rounded-xl border border-[#2a2d3a]">
-                      <img src={item.imageUrl?.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(item.imageUrl)}` : item.imageUrl} className="w-12 h-12 object-contain" />
+                      <img src={item.imageUrl} className="w-12 h-12 object-contain" />
                       <div className="flex-1 font-bold text-white">{item.name}</div>
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex flex-col">

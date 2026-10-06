@@ -4808,40 +4808,6 @@ app.all('/api/bgaming/callback/:sessionId', async (req: Request, res: Response) 
 });
 
 // Seed default case if none exists
-app.get('/api/proxy-image', async (req: Request, res: Response) => {
-  const imageUrl = req.query.url as string;
-  if (!imageUrl) {
-    return res.status(400).send('Missing url');
-  }
-
-  try {
-    // Fandom enabled strict Cloudflare datacenter blocking, so we route through wsrv.nl image proxy
-    const cleanUrl = imageUrl.replace(/^https?:\/\//, '');
-    const wsrvUrl = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}`;
-    
-    const response = await axios.get(wsrvUrl, {
-      responseType: 'arraybuffer',
-      validateStatus: () => true // Don't throw on error
-    });
-
-    if (response.status !== 200) {
-      return res.status(response.status).send('Proxy upstream error');
-    }
-
-    if (response.headers['content-type']) {
-      res.setHeader('Content-Type', response.headers['content-type'] as string);
-    }
-    
-    // Cache the proxied image for 1 year to save bandwidth
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-
-    res.send(response.data);
-  } catch (error: any) {
-    console.error('Proxy image error:', error.message || error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
 async function seedDefaultCase() {
   const settingsCount = await prisma.siteSettings.count();
   if (settingsCount === 0) {
