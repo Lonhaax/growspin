@@ -6,6 +6,14 @@ import { DLCurrency } from "@/components/ui/DLCurrency";
 import { apiFetch } from "@/lib/auth";
 import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
+export function getRarityColor(dlValue: number): string {
+  if (dlValue < 20) return '#ffffff'; // White
+  if (dlValue < 60) return '#22c55e'; // Green
+  if (dlValue < 120) return '#3b82f6'; // Blue
+  if (dlValue < 700) return '#a855f7'; // Purple
+  return '#eab308'; // Gold
+}
+
 export default function ItemManager() {
   const [items, setItems] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,7 +151,11 @@ export default function ItemManager() {
               step="0.01"
               min="0"
               value={newItemValue}
-              onChange={(e) => setNewItemValue(e.target.value)}
+              onChange={(e) => {
+                setNewItemValue(e.target.value);
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) setNewItemColor(getRarityColor(val));
+              }}
  className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
             />
           </div>

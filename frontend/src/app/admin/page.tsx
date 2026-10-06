@@ -10,6 +10,7 @@ import ItemManager from "@/components/admin/ItemManager";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
+import { getRarityColor } from "@/components/admin/ItemManager";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -1370,7 +1371,7 @@ export default function AdminPage() {
                 {adminItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 50).map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: getRarityColor(item.value / 100), imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
  className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
@@ -1388,7 +1389,7 @@ export default function AdminPage() {
                 {itemSearchCache.map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: getRarityColor(1), imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
  className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
@@ -1481,7 +1482,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Value ($ / DL)</span>
-                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Weight</span>
@@ -1566,7 +1567,7 @@ export default function AdminPage() {
                 {adminItems.filter(i => i.name.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 50).map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: getRarityColor(item.value / 100), imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
  className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
@@ -1584,7 +1585,7 @@ export default function AdminPage() {
                 {itemSearchCache.map((item, i) => (
                   <button
                     key={i}
-                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: getRarityColor(1), imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
  className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
                     <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
@@ -1604,7 +1605,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Value ($ / DL)</span>
-                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Weight</span>
