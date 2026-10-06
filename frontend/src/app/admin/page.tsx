@@ -77,34 +77,40 @@ export default function AdminPage() {
     setAffiliatesLoading(false);
   };
 
-  const handleBanAffiliate = async (id: number) => {
-    if (!confirm("Are you absolutely sure? This will strip their referrals, zero their earnings, and freeze their account.")) return;
+  const executeBanAffiliate = async (id: number) => {
     try {
       const res = await apiFetch(`/admin/affiliates/${id}/ban`, { method: "POST" });
       if (res.ok) {
-        setSuccess("Affiliate successfully banned and account locked.");
+        showSuccess("Affiliate successfully banned and account locked.");
         fetchAffiliates();
       } else {
-        setError((await res.json()).error);
+        showError((await res.json()).error);
       }
     } catch (e: any) {
-      setError(e.message);
+      showError(e.message);
     }
   };
 
-  const handleUnbanAffiliate = async (id: number) => {
-    if (!confirm("Reinstate this affiliate and unlock their account?")) return;
+  const handleBanAffiliate = (id: number) => {
+    showConfirm("Are you absolutely sure? This will strip their referrals, zero their earnings, and freeze their account.", () => executeBanAffiliate(id));
+  };
+
+  const executeUnbanAffiliate = async (id: number) => {
     try {
       const res = await apiFetch(`/admin/affiliates/${id}/unban`, { method: "POST" });
       if (res.ok) {
-        setSuccess("Affiliate account unlocked and reinstated.");
+        showSuccess("Affiliate account unlocked and reinstated.");
         fetchAffiliates();
       } else {
-        setError((await res.json()).error);
+        showError((await res.json()).error);
       }
     } catch (e: any) {
-      setError(e.message);
+      showError(e.message);
     }
+  };
+
+  const handleUnbanAffiliate = (id: number) => {
+    showConfirm("Reinstate this affiliate and unlock their account?", () => executeUnbanAffiliate(id));
   };
 
   const fetchChat = async () => {
@@ -194,47 +200,57 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleDeleteUser = async (id: number, username: string) => {
-    if (!confirm(`Are you sure you want to completely delete player "${username}"? All items and history will be purged.`)) return;
+  const executeDeleteUser = async (id: number, username: string) => {
     setLoading(true);
     try {
       const res = await apiFetch(`/admin/users/${id}`, { method: "DELETE" });
       if (res.ok) {
-        setSuccess(`Player ${username} deleted.`);
+        showSuccess(`Player ${username} deleted.`);
         fetchUsers(userSearch);
       } else {
         throw new Error((await res.json()).error);
       }
     } catch (e: any) {
-      setError(e.message);
+      showError(e.message);
     }
     setLoading(false);
   };
 
-  const handleFreezeUser = async (id: number, username: string, isFrozen: boolean) => {
+  const handleDeleteUser = (id: number, username: string) => {
+    showConfirm(`Are you sure you want to completely delete player "${username}"? All items and history will be purged.`, () => executeDeleteUser(id, username));
+  };
+
+  const executeFreezeUser = async (id: number, username: string, isFrozen: boolean) => {
     const action = isFrozen ? "unfreeze" : "freeze";
-    if (!confirm(`Are you sure you want to ${action} player "${username}"?`)) return;
     setLoading(true);
     try {
       const res = await apiFetch(`/admin/users/${id}/freeze`, { method: "POST" });
       if (res.ok) {
-        setSuccess(`Player ${username} ${action}d.`);
+        showSuccess(`Player ${username} ${action}d.`);
         fetchUsers(userSearch);
       } else {
         throw new Error((await res.json()).error);
       }
     } catch (e: any) {
-      setError(e.message);
+      showError(e.message);
     }
     setLoading(false);
   };
 
-  const handleDeleteChat = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this chat message?")) return;
+  const handleFreezeUser = (id: number, username: string, isFrozen: boolean) => {
+    const action = isFrozen ? "unfreeze" : "freeze";
+    showConfirm(`Are you sure you want to ${action} player "${username}"?`, () => executeFreezeUser(id, username, isFrozen));
+  };
+
+  const executeDeleteChat = async (id: number) => {
     try {
       await apiFetch(`/admin/chat/${id}`, { method: 'DELETE' });
       fetchChat();
     } catch (e) {}
+  };
+
+  const handleDeleteChat = (id: number) => {
+    showConfirm("Are you sure you want to delete this chat message?", () => executeDeleteChat(id));
   };
 
   const handleAddFilter = async () => {
@@ -258,9 +274,7 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
-  const handleChatBan = async (id: number, username: string, currentStatus: boolean) => {
-    const action = currentStatus ? "unban" : "ban";
-    if (!confirm(`Are you sure you want to ${action} ${username} from chat?`)) return;
+  const executeChatBan = async (id: number, username: string, currentStatus: boolean) => {
     try {
       await apiFetch(`/admin/chat/ban/${id}`, {
         method: 'POST',
@@ -268,6 +282,11 @@ export default function AdminPage() {
       });
       fetchUsers(userSearch);
     } catch (e) {}
+  };
+
+  const handleChatBan = (id: number, username: string, currentStatus: boolean) => {
+    const action = currentStatus ? "unban" : "ban";
+    showConfirm(`Are you sure you want to ${action} ${username} from chat?`, () => executeChatBan(id, username, currentStatus));
   };
 
   const handleAuditUser = async (user: any) => {
@@ -279,30 +298,36 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
-  const handleApproveWithdrawal = async (id: number) => {
-    if (!confirm("Confirm payout was sent manually?")) return;
+  const executeApproveWithdrawal = async (id: number) => {
     setLoading(true);
     try {
       const res = await apiFetch(`/admin/withdrawals/${id}/approve`, { method: "POST" });
       if (res.ok) {
-        setSuccess("Withdrawal approved!");
+        showSuccess("Withdrawal approved!");
         fetchWithdrawals();
       } else throw new Error((await res.json()).error);
-    } catch (e: any) { setError(e.message); }
+    } catch (e: any) { showError(e.message); }
     setLoading(false);
   };
 
-  const handleRejectWithdrawal = async (id: number) => {
-    if (!confirm("Reject and refund DLs to player?")) return;
+  const handleApproveWithdrawal = (id: number) => {
+    showConfirm("Confirm payout was sent manually?", () => executeApproveWithdrawal(id));
+  };
+
+  const executeRejectWithdrawal = async (id: number) => {
     setLoading(true);
     try {
       const res = await apiFetch(`/admin/withdrawals/${id}/reject`, { method: "POST" });
       if (res.ok) {
-        setSuccess("Withdrawal rejected and refunded!");
+        showSuccess("Withdrawal rejected and refunded!");
         fetchWithdrawals();
       } else throw new Error((await res.json()).error);
-    } catch (e: any) { setError(e.message); }
+    } catch (e: any) { showError(e.message); }
     setLoading(false);
+  };
+
+  const handleRejectWithdrawal = (id: number) => {
+    showConfirm("Reject and refund DLs to player?", () => executeRejectWithdrawal(id));
   };
 
   const executeTriggerRain = async (amountStr: string) => {
@@ -467,14 +492,17 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleDeleteCase = async (id: number) => {
-    if (!confirm("Are you sure?")) return;
+  const executeDeleteCase = async (id: number) => {
     setLoading(true);
     try {
       const res = await apiFetch(`/admin/cases/${id}`, { method: "DELETE" });
       if (res.ok) fetchSettings();
     } catch (e) { }
     setLoading(false);
+  };
+
+  const handleDeleteCase = (id: number) => {
+    showConfirm("Are you sure you want to delete this case?", () => executeDeleteCase(id));
   };
 
   if (user?.role !== 'admin') return <div className="text-center py-20 text-red-500 font-black">UNAUTHORIZED</div>;
@@ -1639,10 +1667,14 @@ export default function AdminPage() {
             </h2>
             <div className="flex gap-2">
               <button
-                onClick={async () => {
-                  if(!confirm('Are you sure you want to permanently delete all pending/failed crypto invoices?')) return;
-                  await apiFetch('/admin/purge-crypto');
-                  fetchDeposits();
+                onClick={() => {
+                  showConfirm(
+                    'Are you sure you want to permanently delete all pending/failed crypto invoices?',
+                    async () => {
+                      await apiFetch('/admin/purge-crypto');
+                      fetchDeposits();
+                    }
+                  );
                 }}
                 className="flex items-center gap-2 px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black text-red-400 hover:bg-red-500/20 transition-colors"
               >
