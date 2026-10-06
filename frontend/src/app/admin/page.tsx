@@ -13,7 +13,7 @@ import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function AdminPage() {
   const { user } = useAuth();
-  const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
+  const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm, showPrompt } = useCustomModal();
   const [activeTab, setActiveTab] = useState<"players" | "cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -305,9 +305,7 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleTriggerRain = async () => {
-    const amountStr = prompt("Enter amount of DLs to drop in Chat Rain:", "1000");
-    if (!amountStr) return;
+  const executeTriggerRain = async (amountStr: string) => {
     const amount = parseInt(amountStr);
     if (isNaN(amount) || amount <= 0) return showAlert("Invalid amount.");
     
@@ -328,6 +326,10 @@ export default function AdminPage() {
       setError(e.message);
     }
     setLoading(false);
+  };
+
+  const handleTriggerRain = () => {
+    showPrompt("Enter amount of DLs to drop in Chat Rain:", executeTriggerRain, "1000", "Trigger Rain");
   };
 
   const handleWithdrawPot = async () => {
@@ -380,10 +382,7 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleAutoBalanceRTP = () => {
-    if (!editingCase) return;
-    const target = prompt("Enter Target RTP % (e.g. 92):", "92");
-    if (!target) return;
+  const executeAutoBalance = (target: string) => {
     const targetRtp = parseFloat(target);
     if (isNaN(targetRtp) || targetRtp <= 0) return showAlert("Invalid RTP.");
     
@@ -434,6 +433,11 @@ export default function AdminPage() {
     }));
 
     setEditingCase({ ...editingCase, items: newItems });
+  };
+
+  const handleAutoBalanceRTP = () => {
+    if (!editingCase) return;
+    showPrompt("Enter Target RTP % (e.g. 92):", executeAutoBalance, "92", "Auto Balance RTP");
   };
 
   const handleSaveCase = async () => {
