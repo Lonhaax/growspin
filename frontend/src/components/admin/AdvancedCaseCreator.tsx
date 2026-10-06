@@ -169,7 +169,7 @@ export default function AdvancedCaseCreator() {
             <button
               onClick={handleGenerateCases}
               disabled={isSubmitting}
-              className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-400 hover:to-fuchsia-500 text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
+ className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-400 hover:to-fuchsia-500 text-white font-black text-[10px] uppercase tracking-wider rounded-lg transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
             >
               {isSubmitting ? "Generating..." : "⚡ 1-Click Generate Cases"}
             </button>
@@ -188,13 +188,13 @@ export default function AdvancedCaseCreator() {
               placeholder="Search items" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
           <select 
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
-            className="bg-[#0a0d14] border border-[#202535] rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-indigo-500"
+ className="bg-[#0a0d14] border border-[#202535] rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-indigo-500"
           >
             <option value="name-asc">Name (A-Z)</option>
             <option value="name-desc">Name (Z-A)</option>
@@ -210,11 +210,11 @@ export default function AdvancedCaseCreator() {
               <div 
                 key={item.name}
                 onClick={() => handleToggleItem(item)}
-                className={`relative flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all border-2 group ${isSelected ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'border-[#202535] bg-[#0a0d14] hover:border-gray-600'}`}
+ className={`relative flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all border-2 group ${isSelected ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'border-[#202535] bg-[#0a0d14] hover:border-gray-600'}`}
               >
                 <div className="w-12 h-12 mb-3 relative">
                   <div className="absolute inset-0 opacity-20 blur-xl" style={{ backgroundColor: item.color }}></div>
-                  <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
+                  <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="text-[10px] text-gray-300 font-bold text-center leading-tight mb-1">{item.name}</div>
                 <div className="text-[10px] font-black" style={{ color: item.color }}>
@@ -242,7 +242,7 @@ export default function AdvancedCaseCreator() {
             {selectedItems.map((si, i) => (
               <div key={si.item.name} className="flex items-center gap-4 bg-[#0a0d14] p-3 rounded-xl border border-[#202535]">
                 <div className="w-10 h-10 p-1 bg-[#13161f] rounded-lg border border-[#202535]">
-                  <img src={si.item.imageUrl} className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+                  <img src={si.item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(si.item.imageUrl.replace(/^https?:\/\//, ''))}` : si.item.imageUrl} className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold text-white">{si.item.name}</div>
@@ -254,13 +254,13 @@ export default function AdvancedCaseCreator() {
                     min="0" max="100" step="0.01"
                     value={si.chance}
                     onChange={(e) => handleChanceChange(i, parseFloat(e.target.value) || 0)}
-                    className="w-24 bg-[#13161f] border border-[#202535] rounded-lg p-2 text-white text-right font-bold focus:outline-none focus:border-indigo-500"
+ className="w-24 bg-[#13161f] border border-[#202535] rounded-lg p-2 text-white text-right font-bold focus:outline-none focus:border-indigo-500"
                   />
                   <span className="text-gray-400 font-bold">%</span>
                 </div>
                 <button 
                   onClick={() => handleToggleItem(si.item)}
-                  className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+ className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -286,7 +286,7 @@ export default function AdvancedCaseCreator() {
             
             {/* We use an SVG chest or a highly stylable placeholder */}
             <div 
-              className="relative w-48 h-48 transition-all duration-300 transform group-hover:scale-105 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)]"
+ className="relative w-48 h-48 transition-all duration-300 transform group-hover:scale-105 filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)]"
               style={{ filter: `hue-rotate(${caseHue}deg) drop-shadow(0 20px 30px rgba(0,0,0,0.5))` }}
             >
               {/* Fallback to a rendered SVG if the user hasn't uploaded a chest.png */}
@@ -307,7 +307,7 @@ export default function AdvancedCaseCreator() {
                 min="0" max="360" 
                 value={caseHue} 
                 onChange={(e) => setCaseHue(parseInt(e.target.value))}
-                className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 rounded-full appearance-none cursor-pointer"
+ className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500 rounded-full appearance-none cursor-pointer"
               />
             </div>
           </div>
@@ -321,7 +321,7 @@ export default function AdvancedCaseCreator() {
                 placeholder="Case Name (4-20 characters)"
                 value={caseName}
                 onChange={(e) => setCaseName(e.target.value)}
-                className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-4 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-4 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
 
@@ -336,7 +336,7 @@ export default function AdvancedCaseCreator() {
                 placeholder={expectedValue > 0 ? suggestedPrice.toFixed(2).toString() : "0.00"}
                 value={manualPrice}
                 onChange={(e) => setManualPrice(e.target.value)}
-                className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-4 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-4 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
               />
               {expectedValue > 0 && (
                 <p className={`text-xs mt-2 font-bold ${(parseFloat(manualPrice) || suggestedPrice) < expectedValue ? 'text-red-400' : 'text-green-400'}`}>
@@ -355,7 +355,7 @@ export default function AdvancedCaseCreator() {
             <button 
               onClick={handleCreateCase}
               disabled={isSubmitting || selectedItems.length === 0 || Math.abs(totalChance - 100) > 0.01}
-              className="w-full mt-4 py-4 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(99,102,241,0.2)] disabled:shadow-none"
+ className="w-full mt-4 py-4 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(99,102,241,0.2)] disabled:shadow-none"
             >
               {isSubmitting ? <span className="animate-spin">⌛</span> : <Save size={20} />}
               Create Case

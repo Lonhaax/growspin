@@ -540,7 +540,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-1.5 bg-[#0c0e14] p-1 rounded-2xl border border-[#202535] min-w-max">
             <button
             onClick={() => setActiveTab("players")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "players"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -551,7 +551,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("cases")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "cases"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -562,7 +562,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("daily_cases")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "daily_cases"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -573,7 +573,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("settings")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "settings"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -584,7 +584,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("studio")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "studio"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -595,7 +595,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("items")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "items"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -606,7 +606,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "analytics"
                 ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -617,7 +617,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("withdrawals")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "withdrawals"
                 ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -628,7 +628,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("bots")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "bots"
                 ? "bg-purple-500 text-black shadow-[0_0_15px_rgba(168,85,247,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -639,7 +639,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("chat")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "chat"
                 ? "bg-rose-500 text-black shadow-[0_0_15px_rgba(244,63,94,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -650,7 +650,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("deposits")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "deposits"
                 ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -661,7 +661,7 @@ export default function AdminPage() {
           </button>
           <button
             onClick={() => setActiveTab("affiliates")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               activeTab === "affiliates"
                 ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                 : "text-[#7f86a2] hover:text-white"
@@ -705,19 +705,19 @@ export default function AdminPage() {
                       setUserSearch(e.target.value);
                       fetchUsers(e.target.value);
                     }}
-                    className="bg-[#0c0e14] border border-[#202535] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-[#585e75] focus:outline-none focus:border-cyan-400 font-semibold"
+ className="bg-[#0c0e14] border border-[#202535] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-[#585e75] focus:outline-none focus:border-cyan-400 font-semibold"
                   />
                 </div>
                 <button
                   onClick={() => fetchUsers(userSearch)}
-                  className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
+ className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
                   title="Refresh Players"
                 >
                   <RefreshCw size={14} className={usersLoading ? "animate-spin" : ""} />
                 </button>
                 <button
                   onClick={handleTriggerRain}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white text-xs font-bold shadow-lg hover:shadow-cyan-500/20 transition-all"
+ className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white text-xs font-bold shadow-lg hover:shadow-cyan-500/20 transition-all"
                 >
                   <AlertTriangle size={14} /> Drop Rain
                 </button>
@@ -782,7 +782,7 @@ export default function AdminPage() {
                               totalWageredDL: (u.totalWagered / 100).toString(),
                               newPassword: ""
                             })}
-                            className="px-3 py-1.5 bg-[#1b1f2c] hover:bg-cyan-500/20 hover:border-cyan-500/40 text-cyan-400 border border-[#2a3044] rounded-lg font-bold text-xs transition-all flex items-center gap-1.5"
+ className="px-3 py-1.5 bg-[#1b1f2c] hover:bg-cyan-500/20 hover:border-cyan-500/40 text-cyan-400 border border-[#2a3044] rounded-lg font-bold text-xs transition-all flex items-center gap-1.5"
                           >
                             <Edit size={12} /> Edit
                           </button>
@@ -790,7 +790,7 @@ export default function AdminPage() {
                             <>
                               <button
                                 onClick={() => handleChatBan(u.id, u.username, u.isChatBanned)}
-                                className={`p-1.5 border rounded-lg transition-colors ${
+ className={`p-1.5 border rounded-lg transition-colors ${
                                   u.isChatBanned 
                                     ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/20' 
                                     : 'bg-slate-500/10 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-slate-500/20 hover:border-rose-500/20'
@@ -801,7 +801,7 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={() => handleFreezeUser(u.id, u.username, u.isFrozen)}
-                                className={`p-1.5 border rounded-lg transition-colors ${
+ className={`p-1.5 border rounded-lg transition-colors ${
                                   u.isFrozen 
                                     ? 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border-orange-500/20' 
                                     : 'bg-slate-500/10 hover:bg-orange-500/20 text-slate-400 hover:text-orange-400 border-slate-500/20 hover:border-orange-500/20'
@@ -812,7 +812,7 @@ export default function AdminPage() {
                               </button>
                               <button
                                 onClick={() => handleDeleteUser(u.id, u.username)}
-                                className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+ className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
                                 title="Purge Player"
                               >
                                 <Trash2 size={13} />
@@ -821,7 +821,7 @@ export default function AdminPage() {
                           )}
                           <button
                             onClick={() => handleAuditUser(u)}
-                            className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg transition-colors"
+ className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg transition-colors"
                             title="Audit Player"
                           >
                             <Search size={13} />
@@ -848,7 +848,7 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={() => setAuditUser(null)}
-                    className="text-[#646b85] hover:text-white text-xs font-black uppercase"
+ className="text-[#646b85] hover:text-white text-xs font-black uppercase"
                   >
                     Close
                   </button>
@@ -907,7 +907,7 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={() => setEditingUser(null)}
-                    className="text-[#646b85] hover:text-white text-xs font-black uppercase"
+ className="text-[#646b85] hover:text-white text-xs font-black uppercase"
                   >
                     Close
                   </button>
@@ -920,7 +920,7 @@ export default function AdminPage() {
                       type="text"
                       value={editingUser.username}
                       onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -929,7 +929,7 @@ export default function AdminPage() {
                     <select
                       value={editingUser.role}
                       onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     >
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -946,7 +946,7 @@ export default function AdminPage() {
                       step="any"
                       value={editingUser.mockBalanceDL}
                       onChange={(e) => setEditingUser({ ...editingUser, mockBalanceDL: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -960,7 +960,7 @@ export default function AdminPage() {
                       step="any"
                       value={editingUser.rakebackBalanceDL}
                       onChange={(e) => setEditingUser({ ...editingUser, rakebackBalanceDL: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -972,7 +972,7 @@ export default function AdminPage() {
                       max="100"
                       value={editingUser.level}
                       onChange={(e) => setEditingUser({ ...editingUser, level: Math.min(100, Math.max(1, parseInt(e.target.value) || 1)).toString() })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -982,7 +982,7 @@ export default function AdminPage() {
                       type="number"
                       value={editingUser.xp}
                       onChange={(e) => setEditingUser({ ...editingUser, xp: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -993,7 +993,7 @@ export default function AdminPage() {
                       step="any"
                       value={editingUser.totalWageredDL}
                       onChange={(e) => setEditingUser({ ...editingUser, totalWageredDL: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
                     />
                   </div>
 
@@ -1006,7 +1006,7 @@ export default function AdminPage() {
                       placeholder="Leave blank to keep unchanged"
                       value={editingUser.newPassword}
                       onChange={(e) => setEditingUser({ ...editingUser, newPassword: e.target.value })}
-                      className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold placeholder-[#585e75]"
+ className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold placeholder-[#585e75]"
                     />
                   </div>
                 </div>
@@ -1014,14 +1014,14 @@ export default function AdminPage() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setEditingUser(null)}
-                    className="flex-1 py-3 bg-[#1b1f2c] border border-[#2a3044] text-white font-bold rounded-xl text-xs hover:bg-[#222838] transition-colors"
+ className="flex-1 py-3 bg-[#1b1f2c] border border-[#2a3044] text-white font-bold rounded-xl text-xs hover:bg-[#222838] transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSaveUser}
                     disabled={loading}
-                    className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center justify-center gap-2"
+ className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center justify-center gap-2"
                   >
                     <Save size={14} /> Commit Changes
                   </button>
@@ -1047,7 +1047,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={fetchWithdrawals}
-                className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
+ className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
               >
                 <RefreshCw size={14} className={withdrawalsLoading ? "animate-spin" : ""} />
               </button>
@@ -1099,14 +1099,14 @@ export default function AdminPage() {
                           <div className="inline-flex gap-2">
                             <button
                               onClick={() => handleApproveWithdrawal(w.id)}
-                              className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors"
+ className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors"
                               title="Mark Approved"
                             >
                               <Check size={14} />
                             </button>
                             <button
                               onClick={() => handleRejectWithdrawal(w.id)}
-                              className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+ className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
                               title="Reject & Refund"
                             >
                               <XCircle size={14} />
@@ -1140,7 +1140,7 @@ export default function AdminPage() {
             <button
               onClick={handleWithdrawPot}
               disabled={loading || !settings.casinoPot || settings.casinoPot <= 0}
-              className="bg-amber-400 hover:bg-amber-300 text-black font-black px-4 py-2 rounded-xl transition-all disabled:opacity-50"
+ className="bg-amber-400 hover:bg-amber-300 text-black font-black px-4 py-2 rounded-xl transition-all disabled:opacity-50"
             >
               Withdraw
             </button>
@@ -1161,7 +1161,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={() => setSettings({ ...settings, maintenanceMode: !settings.maintenanceMode })}
-                className={`w-14 h-7 rounded-full transition-colors relative ${settings.maintenanceMode ? 'bg-red-500' : 'bg-[#2a2d3a]'}`}
+ className={`w-14 h-7 rounded-full transition-colors relative ${settings.maintenanceMode ? 'bg-red-500' : 'bg-[#2a2d3a]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-transform ${settings.maintenanceMode ? 'left-8' : 'left-1'}`} />
               </button>
@@ -1173,7 +1173,7 @@ export default function AdminPage() {
                 type="number"
                 value={settings.mockBalanceOnRegister / 100}
                 onChange={e => setSettings({ ...settings, mockBalanceOnRegister: Math.floor(parseFloat(e.target.value) * 100) })}
-                className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
+ className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
               />
             </div>
 
@@ -1184,7 +1184,7 @@ export default function AdminPage() {
                 type="number"
                 value={settings.xpBase ?? 1000}
                 onChange={e => setSettings({ ...settings, xpBase: parseInt(e.target.value) || 1000 })}
-                className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
+ className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
               />
             </div>
           </div>
@@ -1204,7 +1204,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={() => setSettings({ ...settings, borrowEnabled: !settings.borrowEnabled })}
-                className={`w-14 h-7 rounded-full transition-colors relative ${settings.borrowEnabled ? 'bg-accent-green' : 'bg-[#2a2d3a]'}`}
+ className={`w-14 h-7 rounded-full transition-colors relative ${settings.borrowEnabled ? 'bg-accent-green' : 'bg-[#2a2d3a]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-transform ${settings.borrowEnabled ? 'left-8' : 'left-1'}`} />
               </button>
@@ -1225,7 +1225,7 @@ export default function AdminPage() {
                     const val = Math.max(0, parseFloat(e.target.value) || 0);
                     setSettings({ ...settings, maxBorrowLimit: Math.round(val * 100) });
                   }}
-                  className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-400"
+ className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-400"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-[#7a819c]">DLs</span>
               </div>
@@ -1251,7 +1251,7 @@ export default function AdminPage() {
               </div>
               <button
                 onClick={() => setSettings({ ...settings, slotsEnabled: !settings.slotsEnabled })}
-                className={`w-14 h-7 rounded-full transition-colors relative ${settings.slotsEnabled ? 'bg-emerald-500' : 'bg-[#2a2d3a]'}`}
+ className={`w-14 h-7 rounded-full transition-colors relative ${settings.slotsEnabled ? 'bg-emerald-500' : 'bg-[#2a2d3a]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-transform ${settings.slotsEnabled ? 'left-8' : 'left-1'}`} />
               </button>
@@ -1270,7 +1270,7 @@ export default function AdminPage() {
                   step="0.01"
                   value={settings.slotsHouseEdge ?? 0.05}
                   onChange={e => setSettings({ ...settings, slotsHouseEdge: parseFloat(e.target.value) })}
-                  className="w-full accent-emerald-500"
+ className="w-full accent-emerald-500"
                 />
                 <span className="text-sm font-black text-white w-12 text-right">
                   {Math.round((settings.slotsHouseEdge ?? 0.05) * 100)}%
@@ -1301,14 +1301,14 @@ export default function AdminPage() {
                         type="number" step="0.1"
                         value={settings[`${game}HouseEdge`]}
                         onChange={e => setSettings({ ...settings, [`${game}HouseEdge`]: parseFloat(e.target.value) })}
-                        className="w-16 bg-[#15181f] border border-[#2a2d3a] rounded-lg px-2 py-1 text-white text-center focus:outline-none focus:border-accent-blue"
+ className="w-16 bg-[#15181f] border border-[#2a2d3a] rounded-lg px-2 py-1 text-white text-center focus:outline-none focus:border-accent-blue"
                       />
                     </label>
                   </div>
                 </div>
                 <button
                   onClick={() => setSettings({ ...settings, [`${game}Enabled`]: !settings[`${game}Enabled`] })}
-                  className={`w-12 h-6 rounded-full transition-colors relative ${settings[`${game}Enabled`] ? 'bg-accent-green' : 'bg-[#2a2d3a]'}`}
+ className={`w-12 h-6 rounded-full transition-colors relative ${settings[`${game}Enabled`] ? 'bg-accent-green' : 'bg-[#2a2d3a]'}`}
                 >
                   <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${settings[`${game}Enabled`] ? 'left-7' : 'left-1'}`} />
                 </button>
@@ -1333,7 +1333,7 @@ export default function AdminPage() {
           </h2>
           <button
             onClick={() => { setEditingCase({ name: '', image: '', price: '', active: true, items: [] }); setIsCreatingCase(true); }}
-            className="bg-accent-green text-black px-4 py-2 rounded-xl font-black text-sm flex items-center gap-2 hover:bg-[#00e676] transition-colors"
+ className="bg-accent-green text-black px-4 py-2 rounded-xl font-black text-sm flex items-center gap-2 hover:bg-[#00e676] transition-colors"
           >
             <Plus size={16} /> New Case
           </button>
@@ -1371,9 +1371,9 @@ export default function AdminPage() {
                   <button
                     key={i}
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
-                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+ className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1389,9 +1389,9 @@ export default function AdminPage() {
                   <button
                     key={i}
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
-                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+ className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1475,7 +1475,7 @@ export default function AdminPage() {
                   return (
                     <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-[#15181f] p-3 rounded-xl border border-[#2a2d3a]">
                       <div className="flex items-center gap-2 w-full sm:flex-1">
-                        <img src={item.imageUrl} className="w-8 h-8 object-contain bg-[#1f222b] rounded-lg p-1" />
+                        <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain bg-[#1f222b] rounded-lg p-1" />
                         <input type="text" value={item.name} onChange={e => { const newItems = [...editingCase.items]; newItems[i].name = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="flex-1 bg-transparent border-b border-[#2a2d3a] text-xs text-white p-1 focus:border-accent-blue outline-none" />
                       </div>
                       <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1497,7 +1497,7 @@ export default function AdminPage() {
                               type="checkbox" 
                               checked={!!item.isLuckyStarItem}
                               onChange={e => { const newItems = [...editingCase.items]; newItems[i].isLuckyStarItem = e.target.checked; setEditingCase({ ...editingCase, items: newItems }); }} 
-                              className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+ className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                             />
                           </div>
                         </div>
@@ -1567,9 +1567,9 @@ export default function AdminPage() {
                   <button
                     key={i}
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: (item.value / 100).toString(), weight: '1', color: item.color, imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
-                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+ className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1585,9 +1585,9 @@ export default function AdminPage() {
                   <button
                     key={i}
                     onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
-                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+ className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
                   >
-                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-8 h-8 object-contain" />
                     <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
                   </button>
                 ))}
@@ -1599,7 +1599,7 @@ export default function AdminPage() {
                   const probability = totalWeight > 0 ? ((parseFloat(item.weight) || 0) / totalWeight) * 100 : 0;
                   return (
                     <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#15181f] p-4 rounded-xl border border-[#2a2d3a]">
-                      <img src={item.imageUrl} className="w-12 h-12 object-contain" />
+                      <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} className="w-12 h-12 object-contain" />
                       <div className="flex-1 font-bold text-white">{item.name}</div>
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex flex-col">
@@ -1726,7 +1726,7 @@ export default function AdminPage() {
             </h2>
             <button
               onClick={fetchChat}
-              className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
+ className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
             >
               <RefreshCw size={13} />
               Refresh
@@ -1742,11 +1742,11 @@ export default function AdminPage() {
                 onChange={(e) => setNewFilterWord(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddFilter()}
                 placeholder="Enter word to block..."
-                className="flex-1 bg-[#151923] border border-[#202535] rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-rose-500 outline-none"
+ className="flex-1 bg-[#151923] border border-[#202535] rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-rose-500 outline-none"
               />
               <button
                 onClick={handleAddFilter}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg text-sm transition-colors"
+ className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg text-sm transition-colors"
               >
                 Add Filter
               </button>
@@ -1789,7 +1789,7 @@ export default function AdminPage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleDeleteChat(log.id)}
-                        className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
+ className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
                         title="Delete Message"
                       >
                         <Trash2 size={13} />
@@ -1828,14 +1828,14 @@ export default function AdminPage() {
                     }
                   );
                 }}
-                className="flex items-center gap-2 px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black text-red-400 hover:bg-red-500/20 transition-colors"
+ className="flex items-center gap-2 px-3.5 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black text-red-400 hover:bg-red-500/20 transition-colors"
               >
                 <XCircle size={13} />
                 Purge Old
               </button>
               <button
                 onClick={fetchDeposits}
-                className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
+ className="flex items-center gap-2 px-3.5 py-2 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-xs font-black text-[#7f86a2] hover:text-white transition-colors"
               >
                 <RefreshCw size={13} />
                 Refresh
@@ -2014,7 +2014,7 @@ export default function AdminPage() {
                         {!aff.isFrozen ? (
                           <button
                             onClick={() => handleBanAffiliate(aff.id)}
-                            className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition-colors"
+ className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition-colors"
                             title="Ban Affiliate"
                           >
                             <Trash2 size={16} />
@@ -2022,7 +2022,7 @@ export default function AdminPage() {
                         ) : (
                           <button
                             onClick={() => handleUnbanAffiliate(aff.id)}
-                            className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 p-2 rounded-lg transition-colors"
+ className="bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 p-2 rounded-lg transition-colors"
                             title="Reinstate Affiliate"
                           >
                             <Unlock size={16} />

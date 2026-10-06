@@ -132,7 +132,7 @@ export default function ItemManager() {
               placeholder="e.g. Zeus' Lightning Bolt"
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
-              className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
             />
           </div>
           <div className="w-full md:w-48">
@@ -144,7 +144,7 @@ export default function ItemManager() {
               min="0"
               value={newItemValue}
               onChange={(e) => setNewItemValue(e.target.value)}
-              className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
             />
           </div>
           <div className="w-full md:w-24">
@@ -153,7 +153,7 @@ export default function ItemManager() {
               type="color" 
               value={newItemColor}
               onChange={(e) => setNewItemColor(e.target.value)}
-              className="w-full h-[46px] rounded-xl cursor-pointer bg-transparent border-0"
+ className="w-full h-[46px] rounded-xl cursor-pointer bg-transparent border-0"
             />
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function ItemManager() {
               <button 
                 onClick={fetchFromWiki}
                 disabled={isFetchingWiki || !newItemName}
-                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:text-gray-600 uppercase"
+ className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:text-gray-600 uppercase"
               >
                 {isFetchingWiki ? "Searching Wiki..." : "Auto-Fetch from Wiki"}
               </button>
@@ -175,14 +175,14 @@ export default function ItemManager() {
               placeholder="Paste direct image link (e.g. from Discord or Wiki)"
               value={customImageUrl}
               onChange={(e) => setCustomImageUrl(e.target.value)}
-              className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"
             />
           </div>
           <div className="flex items-end">
             <button 
               onClick={handleAddItem}
               disabled={isAdding || !newItemName || !newItemValue || !customImageUrl}
-              className="h-[46px] px-8 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:shadow-none flex items-center gap-2"
+ className="h-[46px] px-8 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-800 disabled:text-gray-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:shadow-none flex items-center gap-2"
             >
               {isAdding ? "Saving..." : <><Plus size={18} /> Add</>}
             </button>
@@ -203,7 +203,7 @@ export default function ItemManager() {
               placeholder="Search database..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#0a0d14] border border-[#202535] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+ className="w-full bg-[#0a0d14] border border-[#202535] rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500"
             />
           </div>
         </div>
@@ -220,14 +220,14 @@ export default function ItemManager() {
               <div key={item.id} className="relative flex flex-col items-center justify-center p-4 rounded-xl border border-[#202535] bg-[#0a0d14] group hover:border-gray-600 transition-colors">
                 <button 
                   onClick={() => handleDeleteItem(item.id)}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all z-20"
+ className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all z-20"
                 >
                   <Trash2 size={12} />
                 </button>
                 
                 <div className="w-12 h-12 mb-3 relative">
                   <div className="absolute inset-0 opacity-20 blur-xl" style={{ backgroundColor: item.color }}></div>
-                  <img src={item.imageUrl} alt={item.name} referrerPolicy="no-referrer" className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
+                  <img src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} alt={item.name} className="w-full h-full object-contain relative z-10" style={{ imageRendering: 'pixelated' }} />
                 </div>
                 <div className="text-[10px] text-gray-300 font-bold text-center leading-tight mb-1">{item.name}</div>
                 <div className="text-[10px] font-black" style={{ color: item.color }}>

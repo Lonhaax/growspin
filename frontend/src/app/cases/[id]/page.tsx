@@ -140,9 +140,10 @@ function HorizontalSpinner({ spinData, fallbackStrip, onComplete, containerW, ca
                 <Star size={72} className={`text-blue-500 fill-blue-500 transition-all animate-[spin_3s_linear_infinite] ${isWinner ? 'scale-125 drop-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-20' : 'opacity-80'}`} />
               ) : item.imageUrl ? (
                 <img 
-                  src={item.imageUrl} 
+                  src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} 
                   alt={item.name} 
-                  className={`w-20 h-20 object-contain transition-all duration-300 ${isWinner ? 'scale-125 drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] z-20' : 'opacity-80 drop-shadow-md'}`} 
+                  
+ className={`w-20 h-20 object-contain transition-all duration-300 ${isWinner ? 'scale-125 drop-shadow-[0_0_25px_rgba(255,255,255,0.4)] z-20' : 'opacity-80 drop-shadow-md'}`} 
                 />
               ) : (
                 <PackageOpen size={56} style={{ color: item.color }} className={isWinner ? 'scale-125 transition-transform z-20' : 'opacity-80'} />
@@ -156,7 +157,7 @@ function HorizontalSpinner({ spinData, fallbackStrip, onComplete, containerW, ca
                     <button 
                       onClick={handleRepay}
                       disabled={repayingLoan || (user?.mockBalance || 0) < (spinData?.createdItem?.borrowPrice || 0)}
-                      className="bg-purple-600/90 hover:bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md border border-purple-400 transition-colors cursor-pointer disabled:opacity-50 mt-1"
+ className="bg-purple-600/90 hover:bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md border border-purple-400 transition-colors cursor-pointer disabled:opacity-50 mt-1"
                     >
                       {repayingLoan ? "..." : `Repay ${((spinData?.createdItem?.borrowPrice || 0)/100).toLocaleString()}`}
                     </button>
@@ -293,7 +294,7 @@ export default function CaseOpenPage() {
       <div className="flex items-center justify-between mb-4">
         <button 
           onClick={() => router.push("/cases")}
-          className="flex items-center gap-1.5 text-sm font-bold text-white hover:text-gray-300 transition-colors cursor-pointer bg-[#151926] hover:bg-[#1a1f2e] border border-[#2a2d3a] px-3 py-1.5 rounded-lg"
+ className="flex items-center gap-1.5 text-sm font-bold text-white hover:text-gray-300 transition-colors cursor-pointer bg-[#151926] hover:bg-[#1a1f2e] border border-[#2a2d3a] px-3 py-1.5 rounded-lg"
         >
           <ChevronLeft size={16} /> Back
         </button>
@@ -301,7 +302,7 @@ export default function CaseOpenPage() {
           <button className="bg-[#151926] hover:bg-[#1a1f2e] text-[#7a819c] p-2 rounded-lg border border-[#2a2d3a] transition-colors cursor-pointer"><Settings size={16} /></button>
           <button 
             onClick={() => setFairModalOpen(true)}
-            className="bg-[#151926] hover:bg-[#1a1f2e] text-[#7a819c] p-2 rounded-lg border border-[#2a2d3a] transition-colors cursor-pointer"
+ className="bg-[#151926] hover:bg-[#1a1f2e] text-[#7a819c] p-2 rounded-lg border border-[#2a2d3a] transition-colors cursor-pointer"
           >
             <ShieldCheck size={16} />
           </button>
@@ -348,7 +349,7 @@ export default function CaseOpenPage() {
               <button 
                 key={num}
                 onClick={() => !opening && setQty(num)}
-                className={`flex-1 rounded-md py-2 text-center text-[11px] font-black transition-colors cursor-pointer ${
+ className={`flex-1 rounded-md py-2 text-center text-[11px] font-black transition-colors cursor-pointer ${
                   qty === num 
                     ? "bg-[#1a2333] text-white" 
                     : "bg-[#151926] text-[#646b85] hover:bg-[#1a1f2e] hover:text-white"
@@ -365,7 +366,7 @@ export default function CaseOpenPage() {
             <button
               onClick={() => handleOpen(false, false)}
               disabled={opening}
-              className="flex-1 bg-[#1c7ced] hover:bg-[#186dc4] text-white font-black py-3 rounded-lg flex justify-center items-center gap-1 transition-colors disabled:opacity-50 text-[11px] cursor-pointer"
+ className="flex-1 bg-[#1c7ced] hover:bg-[#186dc4] text-white font-black py-3 rounded-lg flex justify-center items-center gap-1 transition-colors disabled:opacity-50 text-[11px] cursor-pointer"
             >
               {opening ? "..." : (
                 <>
@@ -376,7 +377,7 @@ export default function CaseOpenPage() {
             <button
               onClick={() => handleOpen(false, true)}
               disabled={opening}
-              className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-lg flex justify-center items-center gap-1 transition-colors disabled:opacity-50 text-[11px] cursor-pointer"
+ className="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-lg flex justify-center items-center gap-1 transition-colors disabled:opacity-50 text-[11px] cursor-pointer"
             >
               {opening ? "..." : (
                 <>
@@ -389,7 +390,7 @@ export default function CaseOpenPage() {
           <button 
             onClick={() => handleOpen(true, false)}
             disabled={opening}
-            className="w-full text-center text-[#646b85] text-[10px] font-bold hover:text-white transition-colors flex items-center justify-center gap-1.5 py-1.5 cursor-pointer disabled:opacity-50"
+ className="w-full text-center text-[#646b85] text-[10px] font-bold hover:text-white transition-colors flex items-center justify-center gap-1.5 py-1.5 cursor-pointer disabled:opacity-50"
           >
             <RefreshCw size={10} /> Demo Spin
           </button>
@@ -397,7 +398,7 @@ export default function CaseOpenPage() {
 
         {/* Right Spinner Area (Horizontal) */}
         <div 
-          className="flex-1 bg-[#0b0e14] border border-[#1a1f2e] rounded-xl relative overflow-hidden h-[450px] shadow-inner flex flex-col justify-center"
+ className="flex-1 bg-[#0b0e14] border border-[#1a1f2e] rounded-xl relative overflow-hidden h-[450px] shadow-inner flex flex-col justify-center"
           ref={node => {
             if (node && node.offsetWidth !== containerW) {
               setContainerW(node.offsetWidth);
@@ -441,7 +442,7 @@ export default function CaseOpenPage() {
             return (
               <div 
                 key={i} 
-                className="bg-[#0f121a] border border-[#1a1f2e] rounded-xl p-3 flex flex-col relative transition-all group"
+ className="bg-[#0f121a] border border-[#1a1f2e] rounded-xl p-3 flex flex-col relative transition-all group"
                 style={{ 
                   borderTopColor: parseFloat(percentage) < 10 ? item.color : '#2a2d3a', 
                   borderTopWidth: parseFloat(percentage) < 10 ? '2px' : '1px' 
@@ -455,9 +456,10 @@ export default function CaseOpenPage() {
                 <div className="w-full aspect-square relative flex items-center justify-center mt-2 mb-3">
                   {item.imageUrl ? (
                     <img 
-                      src={item.imageUrl} 
+                      src={item.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} 
                       alt={item.name} 
-                      className="w-16 h-16 object-contain drop-shadow-md transition-transform group-hover:scale-110" 
+                      
+ className="w-16 h-16 object-contain drop-shadow-md transition-transform group-hover:scale-110" 
                     />
                   ) : (
                     <PackageOpen size={40} style={{ color: item.color }} />
