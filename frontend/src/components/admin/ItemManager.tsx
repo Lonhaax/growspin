@@ -153,7 +153,7 @@ export default function ItemManager() {
               value={newItemValue}
               onChange={(e) => {
                 setNewItemValue(e.target.value);
-                const val = parseFloat(e.target.value);
+                const val = parseFloat(e.target.value.replace(/,/g, ''));
                 if (!isNaN(val)) setNewItemColor(getRarityColor(val));
               }}
  className="w-full bg-[#0a0d14] border border-[#202535] rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-colors font-bold"

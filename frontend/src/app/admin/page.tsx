@@ -1482,7 +1482,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Value ($ / DL)</span>
-                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value.replace(/,/g, '')); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Weight</span>
@@ -1605,7 +1605,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Value ($ / DL)</span>
-                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; const val = parseFloat(e.target.value.replace(/,/g, '')); if (!isNaN(val)) { newItems[i].color = getRarityColor(val); } setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Weight</span>
