@@ -61,36 +61,37 @@ export default function AdvancedCaseCreator() {
   const expectedValue = selectedItems.reduce((acc, curr) => acc + (curr.item.value * (curr.chance || 0) / 100), 0);
   const suggestedPrice = expectedValue * 1.05; // 5% house edge on cases
 
-  const handleCreateCase = async () => {
-    if (!caseName || caseName.length < 4) return alert("Case name must be at least 4 characters.");
-    if (selectedItems.length === 0) return alert("Please select at least one item.");
-    if (Math.abs(totalChance - 100) > 0.01) return alert("Total chances must equal exactly 100%.");
-    
-    let finalPrice = parseFloat(manualPrice);
-    if (isNaN(finalPrice) || finalPrice <= 0) {
-      if (expectedValue <= 0) return alert("Cannot determine a fair price. Please set a manual price.");
-      finalPrice = suggestedPrice;
-    }
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "alert" | "confirm";
+    onConfirm?: () => void;
+  }>({ isOpen: false, title: "", message: "", type: "alert" });
 
-    if (finalPrice < expectedValue) {
-      const confirmLoss = window.confirm(`WARNING: The case price (${finalPrice.toFixed(2)} DLs) is lower than the expected payout (${expectedValue.toFixed(2)} DLs). The house will lose money on average. Continue?`);
-      if (!confirmLoss) return;
-    }
+  const showAlert = (message: string, title = "Notice") => {
+    setModalConfig({ isOpen: true, title, message, type: "alert" });
+  };
 
+  const showConfirm = (message: string, onConfirm: () => void, title = "Confirmation") => {
+    setModalConfig({ isOpen: true, title, message, type: "confirm", onConfirm });
+  };
+
+  const executeCreateCase = async (finalPrice: number) => {
     setIsSubmitting(true);
     try {
       const payload = {
         name: caseName,
-        price: Math.floor(finalPrice * 100), // convert to subunits
-        image: `/chest.png?hue=${caseHue}`, // Storing the hue intent if needed, or we just render native chests
+        price: Math.floor(finalPrice * 100),
+        image: `/chest.png?hue=${caseHue}`,
         active: true,
         items: selectedItems.map(si => ({
           name: si.item.name,
-          value: Math.floor(si.item.value * 100), // convert to subunits
+          value: Math.floor(si.item.value * 100),
           color: si.item.color,
           weight: si.chance,
           imageUrl: si.item.imageUrl,
-          isLuckyStarItem: si.chance < 5 // arbitrarily mark items < 5% as rare
+          isLuckyStarItem: si.chance < 5
         }))
       };
 
@@ -101,42 +102,108 @@ export default function AdvancedCaseCreator() {
       });
 
       if (res.ok) {
-        alert("Case created successfully!");
+        showAlert("Case created successfully!", "Success");
         setCaseName("");
         setSelectedItems([]);
         setManualPrice("");
       } else {
         const data = await res.json();
-        alert("Error: " + data.error);
+        showAlert("Error: " + data.error, "Error");
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to create case.");
+      showAlert("Failed to create case.", "Error");
     }
     setIsSubmitting(false);
   };
 
-  const handleGenerateCases = async () => {
-    if (!window.confirm("This will instantly generate 4 Growtopia-themed cases based on your current items. Proceed?")) return;
+  const handleCreateCase = () => {
+    if (!caseName || caseName.length < 4) return showAlert("Case name must be at least 4 characters.");
+    if (selectedItems.length === 0) return showAlert("Please select at least one item.");
+    if (Math.abs(totalChance - 100) > 0.01) return showAlert("Total chances must equal exactly 100%.");
+    
+    let finalPrice = parseFloat(manualPrice);
+    if (isNaN(finalPrice) || finalPrice <= 0) {
+      if (expectedValue <= 0) return showAlert("Cannot determine a fair price. Please set a manual price.");
+      finalPrice = suggestedPrice;
+    }
+
+    if (finalPrice < expectedValue) {
+      showConfirm(
+        `WARNING: The case price (${finalPrice.toFixed(2)} DLs) is lower than the expected payout (${expectedValue.toFixed(2)} DLs). The house will lose money on average. Continue?`,
+        () => executeCreateCase(finalPrice),
+        "Negative Profit Warning"
+      );
+      return;
+    }
+
+    executeCreateCase(finalPrice);
+  };
+
+  const executeGenerateCases = async () => {
     setIsSubmitting(true);
     try {
       const res = await apiFetch("/admin/cases/generate", { method: "POST" });
       if (res.ok) {
-        alert("Cases generated successfully!");
-        window.location.reload();
+        showAlert("Cases generated successfully!", "Success");
+        setTimeout(() => window.location.reload(), 2000);
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to generate cases.");
+        showAlert(data.error || "Failed to generate cases.", "Error");
       }
     } catch (e) {
       console.error(e);
-      alert("Error generating cases.");
+      showAlert("Error generating cases.", "Error");
     }
     setIsSubmitting(false);
   };
 
+  const handleGenerateCases = () => {
+    showConfirm(
+      "This will instantly generate 4 Growtopia-themed cases based on your current items. Proceed?",
+      executeGenerateCases,
+      "Generate Cases"
+    );
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      
+      {/* Integrated Modal UI */}
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#13161f] border border-[#202535] p-6 rounded-2xl shadow-2xl max-w-sm w-full animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-black text-white mb-2 flex items-center gap-2">
+              {modalConfig.type === 'confirm' ? <AlertTriangle className="text-yellow-500" /> : <Box className="text-indigo-500" />}
+              {modalConfig.title}
+            </h3>
+            <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+              {modalConfig.message}
+            </p>
+            <div className="flex gap-3 justify-end">
+              {modalConfig.type === 'confirm' && (
+                <button 
+                  onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                  className="px-4 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-[#202535] transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  setModalConfig({ ...modalConfig, isOpen: false });
+                  if (modalConfig.type === 'confirm' && modalConfig.onConfirm) {
+                    modalConfig.onConfirm();
+                  }
+                }}
+                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-colors"
+              >
+                {modalConfig.type === 'confirm' ? 'Confirm' : 'OK'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* SECTION 1: Item Selection Grid */}
       <div className="bg-[#13161f] border border-[#202535] rounded-2xl p-5 shadow-xl">
