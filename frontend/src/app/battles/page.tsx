@@ -1143,39 +1143,40 @@ export default function BattlesPage() {
                               {rolling && targetItemForSpin ? (
                                 <BattleSpinner key={`${displayRound}-${p.id}`} targetItem={targetItemForSpin} itemsPool={currentCaseItemsPool} rolling={rolling} onComplete={() => {}} />
                               ) : targetItemForSpin ? (
-                                <div className="flex flex-col items-center justify-center relative">
-                                  {/* If it was a lucky star, animate crossfade to the actual item */}
-                                  {(targetItemForSpin as any)._hitLuckyStar && (targetItemForSpin as any)._actualWinItem ? (
-                                    <div className="w-24 h-24 flex items-center justify-center relative drop-shadow-[0_0_30px_rgba(59,130,246,0.8)]">
-                                      {/* Blue star fades out quickly */}
-                                      <div className="absolute inset-0 flex items-center justify-center animate-out fade-out duration-[1000ms] fill-mode-forwards z-20">
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-blue-400 drop-shadow-[0_0_20px_rgba(59,130,246,1)] animate-[spin_3s_linear_infinite]">
-                                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                      </div>
-                                      {/* Actual item fades in */}
-                                      <div className="absolute inset-0 flex items-center justify-center animate-in fade-in zoom-in duration-[1000ms] delay-500 fill-mode-both z-10">
-                                        {(targetItemForSpin as any)._actualWinItem.imageUrl ? (
-                                          <img src={(targetItemForSpin as any)._actualWinItem.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent((targetItemForSpin as any)._actualWinItem.imageUrl.replace(/^https?:\/\//, ''))}` : (targetItemForSpin as any)._actualWinItem.imageUrl} alt="" className="max-w-full max-h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)]" />
+                                (() => {
+                                  const finalItemToDisplay = (targetItemForSpin as any)._hitLuckyStar && (targetItemForSpin as any)._actualWinItem 
+                                    ? (targetItemForSpin as any)._actualWinItem 
+                                    : targetItemForSpin;
+                                  
+                                  return (
+                                    <div className="flex flex-col items-center justify-center relative select-none animate-in fade-in zoom-in duration-300" style={{ height: '120px' }}>
+                                      <div 
+                                        className="absolute inset-0 opacity-40" 
+                                        style={{ background: `radial-gradient(circle at center, ${finalItemToDisplay.color || "#3b82f6"} 0%, transparent 70%)` }} 
+                                      />
+                                      <div className="relative z-10 h-20 flex items-center justify-center mb-1">
+                                        {finalItemToDisplay.name === 'Lucky Star' ? (
+                                          <div className="w-16 h-16 relative flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-blue-500 rounded-full opacity-60" style={{ background: 'radial-gradient(circle at center, #3b82f6 0%, transparent 70%)' }} />
+                                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,1)] z-10 animate-[spin_3s_linear_infinite]">
+                                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                            </svg>
+                                          </div>
+                                        ) : finalItemToDisplay.imageUrl ? (
+                                          <img src={finalItemToDisplay.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(finalItemToDisplay.imageUrl.replace(/^https?:\/\//, ''))}` : finalItemToDisplay.imageUrl} alt={finalItemToDisplay.name} className="max-h-16 max-w-[80px] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.6)]" />
                                         ) : (
-                                          <div className="w-16 h-16 rounded-full" style={{ backgroundColor: (targetItemForSpin as any)._actualWinItem.color || '#3b82f6', boxShadow: `0 0 30px ${(targetItemForSpin as any)._actualWinItem.color || '#3b82f6'}` }} />
+                                          <PackageOpen size={48} style={{ color: finalItemToDisplay.color || "#3b82f6" }} className="drop-shadow-xl opacity-90" />
                                         )}
                                       </div>
+                                      <div className="relative z-10 text-center w-full px-1">
+                                        <div className="text-white font-black text-[11px] truncate drop-shadow">{finalItemToDisplay.name}</div>
+                                        <div className="text-[#a0a5b8] font-bold text-[10px] mt-0.5">
+                                          <DLCurrency amount={finalItemToDisplay.value} size="xs" className="text-[#a0a5b8]" />
+                                        </div>
+                                      </div>
                                     </div>
-                                  ) : (
-                                    <div className="w-24 h-24 flex items-center justify-center animate-pulse drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                                      {targetItemForSpin.name === 'Lucky Star' ? (
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-blue-400 drop-shadow-[0_0_20px_rgba(59,130,246,1)] animate-[spin_3s_linear_infinite]">
-                                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                      ) : targetItemForSpin.imageUrl ? (
-                                        <img src={targetItemForSpin.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(targetItemForSpin.imageUrl.replace(/^https?:\/\//, ''))}` : targetItemForSpin.imageUrl} alt="" className="max-w-full max-h-full object-contain" />
-                                      ) : (
-                                        <div className="w-16 h-16 rounded-full" style={{ backgroundColor: targetItemForSpin.color || '#3b82f6', boxShadow: `0 0 30px ${targetItemForSpin.color || '#3b82f6'}` }} />
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
+                                  );
+                                })()
                               ) : (
                                 <div className="flex flex-col items-center justify-center opacity-10 h-full">
                                   <PackageOpen size={48} className="text-[#3a3d4a]" />
