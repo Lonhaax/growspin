@@ -63,7 +63,7 @@ export default function JackpotPage() {
     if (!gameState || gameState.participants.length === 0) return;
     setLoading(true);
     try {
-      const res = await apiFetch("/play/jackpot/roll", { method: "POST" });
+      const res = await apiFetch("/jackpot/roll", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 

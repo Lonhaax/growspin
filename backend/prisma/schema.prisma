@@ -168,6 +168,7 @@ model Case {
   price     Int
   image     String?  @db.Text
   active    Boolean  @default(true)
+  type      String   @default("normal") // normal, daily_bronze, daily_silver, daily_gold, daily_platinum, daily_diamond
   createdAt DateTime @default(now())
 
   items CaseItem[]
@@ -202,6 +203,7 @@ model SiteSettings {
   slotsEnabled          Boolean  @default(true)
   slotsHouseEdge        Float    @default(0.05)
   casinoPot             Int      @default(0)
+  xpBase                Int      @default(1000) // Controls level curve: Math.sqrt(xp / xpBase) + 1
   updatedAt             DateTime @updatedAt
 }
 

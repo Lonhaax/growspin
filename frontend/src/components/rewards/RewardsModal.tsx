@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/auth';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Crown, Gift, Percent, Users, ArrowRight, Loader2, Link2, Copy, CheckCircle2, ChevronRight, Lock } from 'lucide-react';
+import { HorizontalSpinner } from '@/components/ui/HorizontalSpinner';
 import { DLCurrency } from '@/components/ui/DLCurrency';
 
 export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -83,7 +84,11 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
     setActionLoading(false);
   };
 
-  const handleClaimCase = async (tierId: string) => {
+  const [spinData, setSpinData] = useState<any>(null);
+  const [activeCaseData, setActiveCaseData] = useState<any>(null);
+  const [containerW, setContainerW] = useState(0);
+
+  const handleClaimCase = async (tierId: string, caseConfig: any) => {
     setActionLoading(true); setError(''); setSuccess('');
     try {
       const res = await apiFetch('/vip/claim-case', {
@@ -92,9 +97,9 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccess(`You won ${data.winnings / 100} DLs from the ${data.item.name}!`);
-        refreshUser();
-        fetchStatus();
+        // data contains winningItem, winningIndex, strip
+        setActiveCaseData(caseConfig); // To show fallback if needed
+        setSpinData(data);
       } else throw new Error(data.error);
     } catch (e: any) { setError(e.message); }
     setActionLoading(false);
@@ -120,6 +125,50 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative w-full max-w-2xl bg-[#11141d] rounded-3xl shadow-2xl overflow-hidden border border-white/5 max-h-[90vh] flex flex-col"
         >
+          {spinData && (
+            <div className="absolute inset-0 z-50 bg-[#0b0e14]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6">
+              <div className="w-full flex justify-between items-center mb-12">
+                <h3 className="text-xl font-black text-white uppercase tracking-wider">{activeCaseData?.tierName} Case</h3>
+                <button 
+                  onClick={() => {
+                    setSpinData(null);
+                    setSuccess(`You won ${spinData.winningItem.value / 100} DLs from the ${spinData.winningItem.name}!`);
+                    refreshUser();
+                    fetchStatus();
+                  }}
+                  className="bg-white/10 hover:bg-white/20 text-white rounded-lg p-2"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div 
+                className="w-full max-w-full h-40 relative rounded-xl border-2 border-white/10 bg-[#07090d] shadow-inner overflow-hidden mb-12"
+                ref={el => el && setContainerW(el.clientWidth)}
+              >
+                <HorizontalSpinner 
+                  spinData={spinData} 
+                  fallbackStrip={[]} 
+                  onComplete={() => {}} 
+                  containerW={containerW} 
+                  caseData={activeCaseData} 
+                />
+              </div>
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+                <button
+                  onClick={() => {
+                    setSpinData(null);
+                    setSuccess(`You won ${spinData.winningItem.value / 100} DLs from the ${spinData.winningItem.name}!`);
+                    refreshUser();
+                    fetchStatus();
+                  }}
+                  className={`px-8 py-3 rounded-xl font-black uppercase tracking-wider ${activeCaseData?.gradient || 'bg-amber-400 text-black'} shadow-lg hover:scale-105 active:scale-95 transition-all`}
+                >
+                  Collect Reward
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0 bg-[#161a24]">
             <div className="flex items-center gap-3">
@@ -238,7 +287,7 @@ export default function RewardsModal({ isOpen, onClose }: { isOpen: boolean; onC
                             {c.isUnlocked ? (
                               c.canClaim ? (
                                 <button 
-                                  onClick={() => handleClaimCase(c.tierId)}
+                                  onClick={() => handleClaimCase(c.tierId, c)}
                                   disabled={actionLoading}
                                   className={`w-full py-2.5 ${c.gradient} text-black font-black text-xs rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider`}
                                 >

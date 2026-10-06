@@ -139,7 +139,7 @@ export default function AdminPage() {
     try {
       const res = await apiFetch("/admin/settings");
       if (res.ok) setSettings(await res.json());
-      const resCases = await apiFetch("/cases");
+      const resCases = await apiFetch("/admin/cases");
       if (resCases.ok) setCases(await resCases.json());
     } catch (e) { }
   };
@@ -554,7 +554,18 @@ export default function AdminPage() {
             }`}
           >
             <PackageOpen size={15} />
-            <span>Cases ({cases.length})</span>
+            <span>Cases ({cases.filter((c: any) => c.type === 'normal').length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("daily_cases")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "daily_cases"
+                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Gift size={15} />
+            <span>Daily Cases ({cases.filter((c: any) => c.type !== 'normal').length})</span>
           </button>
           <button
             onClick={() => setActiveTab("settings")}
@@ -1161,6 +1172,17 @@ export default function AdminPage() {
                 className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
               />
             </div>
+
+            <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
+              <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-2 tracking-widest">XP Base (Scaling Rate)</label>
+              <p className="text-xs text-white/50 mb-2">Controls how quickly players level up (default 1000). Lower = faster.</p>
+              <input
+                type="number"
+                value={settings.xpBase ?? 1000}
+                onChange={e => setSettings({ ...settings, xpBase: parseInt(e.target.value) || 1000 })}
+                className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
+              />
+            </div>
           </div>
         </div>
 
@@ -1472,7 +1494,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {cases.map(c => (
+            {cases.filter((c: any) => c.type === 'normal').map((c: any) => (
               <div key={c.id} className="bg-[#1f222b] border border-[#2a2d3a] rounded-2xl p-4 flex flex-col items-center text-center">
                 <div className="h-20 mb-3 flex items-center justify-center">
                   {c.image ? <img src={c.image} className="max-h-full max-w-full drop-shadow-lg object-contain" /> : <PackageOpen size={40} className="text-[#3a3d4a]" />}
@@ -1491,6 +1513,98 @@ export default function AdminPage() {
                     setEditingCase(caseToEdit);
                   }} className="flex-1 bg-[#15181f] text-white py-2 rounded-lg font-bold text-xs hover:bg-[#2a2d3a] transition-colors border border-[#2a2d3a]">Edit</button>
                   <button onClick={() => handleDeleteCase(c.id)} className="flex-1 bg-red-500/10 text-red-500 py-2 rounded-lg font-bold text-xs hover:bg-red-500/20 transition-colors border border-red-500/20">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
+
+      {activeTab === "daily_cases" && (
+      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-black text-white flex items-center gap-2">
+            <Gift className="text-accent-green" size={20} /> Daily Cases Management
+          </h2>
+        </div>
+
+        {editingCase && editingCase.type !== 'normal' ? (
+          <div className="bg-[#1f222b] p-5 rounded-2xl border border-[#2a2d3a] space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-black text-white">Edit Daily Case: {editingCase.name}</h3>
+              <button onClick={() => setEditingCase(null)} className="text-[#7a819c] font-bold text-sm hover:text-white">CANCEL</button>
+            </div>
+
+            <div className="border-t border-[#2a2d3a] pt-6">
+              <h4 className="text-white font-bold mb-4">Add Items via Growtopia Search</h4>
+              <div className="flex gap-2 mb-4">
+                <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search Growtopia Wiki..." className="flex-1 bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold text-sm" />
+                <button onClick={handleSearchGrowtopia} className="bg-accent-blue text-white px-4 py-2 rounded-xl font-bold text-sm">Search</button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 max-h-48 overflow-y-auto">
+                {itemSearchCache.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setEditingCase({ ...editingCase, items: [...editingCase.items, { name: item.name, value: '1', weight: '1', color: '#3b82f6', imageUrl: item.imageUrl, isLuckyStarItem: false }] })}
+                    className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-2 flex items-center gap-2 hover:border-accent-green text-left"
+                  >
+                    <img src={item.imageUrl} className="w-8 h-8 object-contain" />
+                    <span className="text-[10px] font-bold text-white truncate">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4">
+                {editingCase.items.map((item: any, i: number) => {
+                  const totalWeight = editingCase.items.reduce((acc: number, item: any) => acc + (parseFloat(item.weight) || 0), 0);
+                  const probability = totalWeight > 0 ? ((parseFloat(item.weight) || 0) / totalWeight) * 100 : 0;
+                  return (
+                    <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#15181f] p-4 rounded-xl border border-[#2a2d3a]">
+                      <img src={item.imageUrl} className="w-12 h-12 object-contain" />
+                      <div className="flex-1 font-bold text-white">{item.name}</div>
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Value ($ / DL)</span>
+                          <input type="number" step="any" value={item.value} onChange={e => { const newItems = [...editingCase.items]; newItems[i].value = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-[#7a819c] font-bold uppercase pl-1">Weight</span>
+                          <div className="flex items-center gap-2">
+                            <input type="number" step="any" value={item.weight} onChange={e => { const newItems = [...editingCase.items]; newItems[i].weight = e.target.value; setEditingCase({ ...editingCase, items: newItems }); }} className="w-20 bg-[#1f222b] border border-transparent focus:border-accent-blue outline-none rounded px-2 py-1 text-xs text-white" />
+                            <span className="text-xs font-bold text-accent-blue w-12 text-right">{probability.toFixed(2)}%</span>
+                          </div>
+                        </div>
+                        <button onClick={() => { const newItems = [...editingCase.items]; newItems.splice(i, 1); setEditingCase({ ...editingCase, items: newItems }); }} className="text-red-500 font-black px-3 py-1 hover:bg-red-500/10 rounded ml-auto sm:ml-2 mt-4">X</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button onClick={handleSaveCase} disabled={loading} className="w-full py-4 bg-accent-green text-black rounded-xl font-black text-lg hover:bg-[#00e676] transition-all flex items-center justify-center gap-2 shadow-lg">
+              <Save size={20} /> Save Daily Case
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {cases.filter((c: any) => c.type !== 'normal').map((c: any) => (
+              <div key={c.id} className="bg-[#1f222b] border border-[#2a2d3a] rounded-2xl p-4 flex flex-col items-center text-center">
+                <div className="h-20 mb-3 flex items-center justify-center">
+                  <Gift size={40} className="text-amber-400" />
+                </div>
+                <div className="text-sm font-black text-white mb-1 truncate w-full">{c.name}</div>
+                <div className="text-xs font-black text-gray-400 mb-4 truncate w-full">Type: {c.type}</div>
+                <div className="flex gap-2 w-full mt-auto">
+                  <button onClick={() => {
+                    const caseToEdit = {
+                      ...c,
+                      price: (c.price / 100).toString(),
+                      items: c.items.map((i: any) => ({ ...i, value: (i.value / 100).toString(), weight: i.weight.toString() }))
+                    };
+                    setEditingCase(caseToEdit);
+                  }} className="flex-1 bg-[#15181f] text-white py-2 rounded-lg font-bold text-xs hover:bg-[#2a2d3a] transition-colors border border-[#2a2d3a]">Edit Items</button>
                 </div>
               </div>
             ))}

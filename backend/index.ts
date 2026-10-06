@@ -260,9 +260,15 @@ const PLINKO_PAYOUTS: any = {
 // Level 10: 81,000 XP (810 DLs wagered)
 // Level 50: 2,401,000 XP (24,010 DLs wagered)
 // Level 100: 9,801,000 XP (98,010 DLs wagered)
-function calculateLevel(xp: number): number {
+let globalXpBase = 1000;
+
+prisma.siteSettings.findUnique({ where: { id: 1 } }).then(settings => {
+  if (settings && settings.xpBase) globalXpBase = settings.xpBase;
+});
+
+function calculateLevel(xp: number, xpBase: number = globalXpBase): number {
   if (xp <= 0) return 1;
-  const computed = Math.floor(Math.sqrt(xp / 1000)) + 1;
+  const computed = Math.floor(Math.sqrt(xp / xpBase)) + 1;
   return Math.min(100, Math.max(1, computed));
 }
 
@@ -912,7 +918,7 @@ app.post('/api/withdraw', requireAuth, requireNotFrozen, async (req: AuthRequest
     if (!amount || typeof amount !== 'number' || amount < 5000) {
       return res.status(400).json({ error: "Minimum withdrawal is 50 DLs ($1.30)" });
     }
-    if (!method || !['crypto', 'growtopia'].includes(method)) {
+    if (!method || !['crypto', 'growtopia', 'btc', 'ltc', 'eth', 'USDT'].includes(method)) {
       return res.status(400).json({ error: "Invalid withdrawal method" });
     }
     if (!address || typeof address !== 'string' || address.trim().length < 3) {
@@ -1171,6 +1177,11 @@ app.get('/api/vip/status', requireAuth, async (req: AuthRequest, res: Response) 
     const DAY_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
 
+    const dbCases = await prisma.case.findMany({
+      where: { type: { startsWith: 'daily_' } },
+      include: { items: true }
+    });
+
     const cases = VIP_TIERS.map((tier) => {
       const isUnlocked = totalWagered >= tier.threshold;
       const claim = user.dailyClaims.find(c => c.tier === tier.id);
@@ -1192,6 +1203,9 @@ app.get('/api/vip/status', requireAuth, async (req: AuthRequest, res: Response) 
         }
       }
 
+      const dbCase = dbCases.find((c: any) => c.type === 'daily_' + tier.id);
+      const items = dbCase ? dbCase.items : tier.loot; // fallback to tier.loot if DB case missing
+
       return {
         tierId: tier.id,
         tierName: tier.name,
@@ -1205,7 +1219,8 @@ app.get('/api/vip/status', requireAuth, async (req: AuthRequest, res: Response) 
         canClaim,
         cooldownRemainingSec,
         nextClaimAt,
-        loot: tier.loot,
+        loot: items,
+        items: items, // Also attach as `items` for spinner compatibility
       };
     });
 
@@ -1273,23 +1288,30 @@ app.post('/api/vip/claim-case', requireAuth, requireNotFrozen, async (req: AuthR
           }
         }
 
+        const dbCase = await tx.case.findFirst({
+          where: { type: 'daily_' + tier.id },
+          include: { items: true }
+        });
+        const items = (dbCase && dbCase.items && dbCase.items.length > 0) ? dbCase.items : tier.loot;
+
         // Roll winning item by weight
-        const totalWeight = tier.loot.reduce((sum, item) => sum + item.weight, 0);
+        const totalWeight = items.reduce((sum, item) => sum + (parseFloat(item.weight as any) || item.weight || 0), 0);
         let rand = Math.random() * totalWeight;
-        let winningItem = tier.loot[0];
-        for (const item of tier.loot) {
-          if (rand < item.weight) {
+        let winningItem = items[0];
+        for (const item of items) {
+          const w = parseFloat(item.weight as any) || item.weight || 0;
+          if (rand < w) {
             winningItem = item;
             break;
           }
-          rand -= item.weight;
+          rand -= w;
         }
 
         // 60-item roller strip, winner placed at index 42
         const winningIndex = 42;
         const strip = Array.from({ length: 60 }).map((_, i) => {
           if (i === winningIndex) return winningItem;
-          return tier.loot[Math.floor(Math.random() * tier.loot.length)];
+          return items[Math.floor(Math.random() * items.length)];
         });
 
         // Upsert DailyClaim
@@ -2151,7 +2173,7 @@ app.post('/api/vip/claim-rakeback', requireAuth, requireNotFrozen, async (req: A
 app.get('/api/cases', async (req: Request, res: Response) => {
   try {
     const cases = await prisma.case.findMany({
-      where: { active: true },
+      where: { active: true, type: 'normal' },
       include: { items: true }
     });
     res.json(cases);
@@ -3166,6 +3188,15 @@ app.delete('/api/admin/items/:id', requireAuth, requireAdmin, async (req: AuthRe
     res.status(500).json({ error: 'Failed to delete' });
   }
 });
+// GET /api/admin/cases
+app.get('/api/admin/cases', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const cases = await prisma.case.findMany({ include: { items: true } });
+    res.json(cases);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // POST /api/admin/cases
 app.post('/api/admin/cases', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
@@ -3466,7 +3497,8 @@ app.put('/api/admin/settings', requireAuth, requireAdmin, async (req: AuthReques
       borrowEnabled,
       maxBorrowLimit,
       slotsEnabled,
-      slotsHouseEdge
+      slotsHouseEdge,
+      xpBase
     } = req.body;
 
     const settings = await prisma.siteSettings.upsert({
@@ -3484,6 +3516,7 @@ app.put('/api/admin/settings', requireAuth, requireAdmin, async (req: AuthReques
         maxBorrowLimit: typeof maxBorrowLimit === 'number' ? Math.round(maxBorrowLimit) : undefined,
         slotsEnabled: typeof slotsEnabled === 'boolean' ? slotsEnabled : undefined,
         slotsHouseEdge: typeof slotsHouseEdge === 'number' ? slotsHouseEdge : undefined,
+        xpBase: typeof xpBase === 'number' ? Math.round(xpBase) : undefined,
       },
       create: {
         id: 1,
@@ -3499,8 +3532,12 @@ app.put('/api/admin/settings', requireAuth, requireAdmin, async (req: AuthReques
         maxBorrowLimit: maxBorrowLimit ?? 100000,
         slotsEnabled: slotsEnabled ?? true,
         slotsHouseEdge: slotsHouseEdge ?? 0.05,
+        xpBase: xpBase ?? 1000,
       }
     });
+
+    if (settings.xpBase) globalXpBase = settings.xpBase;
+
     res.json(settings);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
