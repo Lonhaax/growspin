@@ -2969,41 +2969,44 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         data: { status: 'finished', winnerId: winnerIdStr, totalPotValue }
       });
 
-      // Award items: each winner gets their own items + the items of the losers in the same team sub-slot.
-      // Sub-slot is `(position - 1) % teamSize`
-      for (const p of battle.participants) {
-        if (winningMembers.includes(p.userId) && !p.userId.startsWith('bot-')) {
-          const winnerIntId = parseInt(p.userId);
-          const subSlot = (p.position - 1) % teamSize;
-          
-          // Find all rolls that belong to this sub-slot (from any team)
-          const slotRolls: any[] = [];
-          const slotParticipants = battle.participants.filter(bp => (bp.position - 1) % teamSize === subSlot);
-          const slotParticipantIds = slotParticipants.map(bp => bp.id);
-
-          rounds.forEach(round => {
-            round.forEach((roll: any) => {
-              if (slotParticipantIds.includes(roll.participantId)) {
-                const itemToAward = roll.hitLuckyStar && roll.actualWinItem ? roll.actualWinItem : roll.item;
-                if (itemToAward && itemToAward.id !== -999) {
-                  slotRolls.push(itemToAward);
-                }
-              }
-            });
-          });
-
-          if (slotRolls.length > 0) {
-            await tx.userItem.createMany({
-              data: slotRolls.map(item => ({
-                userId: winnerIntId,
-                name: item.name,
-                value: item.value,
-                color: item.color,
-                imageUrl: item.imageUrl || null,
-                status: 'inventory'
-              }))
-            });
+      // Award items: pool ALL items from the battle, sort by value descending, and deal round-robin to winning team
+      const allRolls: any[] = [];
+      rounds.forEach(round => {
+        round.forEach((roll: any) => {
+          const itemToAward = roll.hitLuckyStar && roll.actualWinItem ? roll.actualWinItem : roll.item;
+          if (itemToAward && itemToAward.id !== -999) {
+            allRolls.push(itemToAward);
           }
+        });
+      });
+
+      // Sort descending by value
+      allRolls.sort((a, b) => b.value - a.value);
+
+      const itemsByWinner: Record<string, any[]> = {};
+      winningMembers.forEach(id => itemsByWinner[id] = []);
+      
+      let turn = 0;
+      allRolls.forEach(item => {
+        const winnerId = winningMembers[turn % winningMembers.length];
+        itemsByWinner[winnerId].push(item);
+        turn++;
+      });
+
+      const humanWinners = winningMembers.filter(id => !id.startsWith('bot-'));
+      for (const winnerId of humanWinners) {
+        const itemsToAward = itemsByWinner[winnerId];
+        if (itemsToAward.length > 0) {
+          await tx.userItem.createMany({
+            data: itemsToAward.map(item => ({
+              userId: parseInt(winnerId),
+              name: item.name,
+              value: item.value,
+              color: item.color,
+              imageUrl: item.imageUrl || null,
+              status: 'inventory'
+            }))
+          });
         }
       }
 
