@@ -1,7 +1,7 @@
 "use client";
 
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
-import { ShieldCheck, Swords, Plus, Users, Bot, Zap, Skull, ChevronLeft, ChevronRight, PackageOpen, Target, Loader2, ArrowRight, User as UserIcon, X, Check, Eye, Link as LinkIcon, Volume2, Lock } from "lucide-react";
+import { ShieldCheck, Swords, Plus, Users, Bot, Zap, Skull, ChevronLeft, ChevronRight, PackageOpen, Target, Loader2, ArrowRight, User as UserIcon, X, Check, Eye, Link as LinkIcon, Volume2, Lock, FileText, Dices } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
@@ -972,61 +972,57 @@ export default function BattlesPage() {
             {activeBattle && (
               <div className="space-y-4 max-w-[1400px] mx-auto mt-4">
                 
-                {/* BATTLE HEADER */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setView("lobby")}
-                      className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1a1d24] text-[#a0a5b8] hover:text-white hover:bg-[#2a2d3a] border border-[#2a2d3a] transition-all"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-[#1c7ced]/20 text-[#1c7ced] font-black px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm border border-[#1c7ced]/30">
-                        <Users size={16} /> 2 Teams
-                      </div>
-                      <div className="bg-[#1a1d24] border border-[#2a2d3a] text-white font-black px-4 py-1.5 rounded-lg text-sm">
-                        Round {currentRound + 1} of {JSON.parse(activeBattle.caseIds || '[]').length}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-[#1a1d24] border border-[#2a2d3a] p-1.5 rounded-lg text-[#a0a5b8]"><Zap size={14} /></div>
-                        <div className="bg-[#1a1d24] border border-[#2a2d3a] p-1.5 rounded-lg text-[#a0a5b8]"><PackageOpen size={14} /></div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="flex gap-2">
-                      <button className="bg-[#1a1d24] border border-[#2a2d3a] w-10 h-10 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><Eye size={18} /></button>
-                      <button className="bg-[#1a1d24] border border-[#2a2d3a] w-10 h-10 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><LinkIcon size={18} /></button>
-                      <button className="bg-[#1a1d24] border border-[#2a2d3a] w-10 h-10 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><ShieldCheck size={18} /></button>
-                      <button className="bg-[#1a1d24] border border-[#2a2d3a] w-10 h-10 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><Volume2 size={18} /></button>
-                    </div>
-                    <div className="bg-[#15181f] border border-[#2a2d3a] px-5 py-2 rounded-lg flex items-center gap-3 text-sm">
-                      <span className="text-[#7a819c] font-black uppercase tracking-wider text-[10px]">Battle Cost</span>
-                      <span className="text-white font-black flex items-center gap-1">
-                        <DLCurrency amount={activeBattle.participants.length * activeBattle.entryFee} size="sm" className="text-white" />
-                      </span>
-                    </div>
+                {/* BATTLE HEADER ROW 1 */}
+                <div className="flex items-center justify-between mb-2 mt-2">
+                  <button
+                    onClick={() => setView("lobby")}
+                    className="flex items-center gap-2 text-[#a0a5b8] hover:text-white transition-colors text-sm font-black"
+                  >
+                    <ChevronLeft size={16} /> Back
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button className="bg-[#1a1d24] border border-[#2a2d3a] px-3 h-8 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white gap-2 text-xs font-black"><Eye size={14} /> 1</button>
+                    <button className="bg-[#1a1d24] border border-[#2a2d3a] w-8 h-8 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><FileText size={14} /></button>
+                    <button className="bg-[#1a1d24] border border-[#2a2d3a] w-8 h-8 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><ShieldCheck size={14} /></button>
+                    <button className="bg-[#1a1d24] border border-[#2a2d3a] w-8 h-8 rounded-lg flex items-center justify-center text-[#a0a5b8] hover:text-white"><Volume2 size={14} /></button>
                   </div>
                 </div>
 
-                {/* CASES SEQUENCE TAPE */}
-                <div className="bg-[#15181f] border border-[#2a2d3a] rounded-xl p-3 flex items-center gap-2 overflow-hidden shadow-lg relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#15181f] to-transparent z-10" />
-                  <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#15181f] to-transparent z-10" />
-                  
-                  {JSON.parse(activeBattle.caseIds || '[]').map((cid: string, i: number) => {
-                    const c = availableCases.find(x => x.id.toString() === cid);
-                    const isCurrent = i === currentRound;
-                    const isPast = i < currentRound;
-                    return (
-                      <div key={i} className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 flex items-center justify-center relative transition-all ${isCurrent ? 'border-accent-green bg-accent-green/10 scale-110 z-20 mx-2' : isPast ? 'border-[#2a2d3a] bg-[#1a1d24] opacity-50' : 'border-[#2a2d3a] bg-[#1a1d24]'}`}>
-                        {c?.image ? <img src={c.image} className="w-8 h-8 object-contain" /> : <PackageOpen size={16} className="text-[#4d5366]" />}
-                        <div className="absolute -bottom-1 -right-1 bg-[#1a1d24] border border-[#2a2d3a] w-4 h-4 rounded text-[8px] flex items-center justify-center font-bold text-[#7a819c]">{i+1}</div>
-                      </div>
-                    )
-                  })}
+                {/* BATTLE HEADER ROW 2 */}
+                <div className="flex items-center justify-between mb-6 relative">
+                  {/* Left Side */}
+                  <div className="flex flex-col">
+                    <div className="text-white font-black text-lg mb-1">
+                      {activeBattle.format === '1v1' ? '2 Players' : activeBattle.format === '1v1v1' ? '3 Players' : activeBattle.format === '1v1v1v1' ? '4 Players' : `${Math.ceil((activeBattle.targetPlayerCount || 2) / (activeBattle.format.startsWith('2') ? 2 : 3))} Teams`}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-black">
+                      <span className="text-[#7a819c]">Round {currentRound + 1} of {JSON.parse(activeBattle.caseIds || '[]').length}</span>
+                      <span className="w-px h-3 bg-[#2a2d3a]" />
+                      <div className="bg-[#1c7ced]/20 text-[#1c7ced] p-1 rounded"><Zap size={12} /></div>
+                      <div className="bg-[#e83e8c]/20 text-[#e83e8c] px-2 py-1 rounded flex items-center gap-1"><Dices size={12} /> 80%</div>
+                    </div>
+                  </div>
+
+                  {/* Center Case Sequence */}
+                  <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+                    {JSON.parse(activeBattle.caseIds || '[]').map((cid: string, i: number) => {
+                      const c = availableCases.find(x => x.id.toString() === cid);
+                      const isPast = i < currentRound;
+                      return (
+                        <div key={i} className={`w-12 h-12 flex flex-col items-center justify-center transition-all ${isPast ? 'opacity-30 grayscale' : ''}`}>
+                          {c?.image ? <img src={c.image} className="w-10 h-10 object-contain drop-shadow" /> : <PackageOpen size={20} className="text-[#4d5366]" />}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Right Side */}
+                  <div className="flex flex-col items-end">
+                    <span className="text-[#7a819c] font-black text-[10px] uppercase tracking-widest mb-1">Battle Cost:</span>
+                    <span className="text-white font-black flex items-center gap-1 text-sm">
+                      <DLCurrency amount={activeBattle.participants.length * activeBattle.entryFee} size="sm" className="text-white" />
+                    </span>
+                  </div>
                 </div>
                 
                 {/* BATTLE ARENA (Spinners) */}
@@ -1071,7 +1067,7 @@ export default function BattlesPage() {
                   
                   {/* Floating Case Label */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px z-30">
-                    <div className="bg-[#0f1115] border-x border-b border-[#2a2d3a] rounded-b-xl px-6 py-1.5 flex items-center gap-3 shadow-md">
+                    <div className="bg-[#0f1115] border-x border-b border-[#2a2d3a] rounded-b-xl px-12 py-1.5 flex items-center gap-3 shadow-md">
                       {(() => {
                         const caseIdsList = JSON.parse(activeBattle.caseIds || '[]');
                         const roundCaseId = caseIdsList[currentRound];
@@ -1174,13 +1170,12 @@ export default function BattlesPage() {
                             {isWinner && <div className="absolute inset-0 bg-gradient-to-b from-accent-green/20 to-transparent pointer-events-none z-0" />}
                             
                             {/* Player Badge */}
-                            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-[#15181f]/90 backdrop-blur-sm border border-[#2a2d3a] rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-lg min-w-max">
-                              <div className="w-5 h-5 rounded flex items-center justify-center text-white font-black text-[10px] bg-[#2a2d3a]">
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-transparent flex items-center gap-2 min-w-max">
+                              <div className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-[10px]">
                                 {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : p.userId[0]}
                               </div>
-                              <div className="text-white text-xs font-bold truncate max-w-[80px] mr-1">{p.userId}</div>
                               <div className="flex items-center gap-1 font-black text-xs text-white">
-                                <DLCurrency amount={currentLootValue} size="sm" className="text-white" />
+                                <DLCurrency amount={currentLootValue} size="xs" className="text-white" />
                               </div>
                             </div>
 
@@ -1257,83 +1252,92 @@ export default function BattlesPage() {
 
                 {/* PLAYER HISTORY GRID */}
                 <div 
-                  className="grid gap-4" 
-                  style={{ gridTemplateColumns: `repeat(auto-fit, minmax(${activeBattle.targetPlayerCount > 4 ? '150px' : '200px'}, 1fr))` }}
+                  className="grid gap-2 mt-2" 
+                  style={{ gridTemplateColumns: `repeat(${activeBattle.targetPlayerCount}, minmax(0, 1fr))` }}
                 >
                   {activeBattle.participants.map((p: any, idx: number) => {
                     const isBot = p.userId.startsWith('bot-');
                     const isWinner = finalWinner && finalWinner.split(',').includes(p.userId.toString());
-                    
-                        let currentLootValue = 0;
-                        if (roundResults.length > 0) {
-                          roundResults.forEach((round: any[]) => {
-                            const myRoll = round.find(r => r.userId === p.userId);
-                            if (myRoll) {
-                              const itemValue = myRoll.hitLuckyStar && myRoll.actualWinItem ? myRoll.actualWinItem.value : myRoll.item.value;
-                              currentLootValue += itemValue;
-                            }
-                          });
+                    let currentLootValue = 0;
+                    if (roundResults.length > 0) {
+                      roundResults.forEach((round: any[]) => {
+                        const myRoll = round.find(r => r.userId === p.userId);
+                        if (myRoll) {
+                          const itemValue = myRoll.hitLuckyStar && myRoll.actualWinItem ? myRoll.actualWinItem.value : myRoll.item.value;
+                          currentLootValue += itemValue;
                         }
+                      });
+                    }
 
                     return (
-                      <div key={p.id} className="bg-[#15181f] border border-[#2a2d3a] rounded-xl overflow-hidden">
-                        
+                      <div key={p.id} className="flex flex-col gap-2">
                         {/* Player Header */}
-                        <div className={`p-4 border-b ${isWinner ? 'border-accent-green/50 bg-accent-green/10' : 'border-[#2a2d3a] bg-[#1a1d24]'} flex items-center justify-between`}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-xs">
-                              {isBot ? <Bot size={16} className="text-accent-blue" /> : p.userId[0]}
+                        <div className={`p-3 rounded-xl border ${isWinner ? 'border-accent-green/50 bg-accent-green/10' : 'border-[#2a2d3a] bg-[#15181f]'} flex items-center justify-between`}>
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <div className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-[10px] flex-shrink-0">
+                              {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : p.userId[0]}
                             </div>
-                            <div className="text-white font-black text-sm truncate max-w-[100px]">{p.userId}</div>
+                            <div className="text-white font-black text-[11px] truncate">{p.userId}</div>
                           </div>
-                          <div className={`font-black text-sm flex items-center gap-1 ${isWinner ? 'text-accent-green' : 'text-white'}`}>
-                            <DLCurrency amount={currentLootValue} size="sm" className={isWinner ? 'text-accent-green' : 'text-white'} />
+                          <div className="bg-[#1a1d24] border border-[#2a2d3a] px-2 py-1 rounded flex items-center gap-1 font-black text-xs">
+                            <DLCurrency amount={currentLootValue} size="xs" className={isWinner ? 'text-accent-green' : 'text-white'} />
                           </div>
                         </div>
 
-                        {/* Roll History */}
-                        <div className="p-2 space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col-reverse">
-                          {[...roundResults].reverse().map((round: any[], roundIdxRaw: number) => {
-                            const actualRoundIdx = roundResults.length - 1 - roundIdxRaw;
-                            const myRoll = round.find(r => r.userId === p.userId);
-                            if (!myRoll) return null;
-                            const displayItem = myRoll.hitLuckyStar && myRoll.actualWinItem ? myRoll.actualWinItem : myRoll.item;
+                        {/* Round Items */}
+                        {Array.from({ length: Math.max(JSON.parse(activeBattle.caseIds || '[]').length, currentRound + 1) }).map((_, rIdx) => {
+                          const isFuture = rIdx > currentRound || !roundResults[rIdx];
+                          if (isFuture) {
                             return (
-                              <motion.div 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                key={actualRoundIdx} 
-                                className="bg-[#1a1d24] p-3 rounded-lg border border-[#2a2d3a] flex items-center justify-between"
-                              >
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                  {displayItem.imageUrl ? (
-                                    <img src={displayItem.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(displayItem.imageUrl.replace(/^https?:\/\//, ''))}` : displayItem.imageUrl} alt="" className="w-8 h-8 object-contain drop-shadow-md" />
-                                  ) : (
-                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: displayItem.color || "#3b82f6", boxShadow: `0 0 10px ${displayItem.color}` }} />
-                                  )}
-                                  <div>
-                                    <div className="text-white text-[10px] opacity-50 uppercase tracking-widest font-bold mb-0.5">Round {actualRoundIdx + 1}</div>
-                                    <div className="text-xs text-white truncate font-bold">{displayItem.name}</div>
-                                  </div>
-                                </div>
-                                <span className="text-xs font-black text-white flex items-center gap-1">
-                                  <DLCurrency amount={displayItem.value} size="sm" className="text-white" />
+                              <div key={`future-${rIdx}-${p.id}`} className="bg-[#15181f] border border-[#2a2d3a] h-[80px] rounded-xl flex flex-col items-center justify-center opacity-30">
+                                <span className="text-[#a0a5b8] text-[10px] font-black uppercase tracking-widest mb-1">Round</span>
+                                <span className="text-white text-lg font-black">{rIdx + 1 < 10 ? `0${rIdx + 1}` : rIdx + 1}</span>
+                              </div>
+                            );
+                          }
+                          const myRoll = roundResults[rIdx].find(r => r.userId === p.userId);
+                          if (!myRoll) return null;
+                          const displayItem = myRoll.hitLuckyStar && myRoll.actualWinItem ? myRoll.actualWinItem : myRoll.item;
+                          
+                          return (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              key={`roll-${rIdx}-${p.id}`} 
+                              className="bg-[#15181f] border border-[#2a2d3a] h-[80px] rounded-xl flex items-center p-3 gap-3"
+                            >
+                              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                                {displayItem.imageUrl ? (
+                                  <img src={displayItem.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(displayItem.imageUrl.replace(/^https?:\/\//, ''))}` : displayItem.imageUrl} alt="" className="max-w-full max-h-full object-contain drop-shadow-md" />
+                                ) : (
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: displayItem.color || "#3b82f6", boxShadow: `0 0 10px ${displayItem.color}` }} />
+                                )}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-[#a0a5b8] font-black text-[10px] uppercase tracking-widest truncate">{displayItem.name}</span>
+                                <span className="text-white font-black text-xs flex items-center gap-1 mt-0.5">
+                                  <DLCurrency amount={displayItem.value} size="xs" className="text-white" />
                                 </span>
-                              </motion.div>
-                            )
-                          })}
-                        </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     )
                   })}
                   
-                  {/* Empty slots */}
+                  {/* Empty slots for missing participants */}
                   {Array.from({ length: Math.max(0, (activeBattle.targetPlayerCount || 2) - activeBattle.participants.length) }).map((_, i) => (
-                    <div key={`empty-${i}`} className="bg-[#15181f]/50 border border-dashed border-[#2a2d3a] rounded-xl flex flex-col items-center justify-center p-8 opacity-50 min-h-[200px]">
-                      <div className="w-12 h-12 rounded-lg bg-[#1a1d24] border border-[#2a2d3a] flex items-center justify-center mb-3">
-                        <Users size={20} className="text-[#4d5366]" />
+                    <div key={`empty-${i}`} className="flex flex-col gap-2 opacity-30">
+                      <div className="bg-[#15181f] border border-dashed border-[#2a2d3a] p-3 rounded-xl flex items-center justify-center h-[48px]">
+                        <Users size={16} className="text-[#4d5366]" />
                       </div>
-                      <div className="text-[10px] font-black text-[#4d5366] uppercase tracking-widest">Waiting</div>
+                      {Array.from({ length: Math.max(JSON.parse(activeBattle.caseIds || '[]').length, currentRound + 1) }).map((_, rIdx) => (
+                        <div key={`empty-future-${rIdx}`} className="bg-[#15181f] border border-[#2a2d3a] h-[80px] rounded-xl flex flex-col items-center justify-center">
+                          <span className="text-[#a0a5b8] text-[10px] font-black uppercase tracking-widest mb-1">Round</span>
+                          <span className="text-white text-lg font-black">{rIdx + 1 < 10 ? `0${rIdx + 1}` : rIdx + 1}</span>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
