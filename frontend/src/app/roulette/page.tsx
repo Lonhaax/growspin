@@ -24,7 +24,7 @@ export default function RoulettePage() {
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const [wheelOffset, setWheelOffset] = useState(0);
-  const [currentTargetIndex, setCurrentTargetIndex] = useState(15); // Start slightly offset
+  const currentTargetIndexRef = useRef(15); // Start slightly offset
 
   const TILE_WIDTH = 80;
   const generateStrip = () => {
@@ -76,11 +76,11 @@ export default function RoulettePage() {
       setGameState('rolling');
       const targetNum = data.target;
       
-      let nextIndex = currentTargetIndex + 45 + Math.floor(Math.random() * 15);
+      let nextIndex = currentTargetIndexRef.current + 45 + Math.floor(Math.random() * 15);
       while (strip[nextIndex].num !== targetNum) {
         nextIndex++;
       }
-      setCurrentTargetIndex(nextIndex);
+      currentTargetIndexRef.current = nextIndex;
 
       const containerWidth = wheelRef.current ? wheelRef.current.clientWidth : 800;
       const centerOffset = (containerWidth / 2) - (TILE_WIDTH / 2);
@@ -101,7 +101,7 @@ export default function RoulettePage() {
     });
 
     return () => { newSocket.close(); };
-  }, [currentTargetIndex, strip]);
+  }, [strip]);
 
   const handleBet = async (color: 'red' | 'black' | 'green') => {
     if (!user) {
@@ -197,23 +197,20 @@ export default function RoulettePage() {
             {strip.map((item, idx) => (
               <div key={idx} className="w-[80px] h-20 flex-shrink-0 flex items-center justify-center p-1">
                 <div className={`w-full h-full rounded-xl flex items-center justify-center shadow-md relative overflow-hidden ${item.color}`}>
-                  {/* Image / Icon placeholders */}
+                  {/* Image placeholders */}
                   {item.num === 0 && (
                     <div className="w-12 h-12 flex items-center justify-center">
-                      <Clover className="text-black opacity-80" size={32} />
-                      <img src="/luck-plant.webp" alt="Green" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/luck-plant.webp" alt="Green" className="absolute inset-0 w-full h-full object-contain p-1" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                   {item.num > 0 && item.num < 8 && (
                     <div className="w-12 h-12 flex items-center justify-center">
-                      <Wrench className="text-white opacity-80" size={32} />
-                      <img src="/wrench.webp" alt="Red" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/wrench.webp" alt="Red" className="absolute inset-0 w-full h-full object-contain p-1" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                   {item.num >= 8 && (
                     <div className="w-12 h-12 flex items-center justify-center">
-                      <HandMetal className="text-[#7a819c] opacity-80" size={32} />
-                      <img src="/fist.webp" alt="Black" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/fist.webp" alt="Black" className="absolute inset-0 w-full h-full object-contain p-1" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                 </div>
