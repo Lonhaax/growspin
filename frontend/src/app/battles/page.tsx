@@ -141,7 +141,7 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
 }
 
 
-function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete }: { tiedPlayers: string[], winnerId: string, onComplete: () => void }) {
+function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete, participants = [] }: { tiedPlayers: string[], winnerId: string, onComplete: () => void, participants?: any[] }) {
   const [strip, setStrip] = useState<string[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
@@ -200,14 +200,18 @@ function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete }: { tiedPlayers:
               animate={controls} 
               style={{ gap: '12px' }}
             >
-              {strip.map((userId, i) => (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-2xl w-48 will-change-transform" style={{ height: '144px' }}>
-                  <div className="w-16 h-16 rounded-2xl bg-[#15181f] flex items-center justify-center text-3xl font-black text-white shadow-inner mb-3">
-                    {userId.startsWith('bot-') ? <Bot size={36} className="text-accent-blue" /> : userId[0]}
+              {strip.map((userId, i) => {
+                const participant = participants.find(p => p.userId === userId);
+                const displayName = participant?.username || userId;
+                return (
+                  <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-2xl w-48 will-change-transform" style={{ height: '144px' }}>
+                    <div className="w-16 h-16 rounded-2xl bg-[#15181f] flex items-center justify-center text-3xl font-black text-white shadow-inner mb-3">
+                      {userId.startsWith('bot-') ? <Bot size={36} className="text-accent-blue" /> : displayName[0]}
+                    </div>
+                    <div className="text-white font-black text-sm truncate w-full px-2 text-center">{displayName}</div>
                   </div>
-                  <div className="text-white font-black text-sm truncate w-full px-2 text-center">{userId}</div>
-                </div>
-              ))}
+                );
+              })}
             </motion.div>
           </div>
         </div>
@@ -1380,6 +1384,7 @@ export default function BattlesPage() {
                     <TieBreakerSpinner
                       tiedPlayers={tieBreakerData.tiedPlayers}
                       winnerId={tieBreakerData.winnerId}
+                      participants={activeBattle.participants}
                       onComplete={() => {
                         setIsTieBreakerOpen(false);
                         setFinalWinner(tieBreakerData.winnerId);
