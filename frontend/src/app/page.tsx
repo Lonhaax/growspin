@@ -220,35 +220,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Promos */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link href="/rewards" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
-          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          <img 
-            src="/rakeback.png" 
-            alt="Rakeback" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/10b981?text=Rakeback' }}
-          />
-        </Link>
-        <Link href="/affiliates" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
-          <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          <img 
-            src="/affiliate.png" 
-            alt="Affiliate" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/3b82f6?text=Affiliate' }}
-          />
-        </Link>
-        <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
-          <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          <img 
-            src="/free.png" 
-            alt="Free to Play" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/f59e0b?text=Free+to+Play' }}
-          />
-        </a>
+      {/* Top Slots */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <Sparkles className="text-purple-400" size={24} />
+              Top Slots
+            </h2>
+            <p className="text-sm text-[#717894] mt-1 font-medium">The most popular slot games</p>
+          </div>
+          <Link href="/slots" className="text-sm font-bold text-accent-blue hover:text-blue-400 transition-colors flex items-center gap-1">
+            View All <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          {[
+            { name: 'Aloha King Elvis', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/AlohaKingElvis.png' },
+            { name: 'Elvis Frog in Vegas', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/ElvisFrog.png' },
+            { name: 'Bonanza Billion', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/BonanzaBillion.png' },
+            { name: 'Sweet Rush Megaways', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/SweetRushMegaways.png' },
+            { name: 'Alien Fruits', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/AlienFruits.png' },
+            { name: 'Wild Cash', provider: 'BGaming', image: 'https://cdn.softswiss.net/i/s3/bgaming/WildCash.png' },
+          ].map((slot) => (
+            <Link 
+              key={slot.name}
+              href="/slots" 
+              className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-[#15181f] border border-[#2a2d3a] hover:border-accent-blue transition-all duration-300 block hover:-translate-y-1 hover:shadow-xl"
+            >
+              <img 
+                src={slot.image} 
+                alt={slot.name} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[#0d121c] via-[#0d121c]/80 to-transparent">
+                <div className="text-xs font-black text-white truncate">{slot.name}</div>
+                <div className="text-[10px] text-[#7a819c] font-bold">{slot.provider}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* Live Feed */}
