@@ -1145,9 +1145,18 @@ export default function BattlesPage() {
                                     : targetItemForSpin;
                                   
                                   return (
-                                    <div className="flex flex-col items-center justify-center relative select-none animate-in fade-in zoom-in duration-300" style={{ height: '120px' }}>
-                                      <div 
-                                        className="absolute inset-0 opacity-40 animate-pulse" 
+                                    <motion.div 
+                                      className="flex flex-col items-center justify-center relative select-none" 
+                                      style={{ height: '120px' }}
+                                      initial={{ scale: 0.9, opacity: 0 }}
+                                      animate={{ scale: 1, opacity: 1 }}
+                                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                    >
+                                      <motion.div 
+                                        className="absolute inset-0" 
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.9, 1.1, 0.9] }}
+                                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                                         style={{ background: `radial-gradient(circle at center, ${finalItemToDisplay.color || "#3b82f6"} 0%, transparent 70%)` }} 
                                       />
                                       <div className="relative z-10 h-20 flex items-center justify-center mb-1">
@@ -1170,7 +1179,7 @@ export default function BattlesPage() {
                                           <DLCurrency amount={finalItemToDisplay.value} size="xs" className="text-[#a0a5b8]" />
                                         </div>
                                       </div>
-                                    </div>
+                                    </motion.div>
                                   );
                                 })()
                               ) : (
