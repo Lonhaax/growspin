@@ -268,9 +268,9 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
       let isMounted = true;
       const runAnim = async () => {
         await controls.set({ x: 0 });
-        const containerWidth = trackRef.current ? trackRef.current.clientWidth : 800;
-        const itemCenter = (55 * 104) + 48; // 96 width (24rem=96px) + 8 gap = 104 step
-        const jitter = (Math.random() - 0.5) * 60;
+        const containerWidth = trackRef.current ? trackRef.current.clientWidth : 320;
+        const itemCenter = (55 * 52) + 24; // 48 width + 4 gap = 52 step
+        const jitter = (Math.random() - 0.5) * 30;
         const targetX = (containerWidth / 2) - itemCenter + jitter;
 
         await controls.start({
@@ -285,27 +285,27 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
   }, [strip]);
 
   return (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="w-full mt-6 flex flex-col items-center overflow-hidden">
-      <div className="text-accent-blue font-black text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
-        <PackageOpen size={14} /> Jackpot Spin
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="w-full mb-4 flex flex-col items-center overflow-hidden">
+      <div className="text-accent-blue font-black text-[10px] uppercase tracking-widest mb-1 flex items-center gap-1.5">
+        <PackageOpen size={12} /> Jackpot Spin
       </div>
       
-      <div className="relative w-full h-[120px] rounded-xl overflow-hidden bg-gradient-to-r from-[#1f222b] via-[#15181f] to-[#1f222b] border border-[#2a2d3a] shadow-inner mb-4">
+      <div className="relative w-80 h-[64px] rounded-lg overflow-hidden bg-gradient-to-r from-[#1f222b] via-[#15181f] to-[#1f222b] border border-[#2a2d3a] shadow-inner">
         {/* Center Target Line */}
-        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-yellow-400 z-20 shadow-[0_0_15px_rgba(234,179,8,1)] pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,1)]" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,1)]" />
+        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-yellow-400 z-20 shadow-[0_0_10px_rgba(234,179,8,1)] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,1)]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,1)]" />
         
         {/* Fades */}
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#15181f] to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#15181f] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#1f222b] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#1f222b] to-transparent z-10 pointer-events-none" />
         
         <div ref={trackRef} className="w-full h-full flex items-center relative overflow-hidden">
           <motion.div 
             className="flex items-center absolute left-0" 
             initial={{ x: 0 }}
             animate={controls} 
-            style={{ gap: '8px' }}
+            style={{ gap: '4px' }}
           >
             {strip.map((tId, i) => {
               const members = teamStats[parseInt(tId)]?.members || [];
@@ -314,11 +314,11 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
               const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
               
               return (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-lg w-24 will-change-transform" style={{ height: '96px' }}>
-                  <div className="w-12 h-12 rounded-xl bg-[#15181f] flex items-center justify-center text-xl font-black text-white shadow-inner mb-2">
-                    {isMulti ? <Users size={20} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={20} className="text-accent-blue" /> : displayName[0])}
+                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#15181f] border border-[#2a2d3a] rounded w-12 will-change-transform" style={{ height: '48px' }}>
+                  <div className="w-6 h-6 rounded bg-[#1f222b] flex items-center justify-center text-[10px] font-black text-white shadow-inner mb-0.5">
+                    {isMulti ? <Users size={12} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={12} className="text-accent-blue" /> : displayName[0])}
                   </div>
-                  <div className="text-white font-black text-[10px] truncate w-full px-2 text-center">{displayName}</div>
+                  <div className="text-white font-black text-[8px] truncate w-full px-1 text-center">{displayName}</div>
                 </div>
               );
             })}
@@ -1098,6 +1098,25 @@ export default function BattlesPage() {
                   </div>
                 </div>
 
+                {/* JACKPOT SPINNER (If active) */}
+                <AnimatePresence>
+                  {isJackpotSpinnerOpen && jackpotSpinnerData && (
+                    <JackpotSpinner
+                      teamStats={jackpotSpinnerData.teamStats}
+                      winnerId={jackpotSpinnerData.winnerId}
+                      mode={jackpotSpinnerData.mode}
+                      participants={activeBattle.participants}
+                      isFast={activeBattle?.isFast}
+                      onComplete={() => {
+                        setIsJackpotSpinnerOpen(false);
+                        setFinalWinner(jackpotSpinnerData.winnerId);
+                        setActiveBattle({ ...activeBattle, status: 'finished', winnerId: jackpotSpinnerData.winnerId, totalPotValue: jackpotSpinnerData.totalPotValue });
+                        refreshUser();
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
                 {/* BATTLE HEADER ROW 2 */}
                 <div className="flex items-center justify-between mb-6 relative">
                   {/* Left Side */}
@@ -1560,22 +1579,6 @@ export default function BattlesPage() {
                         setIsTieBreakerOpen(false);
                         setFinalWinner(tieBreakerData.winnerId);
                         setActiveBattle({ ...activeBattle, status: 'finished', winnerId: tieBreakerData.winnerId, totalPotValue: tieBreakerData.totalPotValue });
-                        refreshUser();
-                      }}
-                    />
-                  )}
-
-                  {isJackpotSpinnerOpen && jackpotSpinnerData && (
-                    <JackpotSpinner
-                      teamStats={jackpotSpinnerData.teamStats}
-                      winnerId={jackpotSpinnerData.winnerId}
-                      mode={jackpotSpinnerData.mode}
-                      participants={activeBattle.participants}
-                      isFast={activeBattle?.isFast}
-                      onComplete={() => {
-                        setIsJackpotSpinnerOpen(false);
-                        setFinalWinner(jackpotSpinnerData.winnerId);
-                        setActiveBattle({ ...activeBattle, status: 'finished', winnerId: jackpotSpinnerData.winnerId, totalPotValue: jackpotSpinnerData.totalPotValue });
                         refreshUser();
                       }}
                     />
