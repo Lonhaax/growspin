@@ -13,6 +13,7 @@ import RewardsModal from "@/components/rewards/RewardsModal";
 import { SoundManager } from "@/lib/audio";
 import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 import ProfileModal from "@/components/profile/ProfileModal";
+import { InventoryModal } from "@/components/inventory/InventoryModal";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
@@ -22,6 +23,7 @@ export function Topbar() {
   const [depositOpen, setDepositOpen] = useState(false);
   const [rewardsOpen, setRewardsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [claiming, setClaiming] = useState(false);
 
@@ -68,6 +70,21 @@ export function Topbar() {
         </div>
       </div>
 
+      {user && (
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-1 h-9 z-10">
+          <div className="px-3 flex items-center gap-2 border-r border-[#2a2d3a]">
+            <DLCurrency amount={balance * 100} size="sm" className="text-white" />
+          </div>
+          <button 
+            onClick={() => setDepositOpen(true)}
+            className="text-emerald-400 hover:text-emerald-300 px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold text-sm"
+          >
+            <Wallet size={14} />
+            Deposit
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center gap-4">
         {user ? (
           <>
@@ -103,27 +120,7 @@ export function Topbar() {
               {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
 
-            <button
-              onClick={() => setRewardsOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 rounded-lg px-3 h-9 transition-colors text-sm font-bold"
-            >
-              <Gift size={14} />
-              Rewards
-            </button>
 
-            {/* Wallet Group */}
-            <div className="flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-1 h-9">
-              <div className="px-3 flex items-center gap-2 border-r border-[#2a2d3a]">
-                <DLCurrency amount={balance * 100} size="sm" className="text-white" />
-              </div>
-              <button 
-                onClick={() => setDepositOpen(true)}
-                className="text-emerald-400 hover:text-emerald-300 px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold text-sm"
-              >
-                <Wallet size={14} />
-                Deposit
-              </button>
-            </div>
 
             {/* Profile Dropdown */}
             <div className="relative ml-2">
@@ -191,9 +188,9 @@ export function Topbar() {
                       <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
                         <History size={16} /> History
                       </button>
-                      <Link href="/inventory" onClick={() => setDropdownOpen(false)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                      <button onClick={() => { setDropdownOpen(false); setInventoryOpen(true); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
                         <Package size={16} /> Inventory
-                      </Link>
+                      </button>
                     </div>
 
                     <div className="py-1 border-t border-[#2a2d3a]">
@@ -258,6 +255,7 @@ export function Topbar() {
         <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
         <RewardsModal isOpen={rewardsOpen} onClose={() => { setRewardsOpen(false); refreshUser(); }} />
         <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
+        <InventoryModal isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} />
       </>
     )}
     <CustomModal config={modalConfig} setConfig={setModalConfig} />

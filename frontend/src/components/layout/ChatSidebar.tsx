@@ -143,22 +143,23 @@ export function ChatSidebar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 320, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className="fixed right-0 top-0 bottom-0 w-80 bg-[#15181f] border-l border-[#2a2d3a] shadow-[-10px_0_30px_rgba(0,0,0,0.8)] z-40 flex flex-col"
+            className="relative h-full bg-[#15181f] border-l border-[#2a2d3a] shadow-[-10px_0_30px_rgba(0,0,0,0.8)] z-40 flex flex-col overflow-hidden shrink-0"
           >
-            {/* Header */}
-            <div className="h-16 flex items-center justify-between px-4 border-b border-[#2a2d3a] bg-[#1f222b] relative overflow-hidden">
-              <div className="flex items-center gap-2 text-white font-bold relative z-10">
-                <MessageSquare size={18} className="text-accent-blue" />
-                Global Chat
+            <div className="w-80 h-full flex flex-col shrink-0">
+              {/* Header */}
+              <div className="h-16 flex items-center justify-between px-4 border-b border-[#2a2d3a] bg-[#1f222b] relative overflow-hidden shrink-0">
+                <div className="flex items-center gap-2 text-white font-bold relative z-10">
+                  <MessageSquare size={18} className="text-accent-blue" />
+                  Global Chat
+                </div>
+                <button onClick={() => setIsOpen(false)} className="text-[#7a819c] hover:text-white relative z-10">
+                  <ChevronRight size={20} />
+                </button>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-[#7a819c] hover:text-white relative z-10">
-                <ChevronRight size={20} />
-              </button>
-            </div>
 
             {/* Rain Animation Overlay */}
             <AnimatePresence>
@@ -252,6 +253,7 @@ export function ChatSidebar() {
                   <Send size={16} />
                 </button>
               </form>
+            </div>
             </div>
           </motion.div>
         )}
