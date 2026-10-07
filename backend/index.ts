@@ -1719,6 +1719,30 @@ app.post('/api/play/roulette/bet', requireAuth, requireNotFrozen, async (req: Au
   }
 });
 
+// GET /api/play/mines/active
+app.get('/api/play/mines/active', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const game = await prisma.minesGame.findFirst({
+      where: { userId: req.user!.id, status: 'playing' }
+    });
+    if (!game) {
+      return res.json({ active: false });
+    }
+    const revealedTiles = JSON.parse(game.boardState);
+    return res.json({
+      active: true,
+      gameId: game.id,
+      betAmount: game.betAmount,
+      minesCount: game.minesCount,
+      revealedTiles,
+      multiplier: game.multiplier
+    });
+  } catch (error) {
+    console.error('Mines active error:', error);
+    res.status(500).json({ error: 'Failed to fetch active mines game' });
+  }
+});
+
 // POST /api/play/mines/start
 app.post('/api/play/mines/start', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   const { minesCount } = req.body;

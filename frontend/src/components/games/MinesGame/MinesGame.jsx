@@ -127,7 +127,29 @@ function MinesGame() {
     }, []);
 
 
-    // (Fairness debug disabled — RNG is server-side)
+    // Check for active game on mount
+    useEffect(() => {
+        const fetchActiveGame = async () => {
+            try {
+                const res = await apiFetch('/play/mines/active');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.active) {
+                        setGameId(data.gameId);
+                        setBetAmount(data.betAmount / 100);
+                        setMinesCount(data.minesCount);
+                        setRevealedTiles(data.revealedTiles);
+                        setIsPlaying(true);
+                        setGameOverState(null);
+                        setMineLocations([]);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch active mines game", err);
+            }
+        };
+        fetchActiveGame();
+    }, []);
 
 
     // Handle client seed change
