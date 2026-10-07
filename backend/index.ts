@@ -3012,6 +3012,7 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
             }))
           });
         }
+      } // <--- CLOSE THE ELSE BLOCK
       // Generate dummy block info for the battle (Provably Fair)
       const eosBlock = Math.floor(Math.random() * 10000000) + 30000000;
       const eosHash = require('crypto').randomBytes(32).toString('hex');
