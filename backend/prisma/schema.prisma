@@ -17,6 +17,12 @@ model User {
   xp                 Int                 @default(0)
   rakebackBalance    Int                 @default(0)
   totalWagered       Int                 @default(0)
+  totalBets          Int                 @default(0)
+  wins               Int                 @default(0)
+  losses             Int                 @default(0)
+  netProfit          Int                 @default(0)
+  allTimeHigh        Int                 @default(100000)
+  allTimeLow         Int                 @default(100000)
   lastFaucetClaim    DateTime?
   createdAt          DateTime            @default(now())
   debt               Int                 @default(0)

@@ -17,15 +17,15 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
   if (!isOpen || !user) return null;
 
-  // Derive stats (some mocked based on available data)
-  const totalWagered = user.totalWagered / 100; // Convert to float
-  const totalBets = Math.floor(totalWagered * 2); // Dummy calculation
+  // Real stats
+  const totalWagered = user.totalWagered / 100;
+  const totalBets = user.totalBets;
   const avgBet = totalBets > 0 ? (totalWagered / totalBets) : 0;
-  const wins = Math.floor(totalBets * 0.45);
-  const losses = totalBets - wins;
-  const netProfit = (user.mockBalance / 100) - 1000; // Assuming 1000 starting balance
-  const allTimeHigh = 1000 + (totalWagered * 0.1); // Dummy
-  const allTimeLow = 1000 - (totalWagered * 0.05); // Dummy
+  const wins = user.wins;
+  const losses = user.losses;
+  const netProfit = user.netProfit / 100;
+  const allTimeHigh = user.allTimeHigh / 100;
+  const allTimeLow = user.allTimeLow / 100;
 
   return (
     <AnimatePresence>

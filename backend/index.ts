@@ -277,6 +277,18 @@ function calculateLevel(xp: number, xpBase: number = globalXpBase): number {
   return Math.min(100, Math.max(1, computed));
 }
 
+function buildUserStatsUpdate(user: any, profit: number, isWin: boolean, isLoss: boolean) {
+  const newBalance = user.mockBalance + profit;
+  return {
+    totalBets: { increment: 1 },
+    wins: { increment: isWin ? 1 : 0 },
+    losses: { increment: isLoss ? 1 : 0 },
+    netProfit: { increment: profit },
+    allTimeHigh: Math.max(user.allTimeHigh || 100000, newBalance),
+    allTimeLow: Math.min(user.allTimeLow || 100000, newBalance)
+  };
+}
+
 // Generates a provably fair random float between 0 and 1
 async function generateProvablyFairFloat(tx: any, userId: number): Promise<{ float: number, pf: any, hmac: string }> {
   let pf = await tx.provablyFair.findFirst({ where: { userId, active: true } });
@@ -432,7 +444,7 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     setRefreshCookie(res, refreshToken);
     res.json({
       accessToken,
-      user: { id: user.id, username: user.username, mockBalance: user.mockBalance, debt: user.debt, level: user.level, xp: user.xp, rakebackBalance: user.rakebackBalance, totalWagered: user.totalWagered, createdAt: user.createdAt },
+      user: { id: user.id, username: user.username, mockBalance: user.mockBalance, debt: user.debt, level: user.level, xp: user.xp, rakebackBalance: user.rakebackBalance, totalWagered: user.totalWagered, totalBets: user.totalBets, wins: user.wins, losses: user.losses, netProfit: user.netProfit, allTimeHigh: user.allTimeHigh, allTimeLow: user.allTimeLow, createdAt: user.createdAt },
     });
   } catch {
     res.status(400).json({ error: 'Username already taken.' });
@@ -483,7 +495,7 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     setRefreshCookie(res, refreshToken);
     res.json({
       accessToken,
-      user: { id: user.id, username: user.username, mockBalance: user.mockBalance, debt: user.debt, level: user.level, xp: user.xp, rakebackBalance: user.rakebackBalance, totalWagered: user.totalWagered, createdAt: user.createdAt },
+      user: { id: user.id, username: user.username, mockBalance: user.mockBalance, debt: user.debt, level: user.level, xp: user.xp, rakebackBalance: user.rakebackBalance, totalWagered: user.totalWagered, totalBets: user.totalBets, wins: user.wins, losses: user.losses, netProfit: user.netProfit, allTimeHigh: user.allTimeHigh, allTimeLow: user.allTimeLow, createdAt: user.createdAt },
     });
   } catch {
     res.status(500).json({ error: 'Server error.' });
@@ -520,7 +532,7 @@ app.post('/api/auth/refresh', async (req: Request, res: Response) => {
     setRefreshCookie(res, newRefresh);
     res.json({
       accessToken: generateAccessToken(payload.userId),
-      user: { id: user!.id, username: user!.username, mockBalance: user!.mockBalance, debt: user!.debt, level: user!.level, xp: user!.xp, rakebackBalance: user!.rakebackBalance, totalWagered: user!.totalWagered, createdAt: user!.createdAt },
+      user: { id: user!.id, username: user!.username, mockBalance: user!.mockBalance, debt: user!.debt, level: user!.level, xp: user!.xp, rakebackBalance: user!.rakebackBalance, totalWagered: user!.totalWagered, totalBets: user!.totalBets, wins: user!.wins, losses: user!.losses, netProfit: user!.netProfit, allTimeHigh: user!.allTimeHigh, allTimeLow: user!.allTimeLow, createdAt: user!.createdAt },
     });
   } catch {
     res.clearCookie('refreshToken');
@@ -1465,7 +1477,8 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
             xp: newXp,
             level: newLevel,
             totalWagered: { increment: amount }, /* POT_HOOK:amount */
-            rakebackBalance: { increment: rakebackAmount }
+            rakebackBalance: { increment: rakebackAmount },
+            ...buildUserStatsUpdate(user, profit, win, !win)
           },
         });
         const potCut = Math.floor(amount * 0.05);
@@ -1598,7 +1611,8 @@ app.post('/api/play/dice', requireAuth, requireNotFrozen, async (req: AuthReques
             xp: newXp,
             level: newLevel,
             totalWagered: { increment: amount }, /* POT_HOOK:amount */
-            rakebackBalance: { increment: rakebackAmount }
+            rakebackBalance: { increment: rakebackAmount },
+            ...buildUserStatsUpdate(user, profit, win, !win)
           }
         });
         const potCut = Math.floor(amount * 0.05);
@@ -1783,7 +1797,8 @@ app.post('/api/play/mines/click', requireAuth, requireNotFrozen, async (req: Aut
               xp: newXp,
               level: newLevel,
               totalWagered: { increment: game.betAmount }, /* POT_HOOK:game.betAmount */
-              rakebackBalance: { increment: rakebackAmount }
+              rakebackBalance: { increment: rakebackAmount },
+              ...buildUserStatsUpdate(user!, -game.betAmount, false, true)
             }
           });
         const potCut = Math.floor(game.betAmount * 0.05);
@@ -1872,7 +1887,8 @@ app.post('/api/play/mines/cashout', requireAuth, requireNotFrozen, async (req: A
             xp: newXp,
             level: newLevel,
             totalWagered: { increment: game.betAmount }, /* POT_HOOK:game.betAmount */
-            rakebackBalance: { increment: rakebackAmount }
+            rakebackBalance: { increment: rakebackAmount },
+            ...buildUserStatsUpdate(user!, game.profit, true, false)
           }
         });
         const potCut = Math.floor(game.betAmount * 0.05);
@@ -1950,7 +1966,8 @@ app.post('/api/play/plinko', requireAuth, requireNotFrozen, async (req: AuthRequ
             xp: newXp,
             level: newLevel,
             totalWagered: { increment: amount }, /* POT_HOOK:amount */
-            rakebackBalance: { increment: rakebackAmount }
+            rakebackBalance: { increment: rakebackAmount },
+            ...buildUserStatsUpdate(user, profit, profit >= 0, profit < 0)
           }
         });
         const potCut = Math.floor(amount * 0.05);

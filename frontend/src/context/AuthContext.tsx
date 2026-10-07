@@ -12,6 +12,12 @@ interface User {
   xp: number;
   rakebackBalance: number;
   totalWagered: number;
+  totalBets: number;
+  wins: number;
+  losses: number;
+  netProfit: number;
+  allTimeHigh: number;
+  allTimeLow: number;
   debt?: number;
   debtCreatedAt?: string | null;
   isFrozen?: boolean;
