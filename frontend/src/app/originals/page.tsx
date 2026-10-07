@@ -69,11 +69,11 @@ export default function OriginalsPage() {
               )}
 
               {/* Game Icon / Graphic */}
-              <div className="absolute inset-0 flex items-center justify-center pb-6">
+              <div className="absolute inset-0 w-full h-full">
                 <img 
                   src={game.image} 
                   alt={game.name} 
-                  className="w-24 h-24 object-contain filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               </div>
 

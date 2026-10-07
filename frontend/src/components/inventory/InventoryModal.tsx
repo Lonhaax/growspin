@@ -297,79 +297,85 @@ export function InventoryModal({ isOpen, onClose }: { isOpen: boolean; onClose: 
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.5 }}
                         onClick={() => handleStackClick(stack)}
-                        className={`relative cursor-pointer bg-[#1f222b] border-2 rounded-2xl p-4 flex flex-col items-center text-center transition-all shadow-lg ${
+                        className={`relative cursor-pointer bg-[#171a23] border-2 rounded-2xl flex flex-col overflow-hidden transition-all shadow-xl group hover:-translate-y-1 ${
                           selectedCount > 0
-                            ? "border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-[#2563eb]/10" 
+                            ? "border-accent-blue shadow-[0_0_20px_rgba(59,130,246,0.3)] bg-[#2563eb]/10" 
                             : isBorrowed
                             ? "border-amber-500/40 hover:border-amber-500/70 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
-                            : "border-[#2a2d3a] hover:border-[#3a3d4a]"
+                            : "border-[#2a2d3a] hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                         }`}
                       >
+                        {/* Background color gradient overlay */}
+                        <div 
+                          className="absolute inset-0 opacity-30 transition-opacity duration-300 group-hover:opacity-50 pointer-events-none"
+                          style={{ background: `linear-gradient(180deg, transparent 20%, ${stack.color} 100%)` }}
+                        />
+
                         {/* Stack Count Badge */}
                         {stack.count > 1 && (
-                          <div className="absolute top-2.5 left-2.5 z-20 bg-[#15181f] border border-[#2a2d3a] text-white font-black text-[10px] px-2 py-0.5 rounded-md shadow-lg">
+                          <div className="absolute top-2.5 left-2.5 z-20 bg-black/60 backdrop-blur-md border border-white/10 text-white font-black text-[10px] px-2 py-0.5 rounded-md shadow-lg">
                             x{stack.count}
                           </div>
                         )}
 
                         {/* Borrowed Pill Badge */}
                         {isBorrowed && (
-                          <div className={`absolute top-2.5 ${stack.count > 1 ? 'left-[45px]' : 'left-2.5'} z-20 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-black text-[9px] uppercase px-1.5 py-0.5 rounded-md flex items-center gap-1`}>
+                          <div className={`absolute top-2.5 ${stack.count > 1 ? 'left-[45px]' : 'left-2.5'} z-20 bg-amber-500/20 backdrop-blur-md border border-amber-500/50 text-amber-300 font-black text-[9px] uppercase px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-lg`}>
                             <HandCoins size={10} /> Borrowed
                           </div>
                         )}
 
+                        {/* Checkbox indicator */}
+                        <div className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors z-20 backdrop-blur-sm ${
+                          isAllSelected ? "border-accent-blue bg-accent-blue" : isPartiallySelected ? "border-accent-blue bg-accent-blue/50" : "border-[#7a819c]/50 bg-black/40"
+                        }`}>
+                          {isAllSelected && <CheckCircle2 size={12} className="text-white" />}
+                          {isPartiallySelected && <div className="text-[10px] font-black text-white leading-none">{selectedCount}</div>}
+                        </div>
+
                         {/* Glow behind image based on rarity color */}
                         <div 
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 blur-2xl rounded-full opacity-30 pointer-events-none" 
+                          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 blur-[30px] rounded-full opacity-40 pointer-events-none transition-opacity duration-300 group-hover:opacity-60" 
                           style={{ backgroundColor: stack.color }} 
                         />
                         
                         {/* Visual placeholder for the item */}
-                        <div 
-                          className="w-20 h-20 mb-3 rounded-lg flex items-center justify-center border border-white/10 shadow-inner z-10 p-2 mt-3 bg-[#15181f]"
-                          style={{ background: `linear-gradient(135deg, ${stack.color}40, transparent)` }}
-                        >
+                        <div className="relative pt-10 pb-6 px-4 flex items-center justify-center flex-1 z-10">
                           {stack.imageUrl ? (
-                            <img src={stack.imageUrl.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(stack.imageUrl.replace(/^https?:\/\//, ''))}` : stack.imageUrl} alt={stack.name} className="max-w-full max-h-full object-contain" />
+                            <img src={stack.imageUrl.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(stack.imageUrl.replace(/^https?:\/\//, ''))}` : stack.imageUrl} alt={stack.name} className="w-24 h-24 object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] group-hover:scale-110 group-hover:rotate-2 transition-all duration-300" />
                           ) : (
-                            <Package size={32} style={{ color: stack.color }} />
+                            <Package size={48} className="filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300" style={{ color: stack.color }} />
                           )}
                         </div>
                         
-                        <h3 className="text-xs font-bold text-white mb-1 z-10 truncate w-full px-1" title={stack.name}>{stack.name}</h3>
-                        <div className="z-10 flex items-center justify-center">
-                          <DLCurrency amount={stack.value * stack.count} size="xs" className="font-black text-white" />
-                        </div>
-
-                        {isBorrowed && (
-                          <div className="mt-2 w-full pt-2 border-t border-white/5 text-[10px] space-y-1 z-10">
-                            <div className="text-amber-400 font-medium flex items-center justify-between">
-                              <span>Loan (each):</span>
-                              <span>{(loan / 100).toFixed(2)} DL</span>
-                            </div>
-                            <div className="text-accent-green font-bold flex items-center justify-between">
-                              <span>Net if sold (all):</span>
-                              <span>+{((netProfit * stack.count) / 100).toFixed(2)} DL</span>
-                            </div>
-                            <button
-                              onClick={(e) => handleRepay(stack.stackedIds[0], e)}
-                              disabled={repayingId === stack.stackedIds[0] || (user?.mockBalance || 0) < loan}
-                              title={((user?.mockBalance || 0) < loan) ? `Need ${(loan / 100).toFixed(2)} DLs in balance` : "Pay off loan to own 1 item permanently"}
-                              className="w-full mt-1.5 py-1 px-2 bg-[#2a1d40] hover:bg-[#382658] border border-purple-500/40 text-purple-300 font-bold rounded-lg text-[9px] transition-all disabled:opacity-40 flex items-center justify-center gap-1 cursor-pointer"
-                            >
-                              <Coins size={10} className="text-purple-400" />
-                              {repayingId === stack.stackedIds[0] ? "Repaying..." : `Repay 1 for ${(loan / 100).toFixed(2)} DL`}
-                            </button>
+                        {/* Bottom Info area */}
+                        <div className="relative bg-[#0c0e14]/80 backdrop-blur-md border-t border-white/5 p-3 flex flex-col items-center z-20 text-center shadow-[0_-5px_15px_rgba(0,0,0,0.3)] shrink-0">
+                          <h3 className="text-[11px] font-black text-white mb-0.5 truncate w-full tracking-wide" title={stack.name}>{stack.name}</h3>
+                          <div className="flex items-center justify-center bg-black/40 px-2 py-0.5 rounded-full border border-white/5 mb-1">
+                            <DLCurrency amount={stack.value * stack.count} size="xs" className="font-bold text-white/90" />
                           </div>
-                        )}
-                        
-                        {/* Checkbox indicator */}
-                        <div className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors z-20 ${
-                          isAllSelected ? "border-accent-blue bg-accent-blue" : isPartiallySelected ? "border-accent-blue bg-accent-blue/50" : "border-[#7a819c] bg-transparent"
-                        }`}>
-                          {isAllSelected && <CheckCircle2 size={12} className="text-white" />}
-                          {isPartiallySelected && <div className="text-[10px] font-black text-white leading-none">{selectedCount}</div>}
+
+                          {isBorrowed && (
+                            <div className="w-full mt-1.5 pt-1.5 border-t border-white/5 text-[10px] space-y-1 text-left">
+                              <div className="text-amber-400/90 font-medium flex items-center justify-between">
+                                <span>Loan:</span>
+                                <span>{(loan / 100).toFixed(2)} DL</span>
+                              </div>
+                              <div className="text-accent-green/90 font-bold flex items-center justify-between">
+                                <span>Net:</span>
+                                <span>+{((netProfit * stack.count) / 100).toFixed(2)} DL</span>
+                              </div>
+                              <button
+                                onClick={(e) => handleRepay(stack.stackedIds[0], e)}
+                                disabled={repayingId === stack.stackedIds[0] || (user?.mockBalance || 0) < loan}
+                                title={((user?.mockBalance || 0) < loan) ? `Need ${(loan / 100).toFixed(2)} DLs in balance` : "Pay off loan to own 1 item permanently"}
+                                className="w-full mt-1.5 py-1.5 px-2 bg-gradient-to-r from-purple-600/20 to-purple-500/20 hover:from-purple-600/40 hover:to-purple-500/40 border border-purple-500/40 hover:border-purple-500/60 text-purple-300 hover:text-white font-bold rounded-lg text-[9px] transition-all disabled:opacity-40 disabled:hover:from-purple-600/20 disabled:hover:to-purple-500/20 flex items-center justify-center gap-1 cursor-pointer shadow-lg"
+                              >
+                                <Coins size={10} className="text-purple-400" />
+                                {repayingId === stack.stackedIds[0] ? "Repaying..." : `Repay 1`}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     );
