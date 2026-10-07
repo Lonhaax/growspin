@@ -1728,7 +1728,11 @@ app.get('/api/play/mines/active', requireAuth, async (req: AuthRequest, res: Res
     if (!game) {
       return res.json({ active: false });
     }
-    const revealedTiles = JSON.parse(game.boardState);
+    const boardStateArr = JSON.parse(game.boardState);
+    const revealedTiles = boardStateArr
+      .map((state: number, index: number) => state === 1 ? index : -1)
+      .filter((index: number) => index !== -1);
+      
     return res.json({
       active: true,
       gameId: game.id,
