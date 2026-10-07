@@ -1,7 +1,7 @@
 "use client";
 
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
-import { ShieldCheck, CircleDot } from "lucide-react";
+import { ShieldCheck, CircleDot, Wrench, HandMetal, Clover } from "lucide-react";
 import { useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
@@ -30,14 +30,16 @@ export default function RoulettePage() {
     const pattern = [0, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8];
     for (let i = 0; i < 1000; i++) {
       const num = pattern[i % 15];
-      let color = 'bg-red-500';
-      if (num === 0) color = 'bg-accent-green text-black';
-      else if (num >= 8) color = 'bg-[#1f222b]';
+      let color = 'bg-[#f44336]'; // Red
+      if (num === 0) color = 'bg-[#00c74d]'; // Green
+      else if (num >= 8) color = 'bg-[#1b1e26]'; // Dark grey/black
       strip.push({ num, color });
     }
     return strip;
   };
   const [strip] = useState(generateStrip());
+  const [history, setHistory] = useState<string[]>(['red', 'black', 'black', 'red', 'green', 'red', 'black']);
+  const historyCounts = { red: 46, green: 0, black: 54 }; // mock counts
 
   const handleBet = async (color: 'red' | 'black' | 'green') => {
     if (!user) {
@@ -118,28 +120,63 @@ export default function RoulettePage() {
       </div>
 
       {/* Wheel Area */}
-      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-8 relative overflow-hidden shadow-2xl">
-        {/* Target Line */}
-        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-white z-20 shadow-[0_0_15px_rgba(255,255,255,1)]" />
-        
-        {/* Glows */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#15181f] to-transparent z-10" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#15181f] to-transparent z-10" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-blue/10 blur-[80px] rounded-full pointer-events-none" />
+      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 relative shadow-2xl flex flex-col gap-6">
+        {/* History Bar */}
+        <div className="flex justify-between items-center px-2">
+          <div className="flex gap-2">
+            {history.slice(0, 10).map((h, i) => (
+              <div key={i} className={`w-4 h-4 rounded-full ${h === 'red' ? 'bg-[#f44336]' : h === 'green' ? 'bg-[#00c74d]' : 'bg-[#1b1e26] border border-[#2a2d3a]'}`} />
+            ))}
+          </div>
+          <div className="flex items-center gap-3 text-xs font-bold text-[#7a819c]">
+            Last 100: 
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-[#f44336]" />{historyCounts.red}</div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-[#00c74d]" />{historyCounts.green}</div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded-full bg-[#1b1e26] border border-[#2a2d3a]" />{historyCounts.black}</div>
+          </div>
+        </div>
 
-        <div ref={wheelRef} className="w-full h-32 overflow-hidden relative">
+        {/* Rolling Status */}
+        <div className="text-center font-black text-xl text-white">
+          {isSpinning ? "Rolling..." : "Place your bets"}
+        </div>
+
+        {/* Wheel Wrapper */}
+        <div className="w-full h-24 overflow-hidden relative rounded-xl bg-[#0f1118]">
+          {/* Target Line */}
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-white z-20 shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+          
+          {/* Glows */}
+          <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0f1118] to-transparent z-10" />
+          <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0f1118] to-transparent z-10" />
+
           <motion.div
             className="flex items-center h-full absolute left-0"
             animate={{ x: wheelOffset }}
             transition={{ duration: 5, ease: [0.12, 0.8, 0.15, 1] }}
           >
             {strip.map((item, idx) => (
-              <div 
-                key={idx} 
-                className="w-20 h-24 flex-shrink-0 flex items-center justify-center p-1"
-              >
-                <div className={`w-full h-full rounded-2xl flex items-center justify-center shadow-lg transform transition-transform ${item.color} ${item.num === 0 ? 'border-2 border-green-400' : 'border border-black/20'}`}>
-                  <span className="text-white font-black text-2xl drop-shadow-md">{item.num}</span>
+              <div key={idx} className="w-[80px] h-20 flex-shrink-0 flex items-center justify-center p-1">
+                <div className={`w-full h-full rounded-xl flex items-center justify-center shadow-md relative overflow-hidden ${item.color}`}>
+                  {/* Image / Icon placeholders */}
+                  {item.num === 0 && (
+                    <div className="w-12 h-12 flex items-center justify-center">
+                      <Clover className="text-black opacity-80" size={32} />
+                      <img src="/roulette-green.png" alt="Green" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                    </div>
+                  )}
+                  {item.num > 0 && item.num < 8 && (
+                    <div className="w-12 h-12 flex items-center justify-center">
+                      <Wrench className="text-white opacity-80" size={32} />
+                      <img src="/roulette-red.png" alt="Red" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                    </div>
+                  )}
+                  {item.num >= 8 && (
+                    <div className="w-12 h-12 flex items-center justify-center">
+                      <HandMetal className="text-[#7a819c] opacity-80" size={32} />
+                      <img src="/roulette-black.png" alt="Black" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -195,23 +232,26 @@ export default function RoulettePage() {
               <button
                 onClick={() => handleBet('red')}
                 disabled={isSpinning || !user}
-                className="flex-1 py-4 bg-red-500 text-white rounded-xl font-black text-lg hover:bg-red-400 transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] disabled:opacity-50 transform hover:-translate-y-1 active:translate-y-0"
+                className="flex-1 py-4 bg-[#f44336] text-white rounded-xl font-black text-lg hover:bg-[#e53935] transition-all shadow-[0_0_20px_rgba(244,67,54,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
               >
-                BET RED (2x)
+                <Wrench size={24} className="opacity-80" />
+                <span>Win 2x</span>
               </button>
               <button
                 onClick={() => handleBet('green')}
                 disabled={isSpinning || !user}
-                className="flex-1 py-4 bg-accent-green text-black rounded-xl font-black text-lg hover:bg-[#00e676] transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:shadow-[0_0_30px_rgba(0,230,118,0.5)] disabled:opacity-50 transform hover:-translate-y-1 active:translate-y-0"
+                className="flex-1 py-4 bg-[#00c74d] text-black rounded-xl font-black text-lg hover:bg-[#00b345] transition-all shadow-[0_0_20px_rgba(0,199,77,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
               >
-                BET GREEN (14x)
+                <Clover size={24} className="opacity-80" />
+                <span>Win 14x</span>
               </button>
               <button
                 onClick={() => handleBet('black')}
                 disabled={isSpinning || !user}
-                className="flex-1 py-4 bg-[#15181f] border border-[#3a3d4a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 transform hover:-translate-y-1 active:translate-y-0"
+                className="flex-1 py-4 bg-[#1b1e26] border border-[#2a2d3a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all disabled:opacity-50 flex flex-col items-center gap-1"
               >
-                BET BLACK (2x)
+                <HandMetal size={24} className="opacity-80" />
+                <span>Win 2x</span>
               </button>
             </div>
         </div>
