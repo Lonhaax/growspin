@@ -247,6 +247,9 @@ export default function BattlesPage() {
   const [isTieBreakerOpen, setIsTieBreakerOpen] = useState(false);
   const [tieBreakerData, setTieBreakerData] = useState<{tiedPlayers: string[], winnerId: string, totalPotValue?: number} | null>(null);
 
+  const [battleCountdown, setBattleCountdown] = useState<number | null>(null);
+  const [blockInfo, setBlockInfo] = useState<{block: number, hash: string} | null>(null);
+
   const fetchLobby = async () => {
     try {
       const [resBattles, resCases] = await Promise.all([
@@ -284,7 +287,17 @@ export default function BattlesPage() {
       // payload: { battleId, rounds, winnerId, isTie, tiedPlayers, totalPotValue, numPlayers, mode, entryFee }
       if (activeBattleIdRef.current === payload.battleId) {
         setActiveBattle((prev: any) => prev ? { ...prev, status: 'running' } : prev);
+        setBlockInfo(payload.blockInfo);
         
+        // 3 second countdown before starting rounds
+        setBattleCountdown(3);
+        await new Promise(r => setTimeout(r, 1000));
+        setBattleCountdown(2);
+        await new Promise(r => setTimeout(r, 1000));
+        setBattleCountdown(1);
+        await new Promise(r => setTimeout(r, 1000));
+        setBattleCountdown(null);
+
         setFullRoundsData(payload.rounds);
         setRoundResults([]);
         setCurrentRound(0);
@@ -1018,6 +1031,43 @@ export default function BattlesPage() {
                 
                 {/* BATTLE ARENA (Spinners) */}
                 <div className="bg-[#0f1115] border border-[#2a2d3a] rounded-xl relative overflow-hidden flex flex-col mt-4">
+                  
+                  <AnimatePresence>
+                    {battleCountdown !== null && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[60] bg-[#0f1115]/95 backdrop-blur-md flex flex-col items-center justify-center"
+                      >
+                        <motion.div 
+                          key={battleCountdown}
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 1.5, opacity: 0 }}
+                          className="text-[140px] font-black text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.4)] leading-none mb-12"
+                        >
+                          {battleCountdown}
+                        </motion.div>
+                        
+                        {blockInfo && (
+                          <motion.div 
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            className="bg-[#1a1d24] border border-[#2a2d3a] px-8 py-4 rounded-2xl flex flex-col items-center gap-2 shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+                          >
+                            <span className="text-[#7a819c] font-black text-xs uppercase tracking-widest mb-1 flex items-center gap-2">
+                              <ShieldCheck size={16} className="text-accent-blue" /> Provably Fair Match
+                            </span>
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="text-white font-mono text-sm">EOS Block: {blockInfo.block}</span>
+                              <span className="text-accent-blue/80 font-mono text-xs">Hash: {blockInfo.hash}</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   
                   {/* Floating Case Label */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px z-30">

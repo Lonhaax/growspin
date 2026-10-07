@@ -3012,9 +3012,12 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
             }))
           });
         }
-      }
+      // Generate dummy block info for the battle (Provably Fair)
+      const eosBlock = Math.floor(Math.random() * 10000000) + 30000000;
+      const eosHash = require('crypto').randomBytes(32).toString('hex');
+      const blockInfo = { block: eosBlock, hash: eosHash };
 
-      return { battleId, rounds, winnerId: winnerIdStr, totalPotValue, mode: battle.mode, format: battle.format, isTie, tiedPlayers, entryFee: battle.entryFee, numPlayers: battle.participants.length, teamStats };
+      return { battleId, rounds, winnerId: winnerIdStr, totalPotValue, mode: battle.mode, format: battle.format, isTie, tiedPlayers, entryFee: battle.entryFee, numPlayers: battle.participants.length, teamStats, blockInfo };
     });
 
     // We can emit live bets for the first non-bot winner
