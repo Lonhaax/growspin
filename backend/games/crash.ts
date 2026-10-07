@@ -67,7 +67,7 @@ export class CrashManager {
 
       // Auto cashout processing
       this.players.forEach((p, userId) => {
-        if (!p.cashedOut && p.autoCashout > 1.00 && this.currentMultiplier >= p.autoCashout && p.autoCashout < this.crashPoint) {
+        if (!p.cashedOut && p.autoCashout > 1.00 && this.currentMultiplier >= p.autoCashout && p.autoCashout <= this.crashPoint) {
           this.cashoutPlayer(userId, p.autoCashout);
         }
       });
@@ -152,7 +152,7 @@ export class CrashManager {
     const mult = forceMultiplier || this.currentMultiplier;
     if (mult > this.crashPoint) throw new Error('Crashed');
 
-    const winAmount = Math.floor(p.amount * mult);
+    const winAmount = Number((p.amount * mult).toFixed(2));
     p.cashedOut = true;
     p.cashoutMultiplier = mult;
     p.profit = winAmount - p.amount;
