@@ -220,6 +220,114 @@ function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete, participants = [
   );
 }
 
+function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], isFast, mode }: { teamStats: any, winnerId: string, onComplete: () => void, participants?: any[], isFast?: boolean, mode: string }) {
+  const [strip, setStrip] = useState<string[]>([]);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimation();
+
+  useEffect(() => {
+    let statToUse = (s: any) => s.total;
+    if (mode.includes('terminal')) statToUse = (s: any) => s.lastPull;
+
+    const tStatsArr = Object.entries(teamStats);
+    
+    let weights: {id: string, weight: number}[] = [];
+    if (mode.includes('crazy')) {
+      const maxVal = Math.max(...tStatsArr.map(([, s]) => statToUse(s)));
+      weights = tStatsArr.map(([id, s]) => ({ id, weight: maxVal - statToUse(s) + 1 }));
+    } else {
+      weights = tStatsArr.map(([id, s]) => ({ id, weight: statToUse(s) }));
+    }
+    const totalWeight = weights.reduce((acc, curr) => acc + curr.weight, 0);
+
+    const getWeightedRandomTeam = () => {
+       if (totalWeight === 0) return weights[Math.floor(Math.random() * weights.length)].id;
+       let r = Math.random() * totalWeight;
+       for (const w of weights) {
+         r -= w.weight;
+         if (r <= 0) return w.id;
+       }
+       return weights[0].id;
+    };
+
+    const newStrip = [];
+    for (let i = 0; i < 65; i++) {
+      let tId = '';
+      if (i === 55) {
+        tId = Object.keys(teamStats).find(key => teamStats[key as any].members.join(',') === winnerId) || '0';
+      } else {
+        tId = getWeightedRandomTeam();
+      }
+      newStrip.push(tId);
+    }
+    setStrip(newStrip);
+  }, [teamStats, winnerId, mode]);
+
+  useEffect(() => {
+    if (strip.length > 0) {
+      let isMounted = true;
+      const runAnim = async () => {
+        await controls.set({ y: 0 });
+        const containerHeight = trackRef.current ? trackRef.current.clientHeight : 400;
+        const itemCenter = (55 * 156) + 72; // 144 height + 12 gap = 156 step
+        const jitter = (Math.random() - 0.5) * 80;
+        const targetY = (containerHeight / 2) - itemCenter + jitter;
+
+        await controls.start({
+          y: targetY,
+          transition: { duration: isFast ? 0.8 : 4.5, ease: [0.12, 0.8, 0.15, 1] }
+        });
+        if (isMounted) setTimeout(onComplete, isFast ? 500 : 1500);
+      };
+      runAnim();
+      return () => { isMounted = false; };
+    }
+  }, [strip]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-lg flex flex-col items-center">
+        <h2 className="text-4xl font-black text-white mb-2 uppercase tracking-widest text-shadow-[0_0_20px_rgba(255,255,255,0.5)]">Jackpot Spin!</h2>
+        <p className="text-accent-blue font-bold mb-8">Rolling for the winner...</p>
+        
+        <div className="relative w-full h-[400px] rounded-3xl overflow-hidden bg-gradient-to-r from-[#1f222b] to-[#15181f] border-2 border-[#2a2d3a] shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 z-20 shadow-[0_0_15px_rgba(234,179,8,1)] pointer-events-none" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[16px] border-l-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,1)]" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[16px] border-r-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,1)]" />
+          
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#15181f] to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#15181f] to-transparent z-10 pointer-events-none" />
+          
+          <div ref={trackRef} className="w-full h-full flex justify-center relative overflow-hidden">
+            <motion.div 
+              className="flex flex-col items-center w-full absolute top-0" 
+              initial={{ y: 0 }}
+              animate={controls} 
+              style={{ gap: '12px' }}
+            >
+              {strip.map((tId, i) => {
+                const members = teamStats[parseInt(tId)]?.members || [];
+                const isMulti = members.length > 1;
+                const participant = participants.find(p => members.includes(p.userId));
+                const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
+                
+                return (
+                  <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-2xl w-48 will-change-transform" style={{ height: '144px' }}>
+                    <div className="w-16 h-16 rounded-2xl bg-[#15181f] flex items-center justify-center text-3xl font-black text-white shadow-inner mb-3">
+                      {isMulti ? <Users size={36} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={36} className="text-accent-blue" /> : displayName[0])}
+                    </div>
+                    <div className="text-white font-black text-sm truncate w-full px-2 text-center">{displayName}</div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BattlesPage() {
   const [isFairOpen, setIsFairOpen] = useState(false);
   const { user, refreshUser, openAuthModal } = useAuth();
@@ -252,6 +360,9 @@ export default function BattlesPage() {
 
   const [isTieBreakerOpen, setIsTieBreakerOpen] = useState(false);
   const [tieBreakerData, setTieBreakerData] = useState<{tiedPlayers: string[], winnerId: string, totalPotValue?: number} | null>(null);
+
+  const [isJackpotSpinnerOpen, setIsJackpotSpinnerOpen] = useState(false);
+  const [jackpotSpinnerData, setJackpotSpinnerData] = useState<{ teamStats: any, winnerId: string, totalPotValue: number, mode: string } | null>(null);
 
   const [battleCountdown, setBattleCountdown] = useState<number | null>(null);
   const [blockInfo, setBlockInfo] = useState<{block: number, hash: string} | null>(null);
@@ -320,12 +431,17 @@ export default function BattlesPage() {
           if (i < payload.rounds.length - 1) await new Promise(r => setTimeout(r, 500));
         }
         
-        if (payload.isTie && payload.tiedPlayers && payload.tiedPlayers.length > 1) {
+        if (payload.mode && payload.mode.includes('jackpot') && payload.teamStats) {
+          setJackpotSpinnerData({ teamStats: payload.teamStats, winnerId: payload.winnerId, totalPotValue: payload.totalPotValue, mode: payload.mode });
+          setFinalWinner(null);
+          setIsJackpotSpinnerOpen(true);
+        } else if (payload.isTie && payload.tiedPlayers && payload.tiedPlayers.length > 1) {
           setTieBreakerData({ tiedPlayers: payload.tiedPlayers, winnerId: payload.winnerId, totalPotValue: payload.totalPotValue });
           setFinalWinner(null);
           setIsTieBreakerOpen(true);
         } else {
           setTieBreakerData(null);
+          setJackpotSpinnerData(null);
           setFinalWinner(payload.winnerId);
           setActiveBattle((prev: any) => prev ? { ...prev, status: 'finished', winnerId: payload.winnerId, totalPotValue: payload.totalPotValue } : prev);
         }
@@ -1379,6 +1495,22 @@ export default function BattlesPage() {
                         setIsTieBreakerOpen(false);
                         setFinalWinner(tieBreakerData.winnerId);
                         setActiveBattle({ ...activeBattle, status: 'finished', winnerId: tieBreakerData.winnerId, totalPotValue: tieBreakerData.totalPotValue });
+                        refreshUser();
+                      }}
+                    />
+                  )}
+
+                  {isJackpotSpinnerOpen && jackpotSpinnerData && (
+                    <JackpotSpinner
+                      teamStats={jackpotSpinnerData.teamStats}
+                      winnerId={jackpotSpinnerData.winnerId}
+                      mode={jackpotSpinnerData.mode}
+                      participants={activeBattle.participants}
+                      isFast={activeBattle?.isFast}
+                      onComplete={() => {
+                        setIsJackpotSpinnerOpen(false);
+                        setFinalWinner(jackpotSpinnerData.winnerId);
+                        setActiveBattle({ ...activeBattle, status: 'finished', winnerId: jackpotSpinnerData.winnerId, totalPotValue: jackpotSpinnerData.totalPotValue });
                         refreshUser();
                       }}
                     />
