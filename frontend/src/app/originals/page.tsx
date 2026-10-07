@@ -1,55 +1,105 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Gamepad2 } from "lucide-react";
+import { motion } from "framer-motion";
+
+const ORIGINAL_GAMES = [
+  { id: "battles", name: "Case Battles", color: "#6366f1", icon: "⚔️", href: "/battles", isNew: false, isUpdated: false },
+  { id: "cases", name: "Cases", color: "#a855f7", icon: "📦", href: "/cases", isNew: false, isUpdated: false },
+  { id: "crash", name: "Crash", color: "#8b5cf6", icon: "📈", href: "/crash", isNew: false, isUpdated: true },
+  { id: "mines", name: "Mines", color: "#ef4444", icon: "💣", href: "/mines", isNew: false, isUpdated: false },
+  { id: "plinko", name: "Plinko", color: "#ec4899", icon: "🎯", href: "/plinko", isNew: false, isUpdated: false },
+  { id: "dice", name: "Dice", color: "#3b82f6", icon: "🎲", href: "/dice", isNew: false, isUpdated: false },
+  { id: "tower", name: "Tower", color: "#06b6d4", icon: "🗼", href: "/tower", isNew: false, isUpdated: false },
+  { id: "roulette", name: "Roulette", color: "#f97316", icon: "🎡", href: "/roulette", isNew: false, isUpdated: false },
+  { id: "blackjack", name: "Blackjack", color: "#4f46e5", icon: "🃏", href: "#", isNew: false, isUpdated: false },
+  { id: "hilo", name: "Hilo", color: "#8b5cf6", icon: "⬆️", href: "#", isNew: false, isUpdated: false },
+  { id: "runelines", name: "Rune Lines", color: "#7c3aed", icon: "🔮", href: "#", isNew: false, isUpdated: false },
+  { id: "slide", name: "Slide", color: "#eab308", icon: "🛝", href: "#", isNew: false, isUpdated: false },
+  { id: "baccarat", name: "Baccarat", color: "#10b981", icon: "🎴", href: "#", isNew: false, isUpdated: false },
+  { id: "reme", name: "Reme", color: "#ef4444", icon: "🔴", href: "#", isNew: false, isUpdated: false },
+  { id: "wheel", name: "Wheel", color: "#6366f1", icon: "🎡", href: "#", isNew: false, isUpdated: false },
+  { id: "layers", name: "Layers", color: "#10b981", icon: "🥞", href: "#", isNew: false, isUpdated: false },
+  { id: "limbo", name: "Limbo", color: "#22c55e", icon: "🚀", href: "#", isNew: false, isUpdated: false },
+  { id: "crosstheroad", name: "Cross The Road", color: "#3b82f6", icon: "🐔", href: "#", isNew: false, isUpdated: false },
+  { id: "coinflip", name: "Coinflip", color: "#eab308", icon: "🪙", href: "#", isNew: false, isUpdated: false },
+  { id: "keno", name: "Keno", color: "#10b981", icon: "🔢", href: "#", isNew: false, isUpdated: false },
+  { id: "snakes", name: "Snakes", color: "#22c55e", icon: "🐍", href: "#", isNew: false, isUpdated: false },
+  { id: "slice", name: "Slice", color: "#ef4444", icon: "🍕", href: "#", isNew: false, isUpdated: false },
+];
 
 export default function OriginalsPage() {
-  const ORIGINALS_GAMES = [
-    { name: "Unbox Cases", href: "/cases", image: "/cases.png", color: "#14b8a6" },
-    { name: "Case Battles", href: "/battles", image: "/battles.png", color: "#f43f5e" },
-    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", color: "#f59e0b" },
-    { name: "Mines", href: "/mines", image: "/mines.png", color: "#ef4444" },
-    { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
-    { name: "Crash", href: "/crash", image: "/crash.png", color: "#8b5cf6" },
-    // { name: "Plinko", href: "/plinko", image: "/plinko.png", color: "#ec4899" },
-    { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredGames = ORIGINAL_GAMES.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
-      {/* Header */}
-      <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-8 relative overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent-green/5 rounded-full blur-[100px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-accent-green/10 rounded-xl border border-accent-green/20">
-              <Gamepad2 size={24} className="text-accent-green" />
-            </div>
-            <h1 className="text-3xl font-black text-white uppercase tracking-wider">GrowSpin Originals</h1>
-          </div>
-          
-          <p className="text-[#8e95ad] leading-relaxed text-lg max-w-3xl">
-            Dive into our suite of custom-built, provably fair casino games. Fast-paced, transparent, and designed for maximum multiplier potential.
-          </p>
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      {/* Header Box */}
+      <div className="bg-[#1b202e] rounded-xl p-6 border border-[#2a2f3e]">
+        <h1 className="text-2xl font-black text-white">GrowSpin Originals</h1>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <input 
+          type="text" 
+          placeholder="Search for Game..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-[#1b202e] border border-[#2a2f3e] rounded-xl py-3 pl-4 pr-10 text-white placeholder-[#626983] focus:outline-none focus:border-[#3a3f4e] transition-colors"
+        />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#626983]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-        {ORIGINALS_GAMES.map((game) => (
-            <Link
-              key={game.name}
-              href={game.href}
-              className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[3/4] bg-[#12141c] border-2"
-              style={{ borderColor: game.color }}
+      <div className="text-[13px] font-bold text-[#626983] mb-4">
+        {filteredGames.length} games
+      </div>
+
+      {/* Games Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        {filteredGames.map((game, i) => (
+          <Link href={game.href} key={game.id}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.02 }}
+              className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group shadow-lg border border-transparent hover:border-white/20 transition-all hover:-translate-y-1"
+              style={{ background: `linear-gradient(180deg, ${game.color}dd 0%, ${game.color} 100%)` }}
             >
-              <img 
-                src={game.image} 
-                alt={game.name} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-            </Link>
+              {/* Badges */}
+              {game.isUpdated && (
+                <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow-sm z-20">
+                  Updated
+                </div>
+              )}
+              {game.isNew && (
+                <div className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow-sm z-20">
+                  New
+                </div>
+              )}
+
+              {/* Game Icon / Graphic */}
+              <div className="absolute inset-0 flex items-center justify-center pb-6">
+                <span className="text-6xl filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300">
+                  {game.icon}
+                </span>
+              </div>
+
+              {/* Title Area */}
+              <div className="absolute bottom-0 inset-x-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent flex flex-col items-center justify-end pb-3 text-center px-2">
+                <h3 className="text-white font-black text-sm uppercase tracking-wide leading-tight drop-shadow-md">
+                  {game.name}
+                </h3>
+                <p className="text-[9px] text-white/70 font-bold tracking-widest uppercase mt-0.5">
+                  GrowSpin Originals
+                </p>
+              </div>
+            </motion.div>
+          </Link>
         ))}
       </div>
     </div>

@@ -171,6 +171,11 @@ export default function SlotsPage() {
 
       {/* Slots Filters & Grid */}
       <div>
+        {/* Header Box */}
+        <div className="bg-[#1b202e] rounded-xl p-6 border border-[#2a2f3e] mb-6">
+          <h1 className="text-2xl font-black text-white">Slots</h1>
+        </div>
+
         {/* Search Bar */}
         <div className="relative mb-4">
           <input
@@ -186,6 +191,7 @@ export default function SlotsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-sm font-bold text-[#878eab]">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
               <span>Filter by</span>
               <button className="bg-[#1b1f2b] border border-[#282d3e] rounded-md px-3 py-1.5 flex items-center gap-2 hover:bg-[#242938] transition-colors">
                 <span className="text-white">Providers</span>
@@ -196,6 +202,7 @@ export default function SlotsPage() {
           
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
               <span>Sort by</span>
               <button className="bg-[#1b1f2b] border border-[#282d3e] rounded-md px-3 py-1.5 flex items-center gap-2 hover:bg-[#242938] transition-colors">
                 <span className="text-white">Popular</span>
@@ -207,16 +214,16 @@ export default function SlotsPage() {
 
         {/* Toggle DLs */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-5 bg-cyan-500 rounded-full flex items-center p-0.5 cursor-pointer shadow-inner">
-            <div className="w-4 h-4 bg-white rounded-full translate-x-4 shadow-sm" />
+          <div className="w-9 h-5 bg-[#1b202e] border border-[#282d3e] rounded-full flex items-center p-0.5 cursor-pointer shadow-inner">
+            <div className="w-4 h-4 bg-[#626983] rounded-full" />
           </div>
-          <span className="text-sm font-bold text-white tracking-wide">Only games that support DLs</span>
+          <span className="text-sm font-bold text-[#878eab] tracking-wide">Only games that support DLS</span>
         </div>
 
         {loading ? (
           <div className="text-center py-20 text-[#7a819c] font-bold animate-pulse">Loading games...</div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-9 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {filteredGames.length === 0 ? (
               <div className="col-span-full text-center py-12 text-[#7a819c] font-bold">No games found.</div>
             ) : filteredGames.map(game => (
@@ -238,14 +245,14 @@ export default function SlotsPage() {
                 
                 {/* Subtle dark gradient overlay on hover */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
-                  <div className="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.8)] scale-90 group-hover:scale-100 transition-transform">
+                  <div className="w-10 h-10 rounded-full bg-[#2563eb] text-white flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.8)] scale-90 group-hover:scale-100 transition-transform">
                     <Play fill="currentColor" size={16} className="ml-0.5" />
                   </div>
                 </div>
 
-                {/* Top Right Info/Lock Icon (Mocking BetDice style) */}
-                <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#191d29]/80 backdrop-blur-sm rounded-sm flex items-center justify-center border border-white/10 shadow-sm z-10 text-[9px] text-cyan-400 font-black">
-                  i
+                {/* Top Right Security Icon */}
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#1b202e]/90 backdrop-blur-sm rounded-[4px] flex items-center justify-center border border-[#2a2f3e] shadow-md z-10 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
               </div>
             ))}

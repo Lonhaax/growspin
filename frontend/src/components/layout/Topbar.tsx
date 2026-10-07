@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
+import { useLayout } from "@/context/LayoutContext";
 import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -18,6 +19,7 @@ import { InventoryModal } from "@/components/inventory/InventoryModal";
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
   const { balance } = useWallet();
+  const { toggleSidebar } = useLayout();
   const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
@@ -51,21 +53,13 @@ export function Topbar() {
     <>
       <header className="h-14 bg-[#0f1118] flex items-center justify-between px-4 sticky top-0 z-20">
         <div className="flex items-center gap-4">
-          <button className="text-[#626983] hover:text-white transition-colors">
+          <button onClick={toggleSidebar} className="text-[#626983] hover:text-white transition-colors">
             <Menu size={20} />
           </button>
-          
-          <div className="hidden md:flex bg-[#1b202e] rounded-lg p-1">
-            <button className="bg-[#2563eb] text-white text-xs font-bold px-4 py-1.5 rounded-md shadow-sm">
-              Casino
-            </button>
-            <button className="text-[#878eab] hover:text-white text-xs font-bold px-4 py-1.5 rounded-md transition-colors">
-              Sports
-            </button>
-          </div>
+
 
           <Link href="/" className="flex items-center gap-2 ml-2">
-            <img src="/logo.png" alt="GrowSpin" className="h-7 w-auto object-contain" />
+            <img src="/logo.png" alt="GrowSpin" className="h-10 w-auto object-contain" />
           </Link>
         </div>
 
@@ -90,7 +84,10 @@ export function Topbar() {
             </div>
 
             {/* Gift Icon */}
-            <button className="text-[#626983] hover:text-white transition-colors hidden sm:block">
+            <button 
+              onClick={() => setRewardsOpen(true)}
+              className="text-[#626983] hover:text-white transition-colors hidden sm:block"
+            >
               <Gift size={18} />
             </button>
 

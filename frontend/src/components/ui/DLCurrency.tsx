@@ -58,7 +58,7 @@ export function DLCurrency({
 
   const img = (
     <img
-      src="/dl.webp"
+      src="/dl.png"
       alt="DL"
       className={`${imgSize} inline-block shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(6,182,212,0.4)]`}
     />

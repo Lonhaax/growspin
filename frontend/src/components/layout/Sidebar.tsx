@@ -22,6 +22,8 @@ import {
   Flame,
   Sparkles,
 } from "lucide-react";
+import { useLayout } from "@/context/LayoutContext";
+import { ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
@@ -39,6 +41,7 @@ interface NavGroup {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { isSidebarOpen, toggleSidebar } = useLayout();
 
   const NAV_GROUPS: NavGroup[] = [
     {
@@ -74,9 +77,20 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 border-r border-[#1f222b] bg-[#11141e] h-full flex flex-col pt-4 overflow-y-auto hidden md:flex z-10 relative">
+    <motion.aside 
+      initial={false}
+      animate={{ width: isSidebarOpen ? 256 : 64 }}
+      className="flex-shrink-0 border-r border-[#1f222b] bg-[#11141e] h-full flex flex-col pt-4 overflow-y-auto hidden md:flex z-10 relative overflow-x-hidden"
+    >
+      <button 
+        onClick={toggleSidebar}
+        className="absolute top-4 right-3 text-[#626983] hover:text-white bg-[#1b202e] rounded-md p-1 transition-colors z-20"
+      >
+        <ChevronLeft size={16} className={`transition-transform ${!isSidebarOpen ? "rotate-180" : ""}`} />
+      </button>
+
       {/* Search Bar */}
-      <div className="px-4 mb-6">
+      <div className={`px-4 mb-6 transition-opacity duration-200 ${isSidebarOpen ? "opacity-100" : "opacity-0 invisible h-0 mb-0"}`}>
         <div className="relative">
           <input 
             type="text" 
@@ -93,9 +107,11 @@ export function Sidebar() {
       <nav className="flex-1 px-2 space-y-6">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="space-y-1">
-            <div className="px-3 pb-1 text-[11px] font-bold text-[#626983] capitalize">
-              {group.label}
-            </div>
+            {isSidebarOpen && (
+              <div className="px-3 pb-1 text-[11px] font-bold text-[#626983] capitalize">
+                {group.label}
+              </div>
+            )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive = pathname === item.href;
@@ -108,9 +124,9 @@ export function Sidebar() {
                         isActive
                           ? "text-white bg-[#1b202e] font-bold"
                           : "text-[#878eab] hover:text-white hover:bg-[#1b202e]/50 font-medium"
-                      }`}
+                      } ${!isSidebarOpen ? "justify-center" : ""}`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className={`flex items-center min-w-0 ${isSidebarOpen ? "gap-3" : "justify-center"}`}>
                         {isActive && (
                           <motion.div
                             layoutId="activeNavIndicator"
@@ -123,10 +139,10 @@ export function Sidebar() {
                             isActive ? "text-white" : "text-[#626983] group-hover:text-white"
                           }`}
                         />
-                        <span className="text-[13px] truncate">{item.name}</span>
+                        {isSidebarOpen && <span className="text-[13px] truncate">{item.name}</span>}
                       </div>
 
-                      {item.badge && (
+                      {item.badge && isSidebarOpen && (
                         <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${item.badgeColor || "bg-cyan-500/20 text-cyan-400"}`}>
                           {item.badge}
                         </span>
@@ -142,12 +158,12 @@ export function Sidebar() {
 
       {/* Footer Support/Fairness */}
       <div className="p-4 mt-4">
-        <button className="flex items-center justify-between w-full px-3 py-2 text-[#878eab] hover:text-white transition-colors rounded-lg hover:bg-[#1b202e]/50">
+        <button className={`flex items-center ${isSidebarOpen ? "justify-between" : "justify-center"} w-full px-3 py-2 text-[#878eab] hover:text-white transition-colors rounded-lg hover:bg-[#1b202e]/50`}>
           <div className="flex items-center gap-2">
             <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="English" className="w-4 h-auto rounded-[2px]" />
-            <span className="text-[13px] font-bold">English</span>
+            {isSidebarOpen && <span className="text-[13px] font-bold">English</span>}
           </div>
-          <ArrowDown size={14} className="text-[#626983]" />
+          {isSidebarOpen && <ArrowDown size={14} className="text-[#626983]" />}
         </button>
       </div>
     </aside>

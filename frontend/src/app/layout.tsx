@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { WalletProvider } from "@/context/WalletContext";
+import { LayoutProvider } from "@/context/LayoutContext";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -34,18 +35,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-full flex bg-bg-primary text-white overflow-hidden">
         <AuthProvider>
           <WalletProvider>
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-              <Topbar />
-              <main className="flex-1 overflow-y-auto bg-bg-primary p-4 flex flex-col min-h-0">
-                <div className="flex-1">
-                  {children}
-                </div>
-                <Footer />
-              </main>
-            </div>
-            <AuthModal />
-            <ChatSidebar />
+            <LayoutProvider>
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <Topbar />
+                <main className="flex-1 overflow-y-auto bg-bg-primary p-4 flex flex-col min-h-0">
+                  <div className="flex-1">
+                    {children}
+                  </div>
+                  <Footer />
+                </main>
+              </div>
+              <AuthModal />
+              <ChatSidebar />
+            </LayoutProvider>
           </WalletProvider>
         </AuthProvider>
       </body>
