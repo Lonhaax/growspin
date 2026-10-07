@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/context/WalletContext';
+import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/lib/auth';
 import { ShieldCheck, Settings, Bomb } from 'lucide-react';
 import { ProvablyFairModal } from '@/components/ui/ProvablyFairModal';
@@ -47,31 +48,38 @@ export default function MinesPage() {
       .catch(console.error);
   }, []);
 
+  const { isLoggedIn } = useAuth();
+
   // Check for active game on mount
   useEffect(() => {
     const fetchActiveGame = async () => {
+      if (!isLoggedIn) return;
       try {
         const res = await apiFetch("/play/mines/active");
         if (!res.ok) return;
         const data = await res.json();
-        if (data.activeGame) {
-          setGameId(data.activeGame.id);
-          setBetAmount((data.activeGame.betAmount / 100).toFixed(2));
-          setMinesCount(data.activeGame.minesCount);
-          setBoardState(JSON.parse(data.activeGame.boardState));
-          setStatus('playing');
-          setMultiplier(data.activeGame.multiplier);
-          setProfit(data.activeGame.profit);
+        if (data.active) {
+          setGameId(data.gameId);
+          setBetAmount((data.betAmount / 100).toFixed(2));
+          setMinesCount(data.minesCount);
           
-          const parsedBoard = JSON.parse(data.activeGame.boardState);
-          setHits(parsedBoard.filter((t: number) => t === 1).length);
+          // Reconstruct board state array of 25 from revealedTiles
+          const newBoardState = Array(25).fill(0);
+          data.revealedTiles.forEach((tileIdx: number) => {
+            newBoardState[tileIdx] = 1;
+          });
+          setBoardState(newBoardState);
+          setStatus('playing');
+          setMultiplier(data.multiplier);
+          setProfit(data.profit || 0);
+          setHits(data.revealedTiles.length);
         }
       } catch (err) {
-        // Ignore 404s
+        // Ignore errors
       }
     };
     fetchActiveGame();
-  }, []);
+  }, [isLoggedIn]);
 
   const handleStart = async () => {
     const amount = parseFloat(betAmount) * 100;
