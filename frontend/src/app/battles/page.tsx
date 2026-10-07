@@ -1,7 +1,7 @@
 "use client";
 
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
-import { ShieldCheck, Swords, Plus, Users, Bot, Zap, Skull, ChevronLeft, ChevronRight, PackageOpen, Target, Loader2, ArrowRight, User as UserIcon, X, Check, Eye, Link as LinkIcon, Volume2, Lock, FileText, Dices } from "lucide-react";
+import { ShieldCheck, Swords, Plus, Users, Bot, Zap, Skull, ChevronLeft, ChevronRight, PackageOpen, Target, Loader2, ArrowRight, User as UserIcon, X, Check, Eye, Link as LinkIcon, Volume2, Lock, FileText, Dices, Ghost, Gem, Terminal, Settings2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
@@ -16,7 +16,7 @@ const CARD_SIZE = 120;
 const CARD_GAP = 12;
 const STEP = CARD_SIZE + CARD_GAP;
 
-function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetItem: any, itemsPool: any[], rolling: boolean, onComplete: () => void }) {
+function BattleSpinner({ targetItem, itemsPool, rolling, onComplete, isFast }: { targetItem: any, itemsPool: any[], rolling: boolean, onComplete: () => void, isFast?: boolean }) {
   const [strip, setStrip] = useState<any[]>([]);
   const [trackOpacity, setTrackOpacity] = useState(1);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -54,7 +54,7 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
 
         await controls.start({
           y: targetY,
-          transition: { duration: 3.5, ease: [0.12, 0.8, 0.15, 1] }
+          transition: { duration: isFast ? 0.8 : 3.5, ease: [0.12, 0.8, 0.15, 1] }
         });
 
         if (targetItem._hitLuckyStar && targetItem._actualWinItem) {
@@ -76,7 +76,7 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
            
            await controls.start({
              y: targetY,
-             transition: { duration: 3.5, ease: [0.12, 0.8, 0.15, 1] }
+             transition: { duration: isFast ? 0.8 : 3.5, ease: [0.12, 0.8, 0.15, 1] }
            });
         }
 
@@ -141,7 +141,7 @@ function BattleSpinner({ targetItem, itemsPool, rolling, onComplete }: { targetI
 }
 
 
-function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete, participants = [] }: { tiedPlayers: string[], winnerId: string, onComplete: () => void, participants?: any[] }) {
+function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete, participants = [], isFast }: { tiedPlayers: string[], winnerId: string, onComplete: () => void, participants?: any[], isFast?: boolean }) {
   const [strip, setStrip] = useState<string[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
@@ -170,9 +170,9 @@ function TieBreakerSpinner({ tiedPlayers, winnerId, onComplete, participants = [
 
         await controls.start({
           y: targetY,
-          transition: { duration: 4.5, ease: [0.12, 0.8, 0.15, 1] }
+          transition: { duration: isFast ? 0.8 : 4.5, ease: [0.12, 0.8, 0.15, 1] }
         });
-        if (isMounted) setTimeout(onComplete, 1500);
+        if (isMounted) setTimeout(onComplete, isFast ? 500 : 1500);
       };
       runAnim();
       return () => { isMounted = false; };
@@ -232,6 +232,7 @@ export default function BattlesPage() {
   const [createMode, setCreateMode] = useState("normal"); // normal, crazy, terminal
   const [createFormat, setCreateFormat] = useState("1v1");
   const [createPlayers, setCreatePlayers] = useState(2);
+  const [createFast, setCreateFast] = useState(false);
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
   const [callAllBots, setCallAllBots] = useState(false);
   
@@ -367,7 +368,7 @@ export default function BattlesPage() {
     try {
       const res = await apiFetch("/battles/create", {
         method: "POST",
-        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createMode, playerCount: createPlayers, format: createFormat })
+        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createMode, playerCount: createPlayers, format: createFormat, isFast: createFast })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -692,35 +693,80 @@ export default function BattlesPage() {
                     <div className="flex-1">
                         
                         {/* Mode Selection Cards */}
-                        <div className="flex gap-4 mb-8">
-                            <button className="flex-1 bg-[#1a1d24] border border-[#2a2d3a] p-4 rounded-xl text-left flex items-start gap-4 transition-all">
-                                <div className="text-[#a0a5b8] shrink-0 mt-1">
-                                    <Swords size={20} />
-                                </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+                            <button 
+                              onClick={() => setCreateMode("normal")}
+                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'normal' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
+                            >
+                                <div className={`shrink-0 mt-1 ${createMode === 'normal' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Swords size={18} /></div>
                                 <div>
-                                    <div className="text-white font-black text-sm mb-0.5">Normal</div>
-                                    <div className="text-[#7a819c] text-[11px] font-bold">Highest total value unboxed wins</div>
+                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'normal' ? 'text-white' : 'text-[#a0a5b8]'}`}>Normal</div>
+                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Highest total value unboxed wins</div>
                                 </div>
                             </button>
-                            <button className="flex-1 bg-[#15181f] border border-[#2a2d3a] p-4 rounded-xl text-left flex items-start gap-4 transition-all opacity-50 relative overflow-hidden">
-                                <div className="absolute top-2 right-2 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded">NEW</div>
-                                <div className="text-[#a0a5b8] shrink-0 mt-1">
-                                    <PackageOpen size={20} />
-                                </div>
+                            <button 
+                              onClick={() => setCreateMode("crazy")}
+                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'crazy' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
+                            >
+                                <div className={`shrink-0 mt-1 ${createMode === 'crazy' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Ghost size={18} /></div>
                                 <div>
-                                    <div className="text-white font-black text-sm mb-0.5">Bonus Mode</div>
-                                    <div className="text-[#7a819c] text-[11px] font-bold">Unbox with a bonus twist</div>
+                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'crazy' ? 'text-white' : 'text-[#a0a5b8]'}`}>Crazy</div>
+                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Lowest total value unboxed wins</div>
                                 </div>
                             </button>
-                            <button className="flex-1 bg-[#15181f] border border-[#2a2d3a] p-4 rounded-xl text-left flex items-start gap-4 transition-all opacity-50">
-                                <div className="text-[#a0a5b8] shrink-0 mt-1">
-                                    <Users size={20} />
-                                </div>
+                            <button 
+                              onClick={() => setCreateMode("terminal")}
+                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'terminal' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
+                            >
+                                <div className={`shrink-0 mt-1 ${createMode === 'terminal' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Terminal size={18} /></div>
                                 <div>
-                                    <div className="text-white font-black text-sm mb-0.5">Shared Mode</div>
-                                    <div className="text-[#7a819c] text-[11px] font-bold">Share the winnings equally</div>
+                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'terminal' ? 'text-white' : 'text-[#a0a5b8]'}`}>Terminal</div>
+                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Highest value in the last case wins</div>
                                 </div>
                             </button>
+                            <button 
+                              onClick={() => setCreateMode("jackpot")}
+                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'jackpot' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
+                            >
+                                <div className={`shrink-0 mt-1 ${createMode === 'jackpot' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Gem size={18} /></div>
+                                <div>
+                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'jackpot' ? 'text-white' : 'text-[#a0a5b8]'}`}>Jackpot</div>
+                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Chance to win pot based on unboxed value</div>
+                                </div>
+                            </button>
+                            <button 
+                              onClick={() => setCreateMode("shared")}
+                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'shared' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
+                            >
+                                <div className={`shrink-0 mt-1 ${createMode === 'shared' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Users size={18} /></div>
+                                <div>
+                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'shared' ? 'text-white' : 'text-[#a0a5b8]'}`}>Shared</div>
+                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Share the winnings equally with all players</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Battle Settings */}
+                        <div className="mb-8">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Settings2 size={16} className="text-[#a0a5b8]" />
+                                <h3 className="text-white font-black text-sm">Battle Settings</h3>
+                            </div>
+                            <div className="flex gap-4">
+                                <button 
+                                  onClick={() => setCreateFast(!createFast)}
+                                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${createFast ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#15181f] border-[#2a2d3a] opacity-70 hover:opacity-100'}`}
+                                >
+                                    <Zap size={18} className={createFast ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
+                                    <div className="text-left">
+                                        <div className={`font-black text-xs ${createFast ? 'text-white' : 'text-[#a0a5b8]'}`}>Fast Spin</div>
+                                        <div className="text-[10px] text-[#7a819c] font-bold">Significantly speeds up the spin animation</div>
+                                    </div>
+                                    <div className={`ml-2 w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createFast ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createFast ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Add Cases Section */}
@@ -1186,7 +1232,7 @@ export default function BattlesPage() {
                             {/* Spinner Container */}
                             <div className="relative z-10 w-full h-[400px] flex items-center justify-center">
                               {rolling && targetItemForSpin ? (
-                                <BattleSpinner key={`${displayRound}-${p.id}`} targetItem={targetItemForSpin} itemsPool={currentCaseItemsPool} rolling={rolling} onComplete={() => {}} />
+                                <BattleSpinner key={`${displayRound}-${p.id}`} targetItem={targetItemForSpin} itemsPool={currentCaseItemsPool} rolling={rolling} onComplete={() => {}} isFast={activeBattle?.isFast} />
                               ) : targetItemForSpin ? (
                                 (() => {
                                   const finalItemToDisplay = (targetItemForSpin as any)._hitLuckyStar && (targetItemForSpin as any)._actualWinItem 
@@ -1385,6 +1431,7 @@ export default function BattlesPage() {
                       tiedPlayers={tieBreakerData.tiedPlayers}
                       winnerId={tieBreakerData.winnerId}
                       participants={activeBattle.participants}
+                      isFast={activeBattle?.isFast}
                       onComplete={() => {
                         setIsTieBreakerOpen(false);
                         setFinalWinner(tieBreakerData.winnerId);

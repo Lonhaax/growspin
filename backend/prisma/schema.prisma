@@ -78,6 +78,7 @@ model Battle {
   createdAt         DateTime            @default(now())
   targetPlayerCount Int                 @default(2)
   format            String              @default("1v1")
+  isFast            Boolean             @default(false)
   participants      BattleParticipant[]
 }
 

@@ -2662,13 +2662,13 @@ app.get('/api/battles/:id', async (req: Request, res: Response) => {
 
 // POST /api/battles/create
 app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { caseIds, mode, playerCount, format } = req.body;
+  const { caseIds, mode, playerCount, format, isFast } = req.body;
   const userId = req.userId!;
 
   if (!Array.isArray(caseIds) || caseIds.length === 0 || caseIds.length > 50) {
     return res.status(400).json({ error: 'Invalid caseIds array. Max 50 cases.' });
   }
-  if (!['normal', 'crazy', 'terminal'].includes(mode)) return res.status(400).json({ error: 'Invalid mode' });
+  if (!['normal', 'crazy', 'terminal', 'jackpot', 'shared'].includes(mode)) return res.status(400).json({ error: 'Invalid mode' });
   if (![2, 3, 4, 6].includes(playerCount)) return res.status(400).json({ error: 'Invalid player count' });
   const finalFormat = format || (playerCount === 2 ? '1v1' : playerCount === 3 ? '1v1v1' : playerCount === 4 ? '1v1v1v1' : '1v1v1v1v1v1');
 
@@ -2711,6 +2711,7 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
             format: finalFormat,
             targetPlayerCount: playerCount,
             entryFee,
+            isFast: isFast === true,
             status: 'waiting',
             participants: {
               create: {
@@ -2976,6 +2977,21 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
         } else {
           winningTeamIds = tiedLast.map(([id]) => id);
         }
+      } else if (battle.mode === 'jackpot') {
+        const totalWinnings = tStatsArr.reduce((acc, [, s]) => acc + s.total, 0);
+        if (totalWinnings === 0) {
+          winningTeamIds = [tStatsArr[Math.floor(Math.random() * tStatsArr.length)][0]];
+        } else {
+          let rand = Math.random() * totalWinnings;
+          let winnerId = tStatsArr[0][0];
+          for (const [id, s] of tStatsArr) {
+            rand -= s.total;
+            if (rand <= 0) { winnerId = id; break; }
+          }
+          winningTeamIds = [winnerId];
+        }
+      } else if (battle.mode === 'shared') {
+        winningTeamIds = tStatsArr.map(([id]) => id);
       } else {
         const maxTotal = Math.max(...tStatsArr.map(([, s]) => s.total));
         winningTeamIds = tStatsArr.filter(([, s]) => s.total === maxTotal).map(([id]) => id);
