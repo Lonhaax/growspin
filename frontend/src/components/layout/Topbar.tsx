@@ -68,11 +68,7 @@ export function Topbar() {
 
       <div className="flex items-center gap-3">
         {isLoading ? (
-          <div className="flex items-center gap-3 animate-pulse">
-            <div className="h-10 w-32 bg-[#1b202e] rounded-lg"></div>
-            <div className="h-8 w-8 bg-[#1b202e] rounded-full hidden sm:block"></div>
-            <div className="h-8 w-8 bg-[#1b202e] rounded-full"></div>
-          </div>
+          <div className="flex items-center gap-3 w-[150px] sm:w-[200px]"></div>
         ) : user ? (
           <>
             {/* Wallet Group */}

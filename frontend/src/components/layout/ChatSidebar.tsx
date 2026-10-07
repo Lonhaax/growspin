@@ -239,7 +239,7 @@ export function ChatSidebar() {
               <form onSubmit={handleSend} className="relative">
                 <input
                   type="text"
-                  placeholder={isLoading ? "Loading..." : user ? "Say something..." : "Login to chat"}
+                  placeholder={isLoading ? "" : user ? "Say something..." : "Login to chat"}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading || !user || isSending}
