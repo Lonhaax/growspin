@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
-import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket } from "lucide-react";
+import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
@@ -49,96 +49,63 @@ export function Topbar() {
 
   return (
     <>
-      <header className="h-14 border-b border-[#1f2433] bg-[#0c0e14]/90 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-20">
+      <header className="h-14 bg-[#0f1118] flex items-center justify-between px-4 sticky top-0 z-20">
         <div className="flex items-center gap-4">
-        <Link href="/" className="md:hidden flex items-center gap-2">
-          <img src="/logo.png" alt="GrowSpin" className="h-8 w-auto object-contain" />
-        </Link>
-        <div className="hidden lg:flex items-center gap-2">
-          <Link
-            href="/slots"
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 transition-colors"
-          >
-            🎰 Slots
-          </Link>
-          <Link
-            href="/originals"
-            className="text-xs font-bold text-[#878eab] hover:text-white px-3 py-1.5 rounded-lg hover:bg-[#161a24] transition-colors"
-          >
-            Originals
-          </Link>
-        </div>
-      </div>
-
-      {user && (
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center bg-[#15181f] border border-[#2a2d3a] rounded-lg p-1 h-9 z-10">
-          <div className="px-3 flex items-center gap-2 border-r border-[#2a2d3a]">
-            <DLCurrency amount={balance * 100} size="sm" className="text-white" />
-          </div>
-          <button 
-            onClick={() => setDepositOpen(true)}
-            className="text-emerald-400 hover:text-emerald-300 px-3 h-full rounded-md transition-colors flex items-center justify-center gap-1.5 font-bold text-sm"
-          >
-            <Wallet size={14} />
-            Deposit
+          <button className="text-[#626983] hover:text-white transition-colors">
+            <Menu size={20} />
           </button>
-        </div>
-      )}
+          
+          <div className="hidden md:flex bg-[#1b202e] rounded-lg p-1">
+            <button className="bg-[#2563eb] text-white text-xs font-bold px-4 py-1.5 rounded-md shadow-sm">
+              Casino
+            </button>
+            <button className="text-[#878eab] hover:text-white text-xs font-bold px-4 py-1.5 rounded-md transition-colors">
+              Sports
+            </button>
+          </div>
 
-      <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 ml-2">
+            <img src="/logo.png" alt="GrowSpin" className="h-7 w-auto object-contain" />
+          </Link>
+        </div>
+
+      {/* Center empty space to keep flex space-between happy, or we can just rely on justify-between */}
+      <div className="flex-1" />
+
+      <div className="flex items-center gap-3">
         {user ? (
           <>
-
-
-            {/* Active Case Loan Badge */}
-            {user.debt !== undefined && user.debt > 0 && (
-              <Link 
-                href="/loan"
-                title={user.isFrozen ? "Account frozen! Click to repay loan." : "Active case loans. Click to manage."}
-                className={`hidden md:flex items-center gap-1.5 border rounded-xl px-2.5 py-1.5 transition-colors text-xs ${
-                  user.isFrozen 
-                    ? "bg-red-500/20 hover:bg-red-500/30 border-red-500/50 animate-pulse" 
-                    : "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30"
-                }`}
+            {/* Wallet Group */}
+            <div className="flex items-center bg-[#1b202e] rounded-lg p-[2px]">
+              <div className="px-3 flex items-center gap-2">
+                <DLCurrency amount={balance * 100} size="sm" className="text-white" />
+                <ChevronDown size={14} className="text-[#626983]" />
+              </div>
+              <button 
+                onClick={() => setDepositOpen(true)}
+                className="bg-[#2563eb] hover:bg-blue-500 text-white p-1.5 rounded-md transition-colors flex items-center justify-center"
               >
-                <HandCoins size={14} className={user.isFrozen ? "text-red-400" : "text-amber-400"} />
-                <span className={`font-bold ${user.isFrozen ? "text-red-300" : "text-[#8e95ad]"}`}>
-                  {user.isFrozen ? "FROZEN:" : "Loan:"}
-                </span>
-                <DLCurrency amount={user.debt} size="xs" className={user.isFrozen ? "text-red-400 font-black" : "text-amber-300 font-black"} />
-              </Link>
-            )}
+                <Wallet size={16} />
+              </button>
+            </div>
 
-            {/* Rewards Button */}
-            <button
-              onClick={() => {
-                const muted = SoundManager.toggleMute();
-                setIsMuted(muted);
-              }}
-              className="hidden sm:flex items-center gap-1.5 text-[#7a819c] hover:text-white bg-[#15181f] border border-[#2a2d3a] hover:border-[#3a3f58] rounded-lg px-2 h-9 transition-colors"
-            >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            {/* Gift Icon */}
+            <button className="text-[#626983] hover:text-white transition-colors hidden sm:block">
+              <Gift size={18} />
             </button>
 
-
+            {/* Notification Bell */}
+            <button className="text-[#626983] hover:text-white transition-colors hidden sm:block">
+              <Bell size={18} />
+            </button>
 
             {/* Profile Dropdown */}
-            <div className="relative ml-2">
+            <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                className="w-8 h-8 rounded-full bg-[#1b202e] border border-[#2a2f3e] flex items-center justify-center text-[#626983] hover:text-white hover:border-[#3a3f4e] transition-all"
               >
-                <div className="relative">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-purple to-accent-blue p-[2px]">
-                    <div className="w-full h-full bg-[#15181f] rounded-[10px] flex items-center justify-center overflow-hidden">
-                      <span className="text-white font-bold">{user.username.charAt(0).toUpperCase()}</span>
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-md flex items-center justify-center text-[9px] font-black text-black shadow-lg border border-[#15181f]">
-                    {user.level}
-                  </div>
-                </div>
-                <ChevronDown size={14} className="text-[#7a819c] hidden sm:block" />
+                <User size={16} />
               </button>
 
               <AnimatePresence>
