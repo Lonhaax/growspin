@@ -166,6 +166,6 @@ export function Sidebar() {
           {isSidebarOpen && <ArrowDown size={14} className="text-[#626983]" />}
         </button>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
