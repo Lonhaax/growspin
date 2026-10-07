@@ -91,10 +91,7 @@ export class CrashManager {
         p.profit = -p.amount;
         // In a real app we might insert a loss record here or already deducted the bet.
         // We assume the bet was deducted at placement time.
-        prisma.user.update({
-          where: { id: userId },
-          data: { totalWagered: { increment: p.amount } }
-        }).catch(console.error);
+        // totalWagered was also already updated.
         
         prisma.transaction.create({
           data: {
@@ -152,7 +149,7 @@ export class CrashManager {
     const mult = forceMultiplier || this.currentMultiplier;
     if (mult > this.crashPoint) throw new Error('Crashed');
 
-    const winAmount = Number((p.amount * mult).toFixed(2));
+    const winAmount = Math.floor(p.amount * mult);
     p.cashedOut = true;
     p.cashoutMultiplier = mult;
     p.profit = winAmount - p.amount;
@@ -160,8 +157,7 @@ export class CrashManager {
     await prisma.user.update({
       where: { id: userId },
       data: { 
-        mockBalance: { increment: winAmount },
-        totalWagered: { increment: p.amount }
+        mockBalance: { increment: winAmount }
       }
     });
 

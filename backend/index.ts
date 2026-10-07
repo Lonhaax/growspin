@@ -1488,25 +1488,47 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
 
 // POST /api/play/crash/bet
 app.post('/api/play/crash/bet', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { amount, autoCashout } = req.body;
+  const amount = Math.floor(req.body.amount || 0);
+  const autoCashout = req.body.autoCashout;
   const userId = Number(req.userId!);
 
   if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount.' });
 
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    if (user.mockBalance < amount) return res.status(400).json({ error: 'Insufficient balance' });
+    const result = await withUserLock(userId, async () => {
+      return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user) throw new Error('User not found');
+        if (user.mockBalance < amount) throw new Error('Insufficient balance');
 
-    // Deduct bet immediately
-    await prisma.user.update({
-      where: { id: userId },
-      data: { mockBalance: { decrement: amount } }
+        const newXp = user.xp + amount;
+        const newLevel = calculateLevel(newXp);
+        const rakebackAmount = Math.floor(amount * getVIPRakebackPercentage(user.totalWagered));
+        await processAffiliateReward(tx, user.referredBy, amount);
+
+        const updatedUser = await tx.user.update({
+          where: { id: userId },
+          data: {
+            mockBalance: { decrement: amount },
+            xp: newXp,
+            level: newLevel,
+            totalWagered: { increment: amount }, /* POT_HOOK:amount */
+            rakebackBalance: { increment: rakebackAmount }
+          }
+        });
+        
+        const potCut = Math.floor(amount * 0.05);
+        if (potCut > 0) {
+          await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
+        }
+        
+        return updatedUser;
+      });
     });
 
-    crashManager.placeBet(user.id, user.username, '', amount, autoCashout || 0);
+    crashManager.placeBet(result.id, result.username, '', amount, autoCashout || 0);
 
-    res.json({ success: true, balance: user.mockBalance - amount });
+    res.json({ success: true, balance: result.mockBalance });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
