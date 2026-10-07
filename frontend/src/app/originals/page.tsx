@@ -5,28 +5,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const ORIGINAL_GAMES = [
-  { id: "battles", name: "Case Battles", color: "#6366f1", icon: "⚔️", href: "/battles", isNew: false, isUpdated: false },
-  { id: "cases", name: "Cases", color: "#a855f7", icon: "📦", href: "/cases", isNew: false, isUpdated: false },
-  { id: "crash", name: "Crash", color: "#8b5cf6", icon: "📈", href: "/crash", isNew: false, isUpdated: true },
-  { id: "mines", name: "Mines", color: "#ef4444", icon: "💣", href: "/mines", isNew: false, isUpdated: false },
-  { id: "plinko", name: "Plinko", color: "#ec4899", icon: "🎯", href: "/plinko", isNew: false, isUpdated: false },
-  { id: "dice", name: "Dice", color: "#3b82f6", icon: "🎲", href: "/dice", isNew: false, isUpdated: false },
-  { id: "tower", name: "Tower", color: "#06b6d4", icon: "🗼", href: "/tower", isNew: false, isUpdated: false },
-  { id: "roulette", name: "Roulette", color: "#f97316", icon: "🎡", href: "/roulette", isNew: false, isUpdated: false },
-  { id: "blackjack", name: "Blackjack", color: "#4f46e5", icon: "🃏", href: "#", isNew: false, isUpdated: false },
-  { id: "hilo", name: "Hilo", color: "#8b5cf6", icon: "⬆️", href: "#", isNew: false, isUpdated: false },
-  { id: "runelines", name: "Rune Lines", color: "#7c3aed", icon: "🔮", href: "#", isNew: false, isUpdated: false },
-  { id: "slide", name: "Slide", color: "#eab308", icon: "🛝", href: "#", isNew: false, isUpdated: false },
-  { id: "baccarat", name: "Baccarat", color: "#10b981", icon: "🎴", href: "#", isNew: false, isUpdated: false },
-  { id: "reme", name: "Reme", color: "#ef4444", icon: "🔴", href: "#", isNew: false, isUpdated: false },
-  { id: "wheel", name: "Wheel", color: "#6366f1", icon: "🎡", href: "#", isNew: false, isUpdated: false },
-  { id: "layers", name: "Layers", color: "#10b981", icon: "🥞", href: "#", isNew: false, isUpdated: false },
-  { id: "limbo", name: "Limbo", color: "#22c55e", icon: "🚀", href: "#", isNew: false, isUpdated: false },
-  { id: "crosstheroad", name: "Cross The Road", color: "#3b82f6", icon: "🐔", href: "#", isNew: false, isUpdated: false },
-  { id: "coinflip", name: "Coinflip", color: "#eab308", icon: "🪙", href: "#", isNew: false, isUpdated: false },
-  { id: "keno", name: "Keno", color: "#10b981", icon: "🔢", href: "#", isNew: false, isUpdated: false },
-  { id: "snakes", name: "Snakes", color: "#22c55e", icon: "🐍", href: "#", isNew: false, isUpdated: false },
-  { id: "slice", name: "Slice", color: "#ef4444", icon: "🍕", href: "#", isNew: false, isUpdated: false },
+  { id: "battles", name: "Case Battles", color: "#6366f1", image: "/battles.png", href: "/battles", isNew: false, isUpdated: false },
+  { id: "cases", name: "Unbox Cases", color: "#a855f7", image: "/cases.png", href: "/cases", isNew: false, isUpdated: false },
+  { id: "crash", name: "Crash", color: "#8b5cf6", image: "/crash.png", href: "/crash", isNew: false, isUpdated: true },
+  { id: "mines", name: "Mines", color: "#ef4444", image: "/mines.png", href: "/mines", isNew: false, isUpdated: false },
+  { id: "plinko", name: "Plinko", color: "#ec4899", image: "/plinko.png", href: "/plinko", isNew: false, isUpdated: false },
+  { id: "dice", name: "Dice", color: "#3b82f6", image: "/dice.png", href: "/dice", isNew: false, isUpdated: false },
+  { id: "roulette", name: "Roulette", color: "#f97316", image: "/roulette.png", href: "/roulette", isNew: false, isUpdated: false },
+  { id: "coinflip", name: "Coinflip", color: "#eab308", image: "/coinflip.png", href: "/coinflip", isNew: false, isUpdated: false },
 ];
 
 export default function OriginalsPage() {
@@ -84,9 +70,11 @@ export default function OriginalsPage() {
 
               {/* Game Icon / Graphic */}
               <div className="absolute inset-0 flex items-center justify-center pb-6">
-                <span className="text-6xl filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300">
-                  {game.icon}
-                </span>
+                <img 
+                  src={game.image} 
+                  alt={game.name} 
+                  className="w-24 h-24 object-contain filter drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
+                />
               </div>
 
               {/* Title Area */}
