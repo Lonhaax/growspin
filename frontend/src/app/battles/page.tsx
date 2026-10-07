@@ -1295,7 +1295,7 @@ export default function BattlesPage() {
                               </div>
                             );
                           }
-                          const myRoll = roundResults[rIdx].find(r => r.userId === p.userId);
+                          const myRoll = roundResults[rIdx].find((r: any) => r.userId === p.userId);
                           if (!myRoll) return null;
                           const displayItem = myRoll.hitLuckyStar && myRoll.actualWinItem ? myRoll.actualWinItem : myRoll.item;
                           
