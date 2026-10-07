@@ -175,4 +175,14 @@ export class CrashManager {
     
     return { winAmount, multiplier: mult, profit: p.profit, username: p.username };
   }
+
+  public getState() {
+    return {
+      state: this.state,
+      timer: this.timer,
+      multiplier: this.currentMultiplier,
+      history: this.history,
+      players: Array.from(this.players.values())
+    };
+  }
 }

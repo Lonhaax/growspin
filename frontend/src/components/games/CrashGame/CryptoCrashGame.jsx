@@ -24,6 +24,18 @@ export default function CryptoCrashGame() {
     const canvasRef = useRef(null);
 
     useEffect(() => {
+        // Fetch initial state
+        fetch((process.env.NEXT_PUBLIC_API_URL || '') + '/api/play/crash/state')
+            .then(res => res.json())
+            .then(data => {
+                setGameState(data.state);
+                setTimer(data.timer);
+                setMultiplier(data.multiplier);
+                setHistory(data.history || []);
+                setPlayers(data.players || []);
+            })
+            .catch(err => console.error(err));
+
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
         const newSocket = io(backendUrl, { path: '/socket.io' });
         setSocket(newSocket);

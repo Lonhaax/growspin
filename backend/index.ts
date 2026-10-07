@@ -1486,6 +1486,11 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
   }
 });
 
+// GET /api/play/crash/state
+app.get('/api/play/crash/state', (req: Request, res: Response) => {
+  res.json(crashManager.getState());
+});
+
 // POST /api/play/crash/bet
 app.post('/api/play/crash/bet', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   const amount = Math.floor(req.body.amount || 0);
