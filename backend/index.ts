@@ -4511,6 +4511,16 @@ const BGAMING_GAMES = [
   { id: 'DiceMillion', name: 'Dice Million', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/DiceMillion.png' },
   { id: 'AlienFruits', name: 'Alien Fruits', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/AlienFruits.png' },
   { id: 'LadyWolfMoon', name: 'Lady Wolf Moon', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/LadyWolfMoon.png' },
+  { id: 'BeastBand', name: 'Beast Band', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/BeastBand.png' },
+  { id: 'BoneBonanza', name: 'Bone Bonanza', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/BoneBonanza.png' },
+  { id: 'SavageBuffaloSpirit', name: 'Savage Buffalo Spirit', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/SavageBuffaloSpirit.png' },
+  { id: 'Gemhalla', name: 'Gemhalla', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/Gemhalla.png' },
+  { id: 'DragonsCrash', name: 'Dragon\'s Crash', provider: 'BGaming', category: 'Instant Win', image: 'https://cdn.softswiss.net/i/s3/bgaming/DragonsCrash.png' },
+  { id: 'PlinkoXY', name: 'Plinko XY', provider: 'BGaming', category: 'Instant Win', image: 'https://cdn.softswiss.net/i/s3/bgaming/PlinkoXY.png' },
+  { id: 'SpaceXY', name: 'Space XY', provider: 'BGaming', category: 'Instant Win', image: 'https://cdn.softswiss.net/i/s3/bgaming/SpaceXY.png' },
+  { id: 'LuckyCrew', name: 'Lucky Crew', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/LuckyCrew.png' },
+  { id: 'RoyalHighRoad', name: 'Royal High-Road', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/RoyalHighRoad.png' },
+  { id: 'BookOfKemet', name: 'Book of Kemet', provider: 'BGaming', category: 'Slots', image: 'https://cdn.softswiss.net/i/s3/bgaming/BookOfKemet.png' },
 
   // Table Games
   { id: 'MultihandBlackjack', name: 'Multihand Blackjack', provider: 'BGaming', category: 'Table Games', image: 'https://cdn.softswiss.net/i/s3/bgaming/MultihandBlackjack.png' },
