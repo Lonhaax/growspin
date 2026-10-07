@@ -1152,25 +1152,28 @@ export default function BattlesPage() {
                                       animate={{ scale: 1, opacity: 1 }}
                                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                     >
-                                      <motion.div 
-                                        className="absolute inset-0" 
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.9, 1.1, 0.9] }}
-                                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                                        style={{ background: `radial-gradient(circle at center, ${finalItemToDisplay.color || "#3b82f6"} 0%, transparent 70%)` }} 
-                                      />
                                       <div className="relative z-10 h-20 flex items-center justify-center mb-1">
                                         {finalItemToDisplay.name === 'Lucky Star' ? (
                                           <div className="w-16 h-16 relative flex items-center justify-center">
-                                            <div className="absolute inset-0 bg-blue-500 rounded-full opacity-60" style={{ background: 'radial-gradient(circle at center, #3b82f6 0%, transparent 70%)' }} />
                                             <svg viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,1)] z-10 animate-[spin_3s_linear_infinite]">
                                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                             </svg>
                                           </div>
                                         ) : finalItemToDisplay.imageUrl ? (
-                                          <img src={finalItemToDisplay.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(finalItemToDisplay.imageUrl.replace(/^https?:\/\//, ''))}` : finalItemToDisplay.imageUrl} alt={finalItemToDisplay.name} className="max-h-16 max-w-[80px] object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.6)]" />
+                                          <motion.img 
+                                            src={finalItemToDisplay.imageUrl?.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(finalItemToDisplay.imageUrl.replace(/^https?:\/\//, ''))}` : finalItemToDisplay.imageUrl} 
+                                            alt={finalItemToDisplay.name} 
+                                            className="max-h-16 max-w-[80px] object-contain"
+                                            animate={{ filter: [`drop-shadow(0px 0px 4px ${finalItemToDisplay.color || '#3b82f6'}80)`, `drop-shadow(0px 0px 18px ${finalItemToDisplay.color || '#3b82f6'})`, `drop-shadow(0px 0px 4px ${finalItemToDisplay.color || '#3b82f6'}80)`] }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                          />
                                         ) : (
-                                          <PackageOpen size={48} style={{ color: finalItemToDisplay.color || "#3b82f6" }} className="drop-shadow-xl opacity-90" />
+                                          <motion.div
+                                            animate={{ filter: [`drop-shadow(0px 0px 4px ${finalItemToDisplay.color || '#3b82f6'}80)`, `drop-shadow(0px 0px 18px ${finalItemToDisplay.color || '#3b82f6'})`, `drop-shadow(0px 0px 4px ${finalItemToDisplay.color || '#3b82f6'}80)`] }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                          >
+                                            <PackageOpen size={48} style={{ color: finalItemToDisplay.color || "#3b82f6" }} />
+                                          </motion.div>
                                         )}
                                       </div>
                                       <div className="relative z-10 text-center w-full px-1">
