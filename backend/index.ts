@@ -1431,7 +1431,7 @@ app.post('/api/vip/claim-case', requireAuth, requireNotFrozen, async (req: AuthR
 app.get('/api/leaderboard', async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
-      orderBy: { netProfit: 'desc' },
+      orderBy: { totalWagered: 'desc' },
       take: 20,
       select: {
         id: true,
