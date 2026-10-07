@@ -2,31 +2,33 @@
 
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
 import { ShieldCheck, CircleDot, Wrench, HandMetal, Clover } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { DLCurrency } from "@/components/ui/DLCurrency";
+import io from 'socket.io-client';
 
 export default function RoulettePage() {
   const [isFairOpen, setIsFairOpen] = useState(false);
   const { user, refreshUser, openAuthModal } = useAuth();
   
   const [betAmount, setBetAmount] = useState<string>("10.00");
+  const [socket, setSocket] = useState<any>(null);
   
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [result, setResult] = useState<{ roll: number, win: boolean, profit: number, outcomeColor: string } | null>(null);
+  const [gameState, setGameState] = useState<'waiting' | 'rolling' | 'rolled'>('waiting');
+  const [timer, setTimer] = useState(15);
+  const [history, setHistory] = useState<string[]>([]);
+  const [players, setPlayers] = useState<any[]>([]);
   const [error, setError] = useState("");
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const [wheelOffset, setWheelOffset] = useState(0);
   const [currentTargetIndex, setCurrentTargetIndex] = useState(15); // Start slightly offset
 
-  // Hardcode 500 items in a realistic alternating sequence
   const TILE_WIDTH = 80;
   const generateStrip = () => {
     const strip = [];
-    // Alternating pattern: Green, Red, Black, Red, Black... (1-7 Red, 8-14 Black)
     const pattern = [0, 1, 14, 2, 13, 3, 12, 4, 11, 5, 10, 6, 9, 7, 8];
     for (let i = 0; i < 1000; i++) {
       const num = pattern[i % 15];
@@ -38,8 +40,68 @@ export default function RoulettePage() {
     return strip;
   };
   const [strip] = useState(generateStrip());
-  const [history, setHistory] = useState<string[]>(['red', 'black', 'black', 'red', 'green', 'red', 'black']);
-  const historyCounts = { red: 46, green: 0, black: 54 }; // mock counts
+
+  useEffect(() => {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const newSocket = io(backendUrl, { path: '/socket.io' });
+    setSocket(newSocket);
+
+    apiFetch("/play/roulette/state")
+      .then(res => res.json())
+      .then(data => {
+        if (data.state) {
+          setGameState(data.state);
+          setTimer(data.timer);
+          setHistory(data.history);
+          setPlayers(data.players);
+        }
+      })
+      .catch(console.error);
+
+    newSocket.on('roulette:state', (data) => {
+      setGameState(data.state);
+      setTimer(data.timer);
+      setHistory(data.history);
+      setPlayers(data.players);
+      if (data.state === 'waiting') {
+        refreshUser();
+      }
+    });
+
+    newSocket.on('roulette:timer', (t) => {
+      setTimer(t);
+    });
+
+    newSocket.on('roulette:start', (data) => {
+      setGameState('rolling');
+      const targetNum = data.target;
+      
+      let nextIndex = currentTargetIndex + 45 + Math.floor(Math.random() * 15);
+      while (strip[nextIndex].num !== targetNum) {
+        nextIndex++;
+      }
+      setCurrentTargetIndex(nextIndex);
+
+      const containerWidth = wheelRef.current ? wheelRef.current.clientWidth : 800;
+      const centerOffset = (containerWidth / 2) - (TILE_WIDTH / 2);
+      const randomJitter = Math.random() * 60 - 30;
+      const finalTranslate = -(nextIndex * TILE_WIDTH) + centerOffset + randomJitter;
+
+      setWheelOffset(finalTranslate);
+    });
+
+    newSocket.on('roulette:rolled', (data) => {
+      setGameState('rolled');
+      setHistory(data.history);
+      refreshUser();
+    });
+
+    newSocket.on('roulette:players', (newPlayers) => {
+      setPlayers(newPlayers);
+    });
+
+    return () => { newSocket.close(); };
+  }, [currentTargetIndex, strip]);
 
   const handleBet = async (color: 'red' | 'black' | 'green') => {
     if (!user) {
@@ -52,48 +114,25 @@ export default function RoulettePage() {
     if (amountCents <= 0) return setError("Invalid bet amount.");
     if (user.mockBalance < amountCents) return setError("Insufficient balance.");
 
-    setIsSpinning(true);
-    setResult(null);
-
     try {
-      const res = await apiFetch("/play/roulette", {
+      const res = await apiFetch("/play/roulette/bet", {
         method: "POST",
         body: JSON.stringify({ amount: amountCents, betOn: color })
       });
       const data = await res.json();
-      
       if (!res.ok) throw new Error(data.error);
-
-      // Spin forward by at least ~45-60 tiles (3-4 full revolutions)
-      const targetNum = data.roll;
-      let nextIndex = currentTargetIndex + 45 + Math.floor(Math.random() * 15);
-      
-      // Keep going forward until we hit the exact targetNum
-      while (strip[nextIndex].num !== targetNum) {
-        nextIndex++;
-      }
-      
-      setCurrentTargetIndex(nextIndex);
-
-      // Calculate translation
-      const containerWidth = wheelRef.current ? wheelRef.current.clientWidth : 800;
-      const centerOffset = (containerWidth / 2) - (TILE_WIDTH / 2);
-      const randomJitter = Math.random() * 60 - 30; // Randomize landing spot slightly within the tile
-      const finalTranslate = -(nextIndex * TILE_WIDTH) + centerOffset + randomJitter;
-
-      setWheelOffset(finalTranslate);
-
-      setTimeout(() => {
-        setResult(data);
-        setIsSpinning(false);
-        refreshUser();
-      }, 5500);
-
+      refreshUser();
     } catch (err: any) {
-      setError(err.message || "Failed to start game");
-      setIsSpinning(false);
+      setError(err.message || "Failed to place bet");
     }
   };
+
+  const historyCounts = { red: 0, green: 0, black: 0 };
+  history.forEach(h => {
+    if (h === 'red') historyCounts.red++;
+    else if (h === 'green') historyCounts.green++;
+    else if (h === 'black') historyCounts.black++;
+  });
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-32">
@@ -138,7 +177,7 @@ export default function RoulettePage() {
 
         {/* Rolling Status */}
         <div className="text-center font-black text-xl text-white">
-          {isSpinning ? "Rolling..." : "Place your bets"}
+          {gameState === 'rolling' ? "Rolling..." : `Rolling in ${timer}s`}
         </div>
 
         {/* Wheel Wrapper */}
@@ -184,30 +223,6 @@ export default function RoulettePage() {
         </div>
       </div>
 
-      {/* Result Alert */}
-      <AnimatePresence>
-        {result && !isSpinning && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`p-5 rounded-2xl border-2 text-center shadow-xl ${
-              result.win ? "bg-accent-green/20 border-accent-green" : "bg-red-500/20 border-red-500"
-            }`}
-          >
-            <h2 className={`text-2xl font-black uppercase tracking-widest ${result.win ? "text-accent-green" : "text-red-500"}`}>
-              {result.win ? "You Won!" : "You Lost!"}
-            </h2>
-            {result.win && (
-              <div className="text-white font-black text-xl mt-1 flex items-center justify-center gap-1">
-                <span className="text-accent-green">+</span>
-                <DLCurrency amount={result.profit} size="md" className="text-white" />
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Controls */}
       <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row gap-6 items-center">
@@ -221,7 +236,7 @@ export default function RoulettePage() {
                     type="number"
                     value={betAmount}
                     onChange={(e) => setBetAmount(e.target.value)}
-                    disabled={isSpinning}
+                    disabled={gameState !== 'waiting'}
                     className="w-full bg-[#15181f] border-2 border-[#2a2d3a] rounded-xl pl-10 pr-4 py-3 text-white font-bold focus:outline-none focus:border-accent-blue transition-colors disabled:opacity-50"
                   />
               </div>
@@ -231,7 +246,7 @@ export default function RoulettePage() {
             <div className="w-full md:w-2/3 flex gap-3">
               <button
                 onClick={() => handleBet('red')}
-                disabled={isSpinning || !user}
+                disabled={gameState !== 'waiting' || !user}
                 className="flex-1 py-4 bg-[#f44336] text-white rounded-xl font-black text-lg hover:bg-[#e53935] transition-all shadow-[0_0_20px_rgba(244,67,54,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
               >
                 <Wrench size={24} className="opacity-80" />
@@ -239,7 +254,7 @@ export default function RoulettePage() {
               </button>
               <button
                 onClick={() => handleBet('green')}
-                disabled={isSpinning || !user}
+                disabled={gameState !== 'waiting' || !user}
                 className="flex-1 py-4 bg-[#00c74d] text-black rounded-xl font-black text-lg hover:bg-[#00b345] transition-all shadow-[0_0_20px_rgba(0,199,77,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
               >
                 <Clover size={24} className="opacity-80" />
@@ -247,7 +262,7 @@ export default function RoulettePage() {
               </button>
               <button
                 onClick={() => handleBet('black')}
-                disabled={isSpinning || !user}
+                disabled={gameState !== 'waiting' || !user}
                 className="flex-1 py-4 bg-[#1b1e26] border border-[#2a2d3a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all disabled:opacity-50 flex flex-col items-center gap-1"
               >
                 <HandMetal size={24} className="opacity-80" />

@@ -44,6 +44,8 @@ const io = new Server(httpServer, {
 
 import { CrashManager } from './games/crash';
 export const crashManager = new CrashManager(io);
+import { RouletteManager } from './games/roulette';
+export const rouletteManager = new RouletteManager(io);
 
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
@@ -1618,19 +1620,18 @@ app.post('/api/play/dice', requireAuth, requireNotFrozen, async (req: AuthReques
   }
 });
 
-// POST /api/play/roulette
-app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+// GET /api/play/roulette/state
+app.get('/api/play/roulette/state', (req: Request, res: Response) => {
+  res.json(rouletteManager.getState());
+});
+
+// POST /api/play/roulette/bet
+app.post('/api/play/roulette/bet', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
   const { amount, betOn } = req.body;
   const userId = req.userId!;
 
-  if (!amount || amount <= 0) {
-    res.status(400).json({ error: 'Invalid amount.' });
-    return;
-  }
-  if (!['red', 'black', 'green'].includes(betOn)) {
-    res.status(400).json({ error: 'Bet must be red, black, or green.' });
-    return;
-  }
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount.' });
+  if (!['red', 'black', 'green'].includes(betOn)) return res.status(400).json({ error: 'Bet must be red, black, or green.' });
 
   try {
     const result = await withUserLock(userId, async () => {
@@ -1639,30 +1640,6 @@ app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRe
         if (!user) throw new Error('User not found');
         if (user.mockBalance < amount) throw new Error('Insufficient balance');
 
-        // Roulette math: 15 slots (0 to 14)
-        // 0 = Green (14x)
-        // 1 to 7 = Red (2x)
-        // 8 to 14 = Black (2x)
-        const pfResult = await generateProvablyFairFloat(tx, userId);
-        const roll = Math.floor(pfResult.float * 15);
-
-        let outcomeColor = 'green';
-        if (roll >= 1 && roll <= 7) outcomeColor = 'red';
-        else if (roll >= 8 && roll <= 14) outcomeColor = 'black';
-
-        const settings = await tx.siteSettings.findUnique({ where: { id: 1 } });
-        const edge = settings?.rouletteHouseEdge ?? 0.05;
-
-        const win = betOn === outcomeColor;
-        let multiplier = 0;
-        if (win) {
-          multiplier = outcomeColor === 'green' ? 14 : 2;
-          multiplier = multiplier * (1 - edge);
-        }
-
-        const profit = win ? Math.floor(amount * multiplier) - amount : -amount;
-
-        // Level/XP calculation
         const newXp = user.xp + amount;
         const newLevel = calculateLevel(newXp);
         const rakebackAmount = Math.floor(amount * getVIPRakebackPercentage(user.totalWagered));
@@ -1671,30 +1648,28 @@ app.post('/api/play/roulette', requireAuth, requireNotFrozen, async (req: AuthRe
         const updatedUser = await tx.user.update({
           where: { id: userId },
           data: {
-            mockBalance: { increment: profit },
+            mockBalance: { decrement: amount },
             xp: newXp,
             level: newLevel,
             totalWagered: { increment: amount }, /* POT_HOOK:amount */
             rakebackBalance: { increment: rakebackAmount }
           }
         });
+        
         const potCut = Math.floor(amount * 0.05);
         if (potCut > 0) {
           await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
         }
-
-        await tx.transaction.create({
-          data: { userId, amount, gameType: 'roulette', result: win ? 'win' : 'loss' },
-        });
-
-        return { roll, outcomeColor, win, profit, multiplier, updatedUser };
+        
+        return updatedUser;
       });
     });
 
-    emitLiveBet(io, { user: result.updatedUser.username, game: 'Roulette', betAmount: amount, multiplier: result.multiplier, profit: result.profit });
-    res.json(result);
+    rouletteManager.placeBet(result.id, result.username, '', amount, betOn);
+
+    res.json({ success: true, balance: result.mockBalance });
   } catch (error: any) {
-    console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
