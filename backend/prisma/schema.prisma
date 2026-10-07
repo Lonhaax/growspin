@@ -215,6 +215,8 @@ model SiteSettings {
   slotsHouseEdge        Float    @default(0.05)
   crashEnabled          Boolean  @default(true)
   crashHouseEdge        Float    @default(0.05)
+  diceEnabled           Boolean  @default(true)
+  diceHouseEdge         Float    @default(0.01)
   casinoPot             Int      @default(0)
   xpBase                Int      @default(1000)
 }

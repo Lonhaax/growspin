@@ -1575,9 +1575,10 @@ app.post('/api/play/dice', requireAuth, requireNotFrozen, async (req: AuthReques
         if (!user) throw new Error('User not found');
         if (user.mockBalance < amount) throw new Error('Insufficient balance');
 
-        // Dice logic: 99% payout (1% house edge)
-        // Multiplier = 99 / winChance
-        const multiplier = 99 / winChance;
+        // Dice logic using house edge from settings
+        const settings = await tx.siteSettings.findUnique({ where: { id: 1 } });
+        const houseEdge = settings?.diceHouseEdge ?? 0.01; // default 1%
+        const multiplier = (100 / winChance) * (1 - houseEdge);
 
         const pfResult = await generateProvablyFairFloat(tx, userId);
         const roll = pfResult.float * 100; // roll between 0 and 99.99...
@@ -3550,6 +3551,7 @@ app.get('/api/settings', async (req: Request, res: Response) => {
       minesHouseEdge: settings.minesHouseEdge,
       crashHouseEdge: settings.crashHouseEdge,
       slotsHouseEdge: settings.slotsHouseEdge,
+      diceHouseEdge: settings.diceHouseEdge,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
