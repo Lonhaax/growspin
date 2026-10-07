@@ -440,14 +440,7 @@ export default function BattlesPage() {
     return { icon: Zap, color: "text-blue-500", bg: "bg-blue-500/20", label: "Standard", desc: "Highest Overall Wins" };
   };
 
-  // Toggle helpers for modifiers
-  const handleToggleModifier = (modifier: string) => {
-      if (createMode === modifier) {
-          setCreateMode("normal"); // toggle off
-      } else {
-          setCreateMode(modifier); // toggle on (mutually exclusive)
-      }
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-32">
@@ -500,7 +493,7 @@ export default function BattlesPage() {
                 </button>
               </div>
               <button
-                onClick={() => { setView("create"); setCreateMode("normal"); setSelectedCaseIds([]); }}
+                onClick={() => { setView("create"); setCreateModes([]); setSelectedCaseIds([]); }}
                 className="bg-[#1c7ced] text-white px-5 py-2.5 rounded-lg font-black hover:bg-[#186dc4] transition-colors shadow-[0_0_15px_rgba(28,124,237,0.3)] text-sm"
               >
                 Create Case Battle
