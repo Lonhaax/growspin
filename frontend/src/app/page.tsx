@@ -5,121 +5,259 @@ import { LiveBetsFeed } from "@/components/ui/LiveBetsFeed";
 import {
   Gamepad2,
   Coins,
-  Bomb,
-  CircleDot,
-  Dices,
-  AlignEndHorizontal,
-  Flame,
   Activity,
   Sparkles,
   ArrowRight,
   Zap,
+  Flame,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+  Trophy,
+  Star,
+  Gift
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/auth";
 
 export default function Home() {
-  // Games merged into CASINO_ORIGINALS
+  const [stats, setStats] = useState({ online: 247, wagered: 24592.50, pot: 0 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStats(prev => ({
+        ...prev,
+        online: Math.max(100, prev.online + Math.floor(Math.random() * 7) - 3)
+      }));
+    }, 5000);
+
+    apiFetch("/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.casinoPot !== undefined) {
+          setStats(prev => ({ ...prev, pot: data.casinoPot / 100 }));
+        }
+      })
+      .catch(console.error);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const CASINO_ORIGINALS = [
-    { name: "Case Battles", href: "/battles", image: "/battles.png", color: "#f43f5e" },
-    { name: "Cases", href: "/cases", image: "/cases.png", color: "#d946ef" },
-    { name: "PvP Jackpot", href: "/jackpot", image: "/jackpot.png", color: "#f97316" },
-    { name: "Coinflip", href: "/coinflip", image: "/coinflip.png", color: "#f59e0b" },
     { name: "Mines", href: "/mines", image: "/mines.png", color: "#ef4444" },
-    { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
     { name: "Crash", href: "/crash", image: "/crash.png", color: "#8b5cf6" },
+    { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
     { name: "Plinko", href: "/plinko", image: "/plinko.png", color: "#ec4899" },
+    { name: "PvP Jackpot", href: "/jackpot", image: "/jackpot.png", color: "#f97316" },
     { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
+    { name: "Slots", href: "/slots", image: "/slots.png", color: "#10b981" },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="max-w-7xl mx-auto space-y-12 pb-24 px-4 sm:px-0">
+      
       {/* Top Main Hero Banner */}
-      <section className="relative w-full rounded-2xl overflow-hidden border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] bg-gradient-to-r from-[#0d121c] to-[#121927] min-h-[260px] flex items-center mb-6">
-        {/* Mock background image */}
-        <div className="absolute inset-0 opacity-40 bg-[url('/main-banner.png')] bg-cover bg-center pointer-events-none mix-blend-screen" />
+      <section className="relative w-full rounded-3xl overflow-hidden border border-cyan-500/20 shadow-[0_0_50px_rgba(6,182,212,0.1)] bg-[#0d121c] min-h-[440px] flex items-center mt-4">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/10 to-[#0d121c] pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-full sm:w-2/3 opacity-30 bg-[url('/main-banner.png')] bg-cover bg-center pointer-events-none mix-blend-screen" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0d121c] via-[#0d121c]/80 to-transparent sm:w-2/3 pointer-events-none" />
         
-        <div className="relative z-10 p-8 sm:p-12 max-w-2xl">
-          <div className="text-xs font-bold text-cyan-400 uppercase tracking-widest mb-2">Welcome to</div>
-          <h1 className="text-5xl sm:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
-            GrowSpin
-          </h1>
-          <p className="text-[#878eab] font-medium text-sm sm:text-base mb-8 max-w-md">
-            The Premier Growtopia Diamond Lock Casino
-          </p>
-          <Link href="/cases" className="inline-flex items-center gap-2 px-6 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-lg transition-colors shadow-lg">
-            Get started <ArrowRight size={18} className="ml-1" />
+        <div className="relative z-10 p-8 sm:p-16 max-w-3xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest mb-6">
+              <Sparkles size={14} /> The #1 Growtopia Casino
+            </div>
+            
+            <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-lg leading-[1.1]">
+              Play. Win. <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Dominate.</span>
+            </h1>
+            
+            <p className="text-[#878eab] font-medium text-lg mb-10 max-w-xl leading-relaxed">
+              Experience provably fair originals, high-stakes case battles, and instant Diamond Lock deposits & withdrawals. The next generation of gambling is here.
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href="/cases" className="inline-flex items-center gap-2 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:-translate-y-1">
+                Start Playing <ArrowRight size={20} className="ml-1" />
+              </Link>
+              <Link href="/provably-fair" className="inline-flex items-center gap-2 px-8 py-4 bg-[#1b1e26] hover:bg-[#252936] border border-[#2a2d3a] text-white font-bold rounded-xl transition-all hover:-translate-y-1">
+                <ShieldCheck size={20} className="text-emerald-400" /> Provably Fair
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Live Stats Strip */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-6 flex items-center gap-5 relative overflow-hidden group hover:border-[#2a2d3a] hover:bg-[#1a1d24] transition-colors">
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity"><Users size={120} /></div>
+          <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]">
+            <Activity size={28} />
+          </div>
+          <div className="relative z-10">
+            <div className="text-[10px] font-black text-[#7a819c] uppercase tracking-widest mb-1">Players Online</div>
+            <div className="text-3xl font-black text-white tracking-tight">{stats.online.toLocaleString()}</div>
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-6 flex items-center gap-5 relative overflow-hidden group hover:border-[#2a2d3a] hover:bg-[#1a1d24] transition-colors">
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity"><TrendingUp size={120} /></div>
+          <div className="w-14 h-14 shrink-0 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]">
+            <Coins size={28} />
+          </div>
+          <div className="relative z-10">
+            <div className="text-[10px] font-black text-[#7a819c] uppercase tracking-widest mb-1">Total Wagered</div>
+            <div className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              {stats.wagered.toLocaleString()}
+              <img src="/dl.webp" className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]" alt="DL" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-6 flex items-center gap-5 relative overflow-hidden group hover:border-[#2a2d3a] hover:bg-[#1a1d24] transition-colors">
+          <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity"><Trophy size={120} /></div>
+          <div className="w-14 h-14 shrink-0 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 shadow-[inset_0_0_20px_rgba(245,158,11,0.1)]">
+            <Trophy size={28} />
+          </div>
+          <div className="relative z-10">
+            <div className="text-[10px] font-black text-[#7a819c] uppercase tracking-widest mb-1">Casino Pot</div>
+            <div className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              {stats.pot > 0 ? stats.pot.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "---"}
+              <img src="/dl.webp" className="w-6 h-6 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" alt="DL" />
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Featured Games */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+              <Flame className="text-amber-500" size={24} /> Popular Right Now
+            </h2>
+            <p className="text-sm text-[#717894] mt-1 font-medium">The most played games on GrowSpin</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link href="/battles" className="group relative rounded-2xl overflow-hidden bg-[#15181f] border border-[#2a2d3a] hover:border-[#f43f5e] transition-all duration-300 aspect-[16/10] flex flex-col items-center justify-center hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(244,63,94,0.3)]">
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-[#0d121c]/40 to-transparent z-10 opacity-80" />
+             <img src="/battles.png" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 mix-blend-lighten" />
+             <div className="relative z-20 flex flex-col items-center mt-auto pb-8">
+               <div className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,0,0,1)] mb-3 group-hover:text-[#f43f5e] transition-colors">Case Battles</div>
+               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#f43f5e]/20 text-[#f43f5e] border border-[#f43f5e]/30 text-xs font-black uppercase tracking-widest backdrop-blur-sm">
+                 <Zap size={14} /> High Volatility
+               </div>
+             </div>
+          </Link>
+          
+          <Link href="/cases" className="group relative rounded-2xl overflow-hidden bg-[#15181f] border border-[#2a2d3a] hover:border-[#d946ef] transition-all duration-300 aspect-[16/10] flex flex-col items-center justify-center hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(217,70,239,0.3)]">
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-[#0d121c]/40 to-transparent z-10 opacity-80" />
+             <img src="/cases.png" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 mix-blend-lighten" />
+             <div className="relative z-20 flex flex-col items-center mt-auto pb-8">
+               <div className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,0,0,1)] mb-3 group-hover:text-[#d946ef] transition-colors">Unboxing</div>
+               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#d946ef]/20 text-[#d946ef] border border-[#d946ef]/30 text-xs font-black uppercase tracking-widest backdrop-blur-sm">
+                 <Star size={14} /> Best Value
+               </div>
+             </div>
+          </Link>
+
+          <Link href="/coinflip" className="group relative rounded-2xl overflow-hidden bg-[#15181f] border border-[#2a2d3a] hover:border-[#f59e0b] transition-all duration-300 aspect-[16/10] flex flex-col items-center justify-center hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)]">
+             <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-[#0d121c]/40 to-transparent z-10 opacity-80" />
+             <img src="/coinflip.png" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 mix-blend-lighten" />
+             <div className="relative z-20 flex flex-col items-center mt-auto pb-8">
+               <div className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,0,0,1)] mb-3 group-hover:text-[#f59e0b] transition-colors">Coinflip</div>
+               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#f59e0b]/20 text-[#f59e0b] border border-[#f59e0b]/30 text-xs font-black uppercase tracking-widest backdrop-blur-sm">
+                 <Users size={14} /> PvP Action
+               </div>
+             </div>
           </Link>
         </div>
       </section>
 
-      {/* Sub Promo Banners */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 items-start">
-        {/* Rakeback */}
-        <Link href="/rewards" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
-          <img 
-            src="/rakeback.png" 
-            alt="Rakeback" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Rakeback' }}
-          />
-        </Link>
-
-        {/* Affiliate */}
-        <Link href="/affiliates" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
-          <img 
-            src="/affiliate.png" 
-            alt="Affiliate" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Affiliate' }}
-          />
-        </Link>
-
-        {/* Free to Play */}
-        <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="relative rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group flex justify-center">
-          <img 
-            src="/free.png" 
-            alt="Free to Play" 
-            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block" 
-            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/1a1e2b/10b981?text=Free+to+Play' }}
-          />
-        </a>
-      </section>
-
-      {/* Unified Originals Grid */}
-
-      {/* Casino Originals Grid */}
-      <section className="space-y-4">
+      {/* Casino Originals */}
+      <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Gamepad2 className="text-accent-green" size={24} />
-              Casino Originals
+              <Gamepad2 className="text-accent-blue" size={24} />
+              Originals
             </h2>
-            <p className="text-xs text-[#717894] mt-0.5 font-medium">Instant, provably fair mini-games engineered for speed</p>
+            <p className="text-sm text-[#717894] mt-1 font-medium">Instant, provably fair mini-games engineered for speed</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
           {CASINO_ORIGINALS.map((game) => (
             <Link
               key={game.name}
               href={game.href}
-              className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl shadow-md block aspect-[3/4] bg-[#12141c] border-2"
-              style={{ borderColor: game.color }}
+              className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] block aspect-[3/4] bg-[#12141c] border border-[#2a2d3a] hover:border-transparent"
             >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none border-2 rounded-2xl z-20" style={{ borderColor: game.color }} />
               <img 
                 src={game.image} 
                 alt={game.name} 
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d121c] via-[#0d121c]/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-center z-10 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                <span className="text-lg font-black text-white drop-shadow-md">{game.name}</span>
+              </div>
             </Link>
           ))}
         </div>
       </section>
-      {/* Live Bets Feed */}
-      <LiveBetsFeed />
+
+      {/* Promos */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link href="/rewards" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
+          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <img 
+            src="/rakeback.png" 
+            alt="Rakeback" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/10b981?text=Rakeback' }}
+          />
+        </Link>
+        <Link href="/affiliates" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
+          <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <img 
+            src="/affiliate.png" 
+            alt="Affiliate" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/3b82f6?text=Affiliate' }}
+          />
+        </Link>
+        <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="relative rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 group flex justify-center bg-[#15181f] border border-[#2a2d3a]">
+          <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          <img 
+            src="/free.png" 
+            alt="Free to Play" 
+            className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500 block mix-blend-screen" 
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x270/15181f/f59e0b?text=Free+to+Play' }}
+          />
+        </a>
+      </section>
+
+      {/* Live Feed */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <Activity className="text-cyan-400" size={24} /> Live Drops & Bets
+          </h2>
+        </div>
+        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl">
+          <LiveBetsFeed />
+        </div>
+      </section>
+      
     </div>
   );
 }
