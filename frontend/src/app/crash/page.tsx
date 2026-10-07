@@ -1,12 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CryptoCrashGame from '@/components/games/CrashGame/CryptoCrashGame';
 import { ProvablyFairModal } from "@/components/ui/ProvablyFairModal";
 import { ShieldCheck, TrendingUp } from "lucide-react";
+import { apiFetch } from "@/lib/auth";
 
 export default function CrashPage() {
   const [isFairOpen, setIsFairOpen] = useState(false);
+  const [rtp, setRtp] = useState<string>("95.00");
+
+  useEffect(() => {
+    apiFetch("/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.crashHouseEdge !== undefined) {
+          setRtp((100 - data.crashHouseEdge * 100).toFixed(2));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto py-8 space-y-6">
@@ -44,7 +57,7 @@ export default function CrashPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-[#878eab] font-bold">RTP</span>
-                <span className="text-white font-bold">99.00%</span>
+                <span className="text-white font-bold">{rtp}%</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#878eab] font-bold">Max Bet</span>

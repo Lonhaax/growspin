@@ -6,15 +6,13 @@ import { apiFetch } from '@/lib/auth';
 import { ShieldCheck, Settings, Bomb } from 'lucide-react';
 import { ProvablyFairModal } from '@/components/ui/ProvablyFairModal';
 
-const HOUSE_EDGE = 0.99;
-
-const calculateMultiplier = (mines: number, hits: number) => {
+const calculateMultiplier = (mines: number, hits: number, rtpFraction: number) => {
     if (hits === 0) return 1.00;
     let mult = 1;
     for (let i = 0; i < hits; i++) {
         mult *= (25 - i) / (25 - mines - i);
     }
-    return mult * HOUSE_EDGE;
+    return mult * rtpFraction;
 };
 
 const BOMB_URL = "https://static.wikia.nocookie.net/growtopia/images/8/8f/ItemSprites.png/revision/latest/window-crop/width/32/x-offset/2112/y-offset/736/window-width/32/window-height/32?format=webp&fill=cb-20260219100732";
@@ -36,6 +34,18 @@ export default function MinesPage() {
 
   const [loading, setLoading] = useState(false);
   const [pfModalOpen, setPfModalOpen] = useState(false);
+  const [rtp, setRtp] = useState<string>("95.00");
+
+  useEffect(() => {
+    apiFetch("/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.minesHouseEdge !== undefined) {
+          setRtp((100 - data.minesHouseEdge * 100).toFixed(2));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // Check for active game on mount
   useEffect(() => {
@@ -143,7 +153,8 @@ export default function MinesPage() {
 
   const numBetAmount = parseFloat(betAmount) * 100;
   const isInsufficient = !isNaN(numBetAmount) && numBetAmount > balance && status === 'idle';
-  const nextMultiplier = calculateMultiplier(minesCount, hits + 1);
+  const rtpFraction = parseFloat(rtp) / 100;
+  const nextMultiplier = calculateMultiplier(minesCount, hits + 1, rtpFraction);
   const nextProfit = numBetAmount * nextMultiplier - numBetAmount;
 
   return (
@@ -298,7 +309,7 @@ export default function MinesPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#878eab] font-bold">RTP</span>
-                  <span className="text-white font-bold">99.00%</span>
+                  <span className="text-white font-bold">{rtp}%</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[#878eab] font-bold">Max Bet</span>

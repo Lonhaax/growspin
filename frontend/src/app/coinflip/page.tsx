@@ -21,6 +21,18 @@ export default function CoinflipPage() {
 
   // For the UI to show streak text
   const [hits, setHits] = useState(0);
+  const [rtp, setRtp] = useState<string>("95.00");
+
+  useEffect(() => {
+    apiFetch("/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.coinflipHouseEdge !== undefined) {
+          setRtp((100 - data.coinflipHouseEdge * 100).toFixed(2));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleFlip = async () => {
     if (!user) {
@@ -227,7 +239,7 @@ export default function CoinflipPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#878eab] font-bold">RTP</span>
-                  <span className="text-white font-bold">96.00%</span>
+                  <span className="text-white font-bold">{rtp}%</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[#878eab] font-bold">Max Bet</span>

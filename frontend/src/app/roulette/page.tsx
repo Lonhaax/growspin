@@ -21,6 +21,7 @@ export default function RoulettePage() {
   const [history, setHistory] = useState<string[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
   const [error, setError] = useState("");
+  const [rtp, setRtp] = useState<string>("95.00");
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const [wheelOffset, setWheelOffset] = useState(0);
@@ -54,6 +55,15 @@ export default function RoulettePage() {
           setTimer(data.timer);
           setHistory(data.history);
           setPlayers(data.players);
+        }
+      })
+      .catch(console.error);
+
+    apiFetch("/settings")
+      .then(res => res.json())
+      .then(data => {
+        if (data.rouletteHouseEdge !== undefined) {
+          setRtp((100 - data.rouletteHouseEdge * 100).toFixed(2));
         }
       })
       .catch(console.error);
@@ -346,7 +356,7 @@ export default function RoulettePage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-[#878eab] font-bold">RTP</span>
-                <span className="text-white font-bold">93.33%</span>
+                <span className="text-white font-bold">{rtp}%</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#878eab] font-bold">Max Bet</span>

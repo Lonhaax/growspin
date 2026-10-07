@@ -3527,6 +3527,13 @@ app.get('/api/settings', async (req: Request, res: Response) => {
       coinflipEnabled: settings.coinflipEnabled,
       rouletteEnabled: settings.rouletteEnabled,
       minesEnabled: settings.minesEnabled,
+      crashEnabled: settings.crashEnabled,
+      slotsEnabled: settings.slotsEnabled,
+      coinflipHouseEdge: settings.coinflipHouseEdge,
+      rouletteHouseEdge: settings.rouletteHouseEdge,
+      minesHouseEdge: settings.minesHouseEdge,
+      crashHouseEdge: settings.crashHouseEdge,
+      slotsHouseEdge: settings.slotsHouseEdge,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
