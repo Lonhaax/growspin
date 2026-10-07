@@ -752,92 +752,7 @@ export default function BattlesPage() {
                     {/* RIGHT COLUMN: Sidebar (Darker background) */}
                     <div className="w-[340px] shrink-0 bg-[#15181f] border border-[#2a2d3a] rounded-xl p-5 self-start shadow-xl">
                         
-                        {/* Modifiers / Battle Settings */}
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                  <Settings2 size={16} className="text-[#a0a5b8]" />
-                                  <h3 className="text-white font-black text-sm">Modifiers</h3>
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-col gap-2">
-                                <button 
-                                  onClick={() => toggleMode("crazy")}
-                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('crazy') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Ghost size={16} className={createModes.includes('crazy') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
-                                        <div className="text-left">
-                                            <div className={`font-black text-xs ${createModes.includes('crazy') ? 'text-white' : 'text-[#a0a5b8]'}`}>Crazy Mode</div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('crazy') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('crazy') ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-                                
-                                <button 
-                                  onClick={() => toggleMode("terminal")}
-                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('terminal') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Terminal size={16} className={createModes.includes('terminal') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
-                                        <div className="text-left">
-                                            <div className={`font-black text-xs ${createModes.includes('terminal') ? 'text-white' : 'text-[#a0a5b8]'}`}>Terminal Mode</div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('terminal') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('terminal') ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
 
-                                <button 
-                                  onClick={() => toggleMode("jackpot")}
-                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('jackpot') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Gem size={16} className={createModes.includes('jackpot') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
-                                        <div className="text-left">
-                                            <div className={`font-black text-xs ${createModes.includes('jackpot') ? 'text-white' : 'text-[#a0a5b8]'}`}>Jackpot Mode</div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('jackpot') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('jackpot') ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-
-                                <button 
-                                  onClick={() => toggleMode("shared")}
-                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('shared') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Users size={16} className={createModes.includes('shared') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
-                                        <div className="text-left">
-                                            <div className={`font-black text-xs ${createModes.includes('shared') ? 'text-white' : 'text-[#a0a5b8]'}`}>Shared Mode</div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('shared') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('shared') ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-
-                                <button 
-                                  onClick={() => setCreateFast(!createFast)}
-                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all mt-2 ${createFast ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Zap size={16} className={createFast ? 'text-amber-500' : 'text-[#a0a5b8]'} />
-                                        <div className="text-left">
-                                            <div className={`font-black text-xs ${createFast ? 'text-white' : 'text-[#a0a5b8]'}`}>Fast Spin</div>
-                                        </div>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createFast ? 'bg-amber-500' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createFast ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
 
                         {/* Select Players */}
                         <div className="mb-6">
@@ -923,21 +838,35 @@ export default function BattlesPage() {
                         <div className="mb-6">
                             <h3 className="text-[#a0a5b8] font-black text-xs mb-3">Modifiers</h3>
                             <div className="space-y-2">
-                                <div className="flex items-center justify-between p-3 bg-[#1a1d24] rounded-lg border border-[#2a2d3a]">
-                                    <span className="text-[#7a819c] font-bold text-[11px] flex items-center gap-1.5"><PackageOpen size={14} /> Jackpot Mode</span>
-                                    <div className="w-9 h-5 rounded-full bg-[#2a2d3a] relative cursor-pointer"><div className="w-3.5 h-3.5 rounded-full bg-[#4d5366] absolute top-[3px] left-[3px]" /></div>
+                                <div onClick={() => toggleMode('jackpot')} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${createModes.includes('jackpot') ? 'bg-accent-blue/10 border-accent-blue' : 'bg-[#1a1d24] border-[#2a2d3a]'}`}>
+                                    <span className={`font-bold text-[11px] flex items-center gap-1.5 ${createModes.includes('jackpot') ? 'text-accent-blue' : 'text-[#7a819c]'}`}><PackageOpen size={14} /> Jackpot Mode</span>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${createModes.includes('jackpot') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-transform ${createModes.includes('jackpot') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-[#1a1d24] rounded-lg border border-[#2a2d3a]">
-                                    <span className="text-[#7a819c] font-bold text-[11px] flex items-center gap-1.5"><Target size={14} /> Crazy Mode</span>
-                                    <div className="w-9 h-5 rounded-full bg-[#2a2d3a] relative cursor-pointer"><div className="w-3.5 h-3.5 rounded-full bg-[#4d5366] absolute top-[3px] left-[3px]" /></div>
+                                <div onClick={() => toggleMode('crazy')} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${createModes.includes('crazy') ? 'bg-accent-blue/10 border-accent-blue' : 'bg-[#1a1d24] border-[#2a2d3a]'}`}>
+                                    <span className={`font-bold text-[11px] flex items-center gap-1.5 ${createModes.includes('crazy') ? 'text-accent-blue' : 'text-[#7a819c]'}`}><Target size={14} /> Crazy Mode</span>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${createModes.includes('crazy') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-transform ${createModes.includes('crazy') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-[#1a1d24] rounded-lg border border-[#2a2d3a]">
-                                    <span className="text-[#7a819c] font-bold text-[11px] flex items-center gap-1.5"><ShieldCheck size={14} /> Terminal Mode</span>
-                                    <div className="w-9 h-5 rounded-full bg-[#2a2d3a] relative cursor-pointer"><div className="w-3.5 h-3.5 rounded-full bg-[#4d5366] absolute top-[3px] left-[3px]" /></div>
+                                <div onClick={() => toggleMode('terminal')} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${createModes.includes('terminal') ? 'bg-accent-blue/10 border-accent-blue' : 'bg-[#1a1d24] border-[#2a2d3a]'}`}>
+                                    <span className={`font-bold text-[11px] flex items-center gap-1.5 ${createModes.includes('terminal') ? 'text-accent-blue' : 'text-[#7a819c]'}`}><ShieldCheck size={14} /> Terminal Mode</span>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${createModes.includes('terminal') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-transform ${createModes.includes('terminal') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-[#1a1d24] rounded-lg border border-[#2a2d3a]">
-                                    <span className="text-[#7a819c] font-bold text-[11px] flex items-center gap-1.5"><Swords size={14} /> Biggest Pull</span>
-                                    <div className="w-9 h-5 rounded-full bg-[#2a2d3a] relative cursor-pointer"><div className="w-3.5 h-3.5 rounded-full bg-[#4d5366] absolute top-[3px] left-[3px]" /></div>
+                                <div onClick={() => toggleMode('shared')} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${createModes.includes('shared') ? 'bg-accent-blue/10 border-accent-blue' : 'bg-[#1a1d24] border-[#2a2d3a]'}`}>
+                                    <span className={`font-bold text-[11px] flex items-center gap-1.5 ${createModes.includes('shared') ? 'text-accent-blue' : 'text-[#7a819c]'}`}><Users size={14} /> Shared Mode</span>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${createModes.includes('shared') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-transform ${createModes.includes('shared') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </div>
+                                <div onClick={() => setCreateFast(!createFast)} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${createFast ? 'bg-amber-500/10 border-amber-500' : 'bg-[#1a1d24] border-[#2a2d3a]'}`}>
+                                    <span className={`font-bold text-[11px] flex items-center gap-1.5 ${createFast ? 'text-amber-500' : 'text-[#7a819c]'}`}><Zap size={14} /> Fast Spin</span>
+                                    <div className={`w-9 h-5 rounded-full relative transition-colors ${createFast ? 'bg-amber-500' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-transform ${createFast ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
