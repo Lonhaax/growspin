@@ -213,6 +213,8 @@ model SiteSettings {
   borrowEnabled         Boolean  @default(true)
   slotsEnabled          Boolean  @default(true)
   slotsHouseEdge        Float    @default(0.05)
+  crashEnabled          Boolean  @default(true)
+  crashHouseEdge        Float    @default(0.05)
   casinoPot             Int      @default(0)
   xpBase                Int      @default(1000)
 }

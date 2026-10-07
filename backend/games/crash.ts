@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -22,8 +23,10 @@ export class CrashManager {
   public timer: number = 10;
   public currentMultiplier: number = 1.00;
   public crashPoint: number = 1.00;
+  public serverSeed: string = '';
+  public salt: string = '0000000000000000000301e2801a9a9598bfb114e574a91a887f2132f33047e6'; // generic salt
   public players: Map<number, CrashPlayer> = new Map();
-  public history: { id: string, crashPoint: number }[] = [];
+  public history: { id: string, crashPoint: number, hash: string }[] = [];
   public startTime: number = 0;
   private loopInterval: NodeJS.Timeout | null = null;
   private tickInterval: NodeJS.Timeout | null = null;
@@ -52,11 +55,11 @@ export class CrashManager {
     }, 1000);
   }
 
-  private startGame() {
+  private async startGame() {
     this.state = 'running';
     this.currentMultiplier = 1.00;
     this.startTime = Date.now();
-    this.crashPoint = this.generateCrashPoint();
+    this.crashPoint = await this.generateCrashPoint();
 
     this.io.emit('crash:start', { state: this.state, multiplier: this.currentMultiplier });
 
@@ -104,7 +107,7 @@ export class CrashManager {
       }
     });
 
-    this.history.unshift({ id: Math.random().toString(36).substring(7), crashPoint: this.crashPoint });
+    this.history.unshift({ id: Math.random().toString(36).substring(7), crashPoint: this.crashPoint, hash: this.serverSeed });
     if (this.history.length > 30) this.history.pop();
 
     this.io.emit('crash:crashed', { crashPoint: this.crashPoint, history: this.history, players: Array.from(this.players.values()) });
@@ -114,11 +117,20 @@ export class CrashManager {
     }, 4000); // Wait 4s before starting next round
   }
 
-  private generateCrashPoint() {
-    const e = 0.95; // 5% house edge
-    const r = Math.random();
-    if (r < 0.05) return 1.00; // instant crash 5%
-    const rawCrash = e / (1 - r);
+  private async generateCrashPoint() {
+    const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
+    const edge = settings?.crashHouseEdge ?? 0.05;
+    
+    this.serverSeed = crypto.randomBytes(32).toString('hex');
+    const hash = crypto.createHmac('sha256', this.serverSeed).update(this.salt).digest('hex');
+    
+    // 52 bits of randomness
+    const h = parseInt(hash.slice(0, 13), 16);
+    const eVal = Math.pow(2, 52);
+    const r = h / eVal;
+
+    if (r < edge) return 1.00; // instant crash based on house edge
+    const rawCrash = (1 - edge) / (1 - r);
     return Math.max(1.00, Math.floor(rawCrash * 100) / 100);
   }
 

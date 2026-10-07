@@ -1291,7 +1291,7 @@ export default function AdminPage() {
           </h2>
 
           <div className="space-y-4">
-            {['coinflip', 'roulette', 'mines'].map(game => (
+            {['coinflip', 'roulette', 'mines', 'crash'].map(game => (
               <div key={game} className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a] flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white capitalize">{game}</div>
