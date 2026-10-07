@@ -267,14 +267,14 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
     if (strip.length > 0) {
       let isMounted = true;
       const runAnim = async () => {
-        await controls.set({ y: 0 });
-        const containerHeight = trackRef.current ? trackRef.current.clientHeight : 400;
-        const itemCenter = (55 * 156) + 72; // 144 height + 12 gap = 156 step
-        const jitter = (Math.random() - 0.5) * 80;
-        const targetY = (containerHeight / 2) - itemCenter + jitter;
+        await controls.set({ x: 0 });
+        const containerWidth = trackRef.current ? trackRef.current.clientWidth : 800;
+        const itemCenter = (55 * 104) + 48; // 96 width (24rem=96px) + 8 gap = 104 step
+        const jitter = (Math.random() - 0.5) * 60;
+        const targetX = (containerWidth / 2) - itemCenter + jitter;
 
         await controls.start({
-          y: targetY,
+          x: targetX,
           transition: { duration: isFast ? 0.8 : 4.5, ease: [0.12, 0.8, 0.15, 1] }
         });
         if (isMounted) setTimeout(onComplete, isFast ? 500 : 1500);
@@ -285,46 +285,47 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
   }, [strip]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-lg flex flex-col items-center">
-        <h2 className="text-4xl font-black text-white mb-2 uppercase tracking-widest text-shadow-[0_0_20px_rgba(255,255,255,0.5)]">Jackpot Spin!</h2>
-        <p className="text-accent-blue font-bold mb-8">Rolling for the winner...</p>
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="w-full mt-6 flex flex-col items-center overflow-hidden">
+      <div className="text-accent-blue font-black text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+        <PackageOpen size={14} /> Jackpot Spin
+      </div>
+      
+      <div className="relative w-full h-[120px] rounded-xl overflow-hidden bg-gradient-to-r from-[#1f222b] via-[#15181f] to-[#1f222b] border border-[#2a2d3a] shadow-inner mb-4">
+        {/* Center Target Line */}
+        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-yellow-400 z-20 shadow-[0_0_15px_rgba(234,179,8,1)] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,1)]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[10px] border-b-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,1)]" />
         
-        <div className="relative w-full h-[400px] rounded-3xl overflow-hidden bg-gradient-to-r from-[#1f222b] to-[#15181f] border-2 border-[#2a2d3a] shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 z-20 shadow-[0_0_15px_rgba(234,179,8,1)] pointer-events-none" />
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[16px] border-l-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,1)]" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[16px] border-r-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,1)]" />
-          
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#15181f] to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#15181f] to-transparent z-10 pointer-events-none" />
-          
-          <div ref={trackRef} className="w-full h-full flex justify-center relative overflow-hidden">
-            <motion.div 
-              className="flex flex-col items-center w-full absolute top-0" 
-              initial={{ y: 0 }}
-              animate={controls} 
-              style={{ gap: '12px' }}
-            >
-              {strip.map((tId, i) => {
-                const members = teamStats[parseInt(tId)]?.members || [];
-                const isMulti = members.length > 1;
-                const participant = participants.find(p => members.includes(p.userId));
-                const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
-                
-                return (
-                  <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-2xl w-48 will-change-transform" style={{ height: '144px' }}>
-                    <div className="w-16 h-16 rounded-2xl bg-[#15181f] flex items-center justify-center text-3xl font-black text-white shadow-inner mb-3">
-                      {isMulti ? <Users size={36} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={36} className="text-accent-blue" /> : displayName[0])}
-                    </div>
-                    <div className="text-white font-black text-sm truncate w-full px-2 text-center">{displayName}</div>
+        {/* Fades */}
+        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#15181f] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#15181f] to-transparent z-10 pointer-events-none" />
+        
+        <div ref={trackRef} className="w-full h-full flex items-center relative overflow-hidden">
+          <motion.div 
+            className="flex items-center absolute left-0" 
+            initial={{ x: 0 }}
+            animate={controls} 
+            style={{ gap: '8px' }}
+          >
+            {strip.map((tId, i) => {
+              const members = teamStats[parseInt(tId)]?.members || [];
+              const isMulti = members.length > 1;
+              const participant = participants.find(p => members.includes(p.userId));
+              const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
+              
+              return (
+                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#1f222b] border border-[#2a2d3a] rounded-lg w-24 will-change-transform" style={{ height: '96px' }}>
+                  <div className="w-12 h-12 rounded-xl bg-[#15181f] flex items-center justify-center text-xl font-black text-white shadow-inner mb-2">
+                    {isMulti ? <Users size={20} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={20} className="text-accent-blue" /> : displayName[0])}
                   </div>
-                );
-              })}
-            </motion.div>
-          </div>
+                  <div className="text-white font-black text-[10px] truncate w-full px-2 text-center">{displayName}</div>
+                </div>
+              );
+            })}
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
