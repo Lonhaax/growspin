@@ -269,7 +269,7 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
       const runAnim = async () => {
         await controls.set({ x: 0 });
         const containerWidth = trackRef.current ? trackRef.current.clientWidth : 320;
-        const itemCenter = (55 * 42) + 21; // 40 width + 2 gap = 42 step
+        const itemCenter = (55 * 40) + 20; // 40 width, 0 gap = 40 step
         const jitter = (Math.random() - 0.5) * 30;
         const targetX = (containerWidth / 2) - itemCenter + jitter;
 
@@ -296,26 +296,17 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
         
         <div ref={trackRef} className="w-full h-full flex items-center relative overflow-hidden">
           <motion.div 
-            className="flex items-center absolute left-0" 
+            className="flex items-center absolute left-0 h-full" 
             initial={{ x: 0 }}
             animate={controls} 
-            style={{ gap: '2px' }}
+            style={{ gap: '0px' }}
           >
             {strip.map((tId, i) => {
-              const members = teamStats[parseInt(tId)]?.members || [];
-              const isMulti = members.length > 1;
-              const participant = participants.find(p => members.includes(p.userId));
-              const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
-              
               const PLAYER_COLORS = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#f43f5e'];
               const color = PLAYER_COLORS[parseInt(tId) % PLAYER_COLORS.length];
 
               return (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative rounded w-10 will-change-transform shadow-sm border border-black/20" style={{ height: '40px', backgroundColor: color }}>
-                  <div className="text-white font-black text-[10px] uppercase tracking-wider mix-blend-overlay drop-shadow-sm">
-                    {displayName.substring(0,3)}
-                  </div>
-                </div>
+                <div key={i} className="flex-shrink-0 w-10 h-full will-change-transform" style={{ backgroundColor: color }} />
               );
             })}
           </motion.div>
