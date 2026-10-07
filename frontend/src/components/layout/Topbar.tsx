@@ -209,15 +209,15 @@ export function Topbar() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => openAuthModal("login")}
-              className="px-6 py-2.5 text-sm font-bold text-white hover:text-accent-green transition-colors"
+              className="px-5 py-2.5 text-sm font-bold text-white hover:text-accent-blue transition-colors"
             >
-              Log in
+              Log In
             </button>
             <button
               onClick={() => openAuthModal("register")}
-              className="px-6 py-2.5 bg-accent-green text-black rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(0,230,118,0.4)] hover:bg-[#00c566] transition-colors"
+              className="px-5 py-2.5 bg-accent-blue text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:bg-blue-500 transition-colors"
             >
-              Sign up
+              Sign Up
             </button>
           </div>
         )}
