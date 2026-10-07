@@ -313,12 +313,14 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
               const participant = participants.find(p => members.includes(p.userId));
               const displayName = isMulti ? `Team ${parseInt(tId)+1}` : (participant?.username || members[0] || 'Unknown');
               
+              const PLAYER_COLORS = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#f43f5e'];
+              const color = PLAYER_COLORS[parseInt(tId) % PLAYER_COLORS.length];
+
               return (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative bg-[#15181f] border border-[#2a2d3a] rounded w-12 will-change-transform" style={{ height: '48px' }}>
-                  <div className="w-6 h-6 rounded bg-[#1f222b] flex items-center justify-center text-[10px] font-black text-white shadow-inner mb-0.5">
-                    {isMulti ? <Users size={12} className="text-accent-blue" /> : (members[0]?.startsWith('bot-') ? <Bot size={12} className="text-accent-blue" /> : displayName[0])}
+                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative rounded w-12 will-change-transform shadow-md border-2 border-black/20" style={{ height: '48px', backgroundColor: color }}>
+                  <div className="text-white font-black text-[12px] uppercase tracking-wider mix-blend-overlay drop-shadow-md">
+                    {displayName.substring(0,3)}
                   </div>
-                  <div className="text-white font-black text-[8px] truncate w-full px-1 text-center">{displayName}</div>
                 </div>
               );
             })}
