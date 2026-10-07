@@ -38,7 +38,7 @@ export function SplashScreen() {
             <motion.img 
               src="/logo.png" 
               alt="GrowSpin" 
-              className="h-16 w-auto object-contain drop-shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+              className="h-24 w-auto object-contain drop-shadow-[0_0_15px_rgba(37,99,235,0.4)]"
               animate={{ 
                 y: [0, -5, 0],
               }}
