@@ -20,7 +20,7 @@ type ChatMsg = {
 };
 
 export function ChatSidebar() {
-  const { user, openAuthModal } = useAuth();
+  const { user, isLoading, openAuthModal } = useAuth();
   const { fetchBalance } = useWallet();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
@@ -239,15 +239,15 @@ export function ChatSidebar() {
               <form onSubmit={handleSend} className="relative">
                 <input
                   type="text"
-                  placeholder={user ? "Say something..." : "Login to chat"}
+                  placeholder={isLoading ? "Loading..." : user ? "Say something..." : "Login to chat"}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  disabled={!user || isSending}
+                  disabled={isLoading || !user || isSending}
                   className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-lg pl-3 pr-10 py-2 text-sm text-white focus:outline-none focus:border-accent-blue disabled:opacity-50 transition-colors"
                 />
                 <button 
                   type="submit"
-                  disabled={!user || isSending || !input.trim()}
+                  disabled={isLoading || !user || isSending || !input.trim()}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-accent-blue hover:text-blue-400 disabled:opacity-50 transition-colors"
                 >
                   <Send size={16} />

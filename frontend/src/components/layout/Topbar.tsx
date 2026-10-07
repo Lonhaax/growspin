@@ -17,7 +17,7 @@ import ProfileModal from "@/components/profile/ProfileModal";
 import { InventoryModal } from "@/components/inventory/InventoryModal";
 
 export function Topbar() {
-  const { user, logout, refreshUser, openAuthModal } = useAuth();
+  const { user, isLoading, logout, refreshUser, openAuthModal } = useAuth();
   const { balance } = useWallet();
   const { toggleSidebar } = useLayout();
   const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm } = useCustomModal();
@@ -67,7 +67,13 @@ export function Topbar() {
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        {user ? (
+        {isLoading ? (
+          <div className="flex items-center gap-3 animate-pulse">
+            <div className="h-10 w-32 bg-[#1b202e] rounded-lg"></div>
+            <div className="h-8 w-8 bg-[#1b202e] rounded-full hidden sm:block"></div>
+            <div className="h-8 w-8 bg-[#1b202e] rounded-full"></div>
+          </div>
+        ) : user ? (
           <>
             {/* Wallet Group */}
             <div className="flex items-center bg-[#1b202e] rounded-lg p-[2px]">
