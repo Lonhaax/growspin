@@ -1764,6 +1764,12 @@ app.post('/api/play/mines/start', requireAuth, requireNotFrozen, async (req: Aut
         if (!user) throw new Error('User not found');
         if (user.mockBalance < amount) throw new Error('Insufficient balance');
 
+        // Cleanup any abandoned sessions to prevent active-game recovery bugs
+        await tx.minesGame.updateMany({
+          where: { userId, status: 'playing' },
+          data: { status: 'blown_up' }
+        });
+
         // Deduct bet amount upfront
         const updatedUser = await tx.user.update({
           where: { id: userId },
