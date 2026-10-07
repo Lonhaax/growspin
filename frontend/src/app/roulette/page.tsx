@@ -280,7 +280,7 @@ export default function RoulettePage() {
         {/* Red Players */}
         <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
           <div className="flex items-center gap-2 mb-4 text-[#f44336] font-black text-xl">
-            <Wrench size={24} /> Red <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'red').length} Bets</span>
+            <img src="/wrench.webp" alt="Red" className="w-6 h-6 object-contain opacity-80" /> Red <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'red').length} Bets</span>
           </div>
           <div className="space-y-2 overflow-y-auto pr-2 flex-1">
             {players.filter(p => p.betOn === 'red').map((p, i) => (
@@ -298,7 +298,7 @@ export default function RoulettePage() {
         {/* Green Players */}
         <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
           <div className="flex items-center gap-2 mb-4 text-[#00c74d] font-black text-xl">
-            <Clover size={24} /> Green <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'green').length} Bets</span>
+            <img src="/luck-plant.webp" alt="Green" className="w-6 h-6 object-contain opacity-80" /> Green <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'green').length} Bets</span>
           </div>
           <div className="space-y-2 overflow-y-auto pr-2 flex-1">
             {players.filter(p => p.betOn === 'green').map((p, i) => (
@@ -316,7 +316,7 @@ export default function RoulettePage() {
         {/* Black Players */}
         <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
           <div className="flex items-center gap-2 mb-4 text-white font-black text-xl">
-            <HandMetal size={24} className="text-[#7a819c]" /> Black <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'black').length} Bets</span>
+            <img src="/fist.webp" alt="Black" className="w-6 h-6 object-contain opacity-80" /> Black <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'black').length} Bets</span>
           </div>
           <div className="space-y-2 overflow-y-auto pr-2 flex-1">
             {players.filter(p => p.betOn === 'black').map((p, i) => (
