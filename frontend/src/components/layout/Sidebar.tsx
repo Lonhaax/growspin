@@ -82,13 +82,6 @@ export function Sidebar() {
       animate={{ width: isSidebarOpen ? 256 : 64 }}
       className="flex-shrink-0 border-r border-[#1f222b] bg-[#11141e] h-full flex flex-col pt-4 overflow-y-auto hidden md:flex z-10 relative overflow-x-hidden"
     >
-      <button 
-        onClick={toggleSidebar}
-        className="absolute top-4 right-3 text-[#626983] hover:text-white bg-[#1b202e] rounded-md p-1 transition-colors z-20"
-      >
-        <ChevronLeft size={16} className={`transition-transform ${!isSidebarOpen ? "rotate-180" : ""}`} />
-      </button>
-
       {/* Search Bar */}
       <div className={`px-4 mb-6 transition-opacity duration-200 ${isSidebarOpen ? "opacity-100" : "opacity-0 invisible h-0 mb-0"}`}>
         <div className="relative">

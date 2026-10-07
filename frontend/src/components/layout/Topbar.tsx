@@ -59,7 +59,7 @@ export function Topbar() {
 
 
           <Link href="/" className="flex items-center gap-2 ml-2">
-            <img src="/logo.png" alt="GrowSpin" className="h-10 w-auto object-contain" />
+            <img src="/logo.png" alt="GrowSpin" className="h-8 w-auto object-contain" />
           </Link>
         </div>
 
