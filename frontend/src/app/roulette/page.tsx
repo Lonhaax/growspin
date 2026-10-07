@@ -275,6 +275,62 @@ export default function RoulettePage() {
             </div>
         </div>
       </div>
+      {/* Players List */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Red Players */}
+        <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
+          <div className="flex items-center gap-2 mb-4 text-[#f44336] font-black text-xl">
+            <Wrench size={24} /> Red <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'red').length} Bets</span>
+          </div>
+          <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+            {players.filter(p => p.betOn === 'red').map((p, i) => (
+              <div key={i} className="flex justify-between items-center bg-[#15181f] p-3 rounded-xl border border-[#2a2d3a]">
+                <div className="text-white font-bold text-sm truncate">{p.username}</div>
+                <div className="flex items-center gap-1 text-white font-black text-sm">
+                  <img src="/dl.webp" alt="DL" className="w-4 h-4 object-contain drop-shadow-[0_2px_6px_rgba(6,182,212,0.4)]" />
+                  {(p.amount / 100).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Green Players */}
+        <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
+          <div className="flex items-center gap-2 mb-4 text-[#00c74d] font-black text-xl">
+            <Clover size={24} /> Green <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'green').length} Bets</span>
+          </div>
+          <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+            {players.filter(p => p.betOn === 'green').map((p, i) => (
+              <div key={i} className="flex justify-between items-center bg-[#15181f] p-3 rounded-xl border border-[#2a2d3a]">
+                <div className="text-white font-bold text-sm truncate">{p.username}</div>
+                <div className="flex items-center gap-1 text-white font-black text-sm">
+                  <img src="/dl.webp" alt="DL" className="w-4 h-4 object-contain drop-shadow-[0_2px_6px_rgba(6,182,212,0.4)]" />
+                  {(p.amount / 100).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Black Players */}
+        <div className="bg-[#1f222b] border border-[#2a2d3a] rounded-3xl p-6 shadow-xl flex flex-col max-h-[400px]">
+          <div className="flex items-center gap-2 mb-4 text-white font-black text-xl">
+            <HandMetal size={24} className="text-[#7a819c]" /> Black <span className="text-[#7a819c] text-sm ml-auto">{players.filter(p => p.betOn === 'black').length} Bets</span>
+          </div>
+          <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+            {players.filter(p => p.betOn === 'black').map((p, i) => (
+              <div key={i} className="flex justify-between items-center bg-[#15181f] p-3 rounded-xl border border-[#2a2d3a]">
+                <div className="text-white font-bold text-sm truncate">{p.username}</div>
+                <div className="flex items-center gap-1 text-white font-black text-sm">
+                  <img src="/dl.webp" alt="DL" className="w-4 h-4 object-contain drop-shadow-[0_2px_6px_rgba(6,182,212,0.4)]" />
+                  {(p.amount / 100).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
