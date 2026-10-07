@@ -1,0 +1,275 @@
+.crypto-crash-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+}
+
+.crash-history-strip {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    background: #1f222b;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    border: 1px solid #2a2d3a;
+}
+
+.history-item {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.history-item.x1 { color: #8ea8c3; background: rgba(142, 168, 195, 0.1); }
+.history-item.x2 { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.history-item.x3 { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+
+.crash-container {
+    display: flex;
+    gap: 20px;
+    height: 500px;
+}
+
+.crash-left {
+    width: 320px;
+    background: #1f222b;
+    border: 1px solid #2a2d3a;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bet-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-row {
+    display: flex;
+    align-items: center;
+    background: #15181f;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 0 15px;
+    height: 48px;
+}
+
+.input-row input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+}
+
+.input-row label {
+    margin-right: 10px;
+    color: #8ea8c3;
+    font-size: 14px;
+}
+
+.quick-bets {
+    display: flex;
+    gap: 5px;
+}
+
+.quick-bets button {
+    flex: 1;
+    background: #2a2d3a;
+    border: none;
+    color: #8ea8c3;
+    border-radius: 4px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.quick-bets button:hover {
+    background: #3a3f52;
+    color: #fff;
+}
+
+.btn-crash {
+    height: 56px;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.action-btn {
+    background: #3b82f6;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn:hover {
+    background: #2563eb;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn.waiting {
+    background: #2a2d3a;
+    color: #8ea8c3;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.action-btn.cashout {
+    background: #f59e0b;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.action-btn.success {
+    background: #10b981;
+    box-shadow: none;
+}
+
+.action-btn.crashed {
+    background: #ef4444;
+    box-shadow: none;
+}
+
+.players-list {
+    flex: 1;
+    background: #15181f;
+    border-radius: 8px;
+    border: 1px solid #2a2d3a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.players-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: #2a2d3a;
+    font-size: 13px;
+    color: #8ea8c3;
+    font-weight: bold;
+}
+
+.players-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.player-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.player-row.win {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.player-row.loss {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.p-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.p-user img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.p-bet {
+    width: 60px;
+    text-align: right;
+    color: #fff;
+}
+
+.p-mult {
+    width: 60px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.crash-right {
+    flex: 1;
+    background: #1f222b;
+    border: 1px solid #2a2d3a;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.canvas-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #15181f;
+    border-radius: 8px;
+    border: 1px solid #2a2d3a;
+    overflow: hidden;
+}
+
+.multiplier-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 72px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    z-index: 10;
+    font-family: 'Gotham Pro', 'Inter', sans-serif;
+}
+
+.multiplier-display.crashed {
+    color: #ef4444;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+@media (max-width: 768px) {
+    .crash-container {
+        flex-direction: column;
+        height: auto;
+    }
+    .crash-left {
+        width: 100%;
+    }
+    .crash-right {
+        height: 400px;
+    }
+}

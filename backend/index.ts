@@ -42,6 +42,9 @@ const io = new Server(httpServer, {
   }
 });
 
+import { CrashManager } from './games/crash';
+export const crashManager = new CrashManager(io);
+
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
@@ -1483,71 +1486,42 @@ app.post('/api/play/coinflip', requireAuth, requireNotFrozen, async (req: AuthRe
   }
 });
 
-// POST /api/play/crash
-app.post('/api/play/crash', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
-  const { amount, cashoutMultiplier } = req.body;
-  const userId = req.userId!;
+// POST /api/play/crash/bet
+app.post('/api/play/crash/bet', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+  const { amount, autoCashout } = req.body;
+  const userId = Number(req.userId!);
 
-  if (!amount || amount <= 0) {
-    res.status(400).json({ error: 'Invalid amount.' });
-    return;
-  }
-  if (!cashoutMultiplier || cashoutMultiplier < 1.01) {
-    res.status(400).json({ error: 'Cashout multiplier must be at least 1.01x.' });
-    return;
-  }
+  if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount.' });
 
   try {
-    const result = await withUserLock(userId, async () => {
-      return await prisma.$transaction(async (tx) => {
-        const user = await tx.user.findUnique({ where: { id: userId } });
-        if (!user) throw new Error('User not found');
-        if (user.mockBalance < amount) throw new Error('Insufficient balance');
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.mockBalance < amount) return res.status(400).json({ error: 'Insufficient balance' });
 
-        // Generate crash point (house edge built in). 
-        // Formula: e = 0.99, r = Math.random(), crash = max(1.00, e / (1 - r))
-        const e = 0.95; // 5% house edge for crash
-        const pfResult = await generateProvablyFairFloat(tx, userId);
-        const r = pfResult.float;
-        const rawCrash = e / (1 - r);
-        const crashPoint = Math.max(1.00, Math.floor(rawCrash * 100) / 100);
-
-        const win = cashoutMultiplier <= crashPoint;
-        const profit = win ? (amount * cashoutMultiplier) - amount : -amount;
-
-        // Level/XP calculation
-        const newXp = user.xp + amount;
-        const newLevel = calculateLevel(newXp);
-        const rakebackAmount = amount * getVIPRakebackPercentage(user.totalWagered);
-        await processAffiliateReward(tx, user.referredBy, amount);
-
-        const updatedUser = await tx.user.update({
-          where: { id: userId },
-          data: {
-            mockBalance: { increment: profit },
-            xp: newXp,
-            level: newLevel,
-            totalWagered: { increment: amount }, /* POT_HOOK:amount */
-            rakebackBalance: { increment: rakebackAmount }
-          }
-        });
-        const potCut = Math.floor(amount * 0.05);
-        if (potCut > 0) {
-          await tx.siteSettings.update({ where: { id: 1 }, data: { casinoPot: { increment: potCut } } });
-        }
-
-        await tx.transaction.create({
-          data: { userId, amount, gameType: 'crash', result: win ? 'win' : 'loss' },
-        });
-
-        return { crashPoint, win, profit, updatedUser };
-      });
+    // Deduct bet immediately
+    await prisma.user.update({
+      where: { id: userId },
+      data: { mockBalance: { decrement: amount } }
     });
 
-    emitLiveBet(io, { user: result.updatedUser.username, game: 'Crash', betAmount: amount, multiplier: result.win ? cashoutMultiplier : 0, profit: result.profit });
+    crashManager.placeBet(user.id, user.username, '', amount, autoCashout || 0);
+
+    res.json({ success: true, balance: user.mockBalance - amount });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// POST /api/play/crash/cashout
+app.post('/api/play/crash/cashout', requireAuth, requireNotFrozen, async (req: AuthRequest, res: Response) => {
+  const userId = Number(req.userId!);
+
+  try {
+    const result = await crashManager.cashoutPlayer(userId);
+    emitLiveBet(io, { user: result.username, game: 'Crash', betAmount: 0, multiplier: result.multiplier, profit: result.profit });
     res.json(result);
   } catch (error: any) {
-    console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
