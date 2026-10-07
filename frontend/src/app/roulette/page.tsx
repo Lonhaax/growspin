@@ -249,7 +249,7 @@ export default function RoulettePage() {
                   myBet ? (myBet.betOn === 'red' ? 'bg-[#f44336] ring-4 ring-white/20' : 'bg-[#f44336]/30 opacity-50 grayscale') : 'bg-[#f44336] hover:bg-[#e53935]'
                 }`}
               >
-                <Wrench size={24} className="opacity-80" />
+                <img src="/wrench.webp" alt="Red" className="w-6 h-6 object-contain opacity-80" />
                 <span>{myBet?.betOn === 'red' ? `Betted` : `Win 2x`}</span>
               </button>
               <button
@@ -259,7 +259,7 @@ export default function RoulettePage() {
                   myBet ? (myBet.betOn === 'green' ? 'bg-[#00c74d] ring-4 ring-white/50' : 'bg-[#00c74d]/30 opacity-50 grayscale text-white') : 'bg-[#00c74d] hover:bg-[#00b345]'
                 }`}
               >
-                <Clover size={24} className="opacity-80" />
+                <img src="/luck-plant.webp" alt="Green" className="w-6 h-6 object-contain opacity-80" />
                 <span>{myBet?.betOn === 'green' ? `Betted` : `Win 14x`}</span>
               </button>
               <button
@@ -269,7 +269,7 @@ export default function RoulettePage() {
                   myBet ? (myBet.betOn === 'black' ? 'bg-[#1b1e26] ring-4 ring-white/20' : 'bg-[#1b1e26]/50 opacity-50 grayscale') : 'bg-[#1b1e26] hover:bg-[#2a2d3a]'
                 }`}
               >
-                <HandMetal size={24} className="opacity-80" />
+                <img src="/fist.webp" alt="Black" className="w-6 h-6 object-contain opacity-80" />
                 <span>{myBet?.betOn === 'black' ? `Betted` : `Win 2x`}</span>
               </button>
             </div>

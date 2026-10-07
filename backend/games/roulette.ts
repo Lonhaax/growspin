@@ -96,7 +96,7 @@ export class RouletteManager {
 
     setTimeout(() => {
       this.startWaiting();
-    }, 4000);
+    }, 1500);
   }
 
   private async generateRoll() {
