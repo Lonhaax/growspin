@@ -15,7 +15,7 @@ export default function CryptoCrashGame() {
     const [players, setPlayers] = useState([]);
     const [history, setHistory] = useState([]);
 
-    const [betAmount, setBetAmount] = useState('10');
+    const [betAmount, setBetAmount] = useState('1.00');
     const [autoCashout, setAutoCashout] = useState('2.00');
     
     const [betPlaced, setBetPlaced] = useState(false);
@@ -165,7 +165,7 @@ export default function CryptoCrashGame() {
         try {
             const res = await apiFetch('/play/crash/bet', {
                 method: 'POST',
-                body: JSON.stringify({ amount: parseFloat(betAmount), autoCashout: parseFloat(autoCashout) })
+                body: JSON.stringify({ amount: Math.floor(parseFloat(betAmount) * 100), autoCashout: parseFloat(autoCashout) })
             });
             const data = await res.json();
             if(data.error) throw new Error(data.error);
@@ -226,10 +226,10 @@ export default function CryptoCrashGame() {
                             <span>💰</span>
                         </div>
                         <div className="quick-bets">
-                            <button onClick={() => setBetAmount(prev => Math.floor(parseFloat(prev) + 10).toString())}>+10</button>
-                            <button onClick={() => setBetAmount(prev => Math.floor(parseFloat(prev) + 100).toString())}>+100</button>
-                            <button onClick={() => setBetAmount(prev => Math.floor(parseFloat(prev) * 2).toString())}>x2</button>
-                            <button onClick={() => setBetAmount(prev => Math.max(1, Math.floor(parseFloat(prev) / 2)).toString())}>1/2</button>
+                            <button onClick={() => setBetAmount(prev => (parseFloat(prev) + 1).toFixed(2))}>+1</button>
+                            <button onClick={() => setBetAmount(prev => (parseFloat(prev) + 10).toFixed(2))}>+10</button>
+                            <button onClick={() => setBetAmount(prev => (parseFloat(prev) * 2).toFixed(2))}>x2</button>
+                            <button onClick={() => setBetAmount(prev => Math.max(0.01, parseFloat(prev) / 2).toFixed(2))}>1/2</button>
                         </div>
                     </div>
 
@@ -257,7 +257,7 @@ export default function CryptoCrashGame() {
                     )}
                     {gameState === 'running' && betPlaced && !hasCashedOut && (
                         <button className="btn-crash action-btn cashout" onClick={handleCashout}>
-                            Cashout ({Math.floor(parseFloat(betAmount) * multiplier)} DLs)
+                            Cashout ({(parseFloat(betAmount) * multiplier).toFixed(2)} DLs)
                         </button>
                     )}
                     {gameState === 'running' && betPlaced && hasCashedOut && (
@@ -288,7 +288,7 @@ export default function CryptoCrashGame() {
                                         <img src={p.avatar || '/default-avatar.png'} alt=""/>
                                         <span>{p.username}</span>
                                     </div>
-                                    <div className="p-bet">{Math.floor(p.amount)}</div>
+                                    <div className="p-bet">{(p.amount / 100).toFixed(2)}</div>
                                     <div className="p-mult">{p.cashedOut ? `${p.cashoutMultiplier.toFixed(2)}x` : '-'}</div>
                                 </div>
                             ))}
