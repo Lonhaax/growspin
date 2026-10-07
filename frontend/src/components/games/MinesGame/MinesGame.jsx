@@ -52,7 +52,7 @@ const StatsIcon = () => (
 )
 
 function MinesGame() {
-    const { isAuthenticated } = useAuth();
+    const { isLoggedIn } = useAuth();
     const { balance, placeBet, addWinnings, showToast, refreshUser } = useWallet();
     const [isPlaying, setIsPlaying] = useState(false);
     const [betAmount, setBetAmount] = useState(1);
@@ -131,7 +131,7 @@ function MinesGame() {
     // Check for active game on mount
     useEffect(() => {
         const fetchActiveGame = async () => {
-            if (!isAuthenticated) return;
+            if (!isLoggedIn) return;
             try {
                 const res = await apiFetch('/play/mines/active');
                 if (res.ok) {
@@ -151,7 +151,7 @@ function MinesGame() {
             }
         };
         fetchActiveGame();
-    }, [isAuthenticated]);
+    }, [isLoggedIn]);
 
 
     // Handle client seed change
