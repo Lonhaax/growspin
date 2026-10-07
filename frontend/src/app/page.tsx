@@ -22,26 +22,21 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/auth";
 
 export default function Home() {
-  const [stats, setStats] = useState({ online: 247, wagered: 24592.50, pot: 0 });
+  const [stats, setStats] = useState({ totalUsers: 0, wagered: 0, pot: 0 });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        online: Math.max(100, prev.online + Math.floor(Math.random() * 7) - 3)
-      }));
-    }, 5000);
-
-    apiFetch("/settings")
+    apiFetch("/stats")
       .then(res => res.json())
       .then(data => {
-        if (data && data.casinoPot !== undefined) {
-          setStats(prev => ({ ...prev, pot: data.casinoPot / 100 }));
+        if (data && data.totalUsers !== undefined) {
+          setStats({
+            totalUsers: data.totalUsers,
+            wagered: data.totalWagered / 100, // convert cents to DLs
+            pot: data.casinoPot / 100
+          });
         }
       })
       .catch(console.error);
-
-    return () => clearInterval(interval);
   }, []);
 
   const CASINO_ORIGINALS = [
@@ -100,8 +95,8 @@ export default function Home() {
             <Activity size={28} />
           </div>
           <div className="relative z-10">
-            <div className="text-[10px] font-black text-[#7a819c] uppercase tracking-widest mb-1">Players Online</div>
-            <div className="text-3xl font-black text-white tracking-tight">{stats.online.toLocaleString()}</div>
+            <div className="text-[10px] font-black text-[#7a819c] uppercase tracking-widest mb-1">Total Players</div>
+            <div className="text-3xl font-black text-white tracking-tight">{stats.totalUsers.toLocaleString()}</div>
           </div>
         </motion.div>
 

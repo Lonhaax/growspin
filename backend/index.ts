@@ -3513,6 +3513,22 @@ app.delete('/api/admin/items/:id', requireAuth, requireAdmin, async (req: AuthRe
   }
 });
 
+// GET /api/stats - Public casino statistics
+app.get('/api/stats', async (req: Request, res: Response) => {
+  try {
+    const [totalUsers, sumAgg, settings] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.aggregate({ _sum: { totalWagered: true } }),
+      prisma.siteSettings.findUnique({ where: { id: 1 } })
+    ]);
+    const totalWagered = sumAgg._sum.totalWagered || 0;
+    const casinoPot = settings?.casinoPot || 0;
+    res.json({ totalUsers, totalWagered, casinoPot });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/settings - Public site settings
 app.get('/api/settings', async (req: Request, res: Response) => {
   try {
