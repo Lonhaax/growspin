@@ -1147,7 +1147,7 @@ export default function BattlesPage() {
                                   return (
                                     <div className="flex flex-col items-center justify-center relative select-none animate-in fade-in zoom-in duration-300" style={{ height: '120px' }}>
                                       <div 
-                                        className="absolute inset-0 opacity-40" 
+                                        className="absolute inset-0 opacity-40 animate-pulse" 
                                         style={{ background: `radial-gradient(circle at center, ${finalItemToDisplay.color || "#3b82f6"} 0%, transparent 70%)` }} 
                                       />
                                       <div className="relative z-10 h-20 flex items-center justify-center mb-1">
