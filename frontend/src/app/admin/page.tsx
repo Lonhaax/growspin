@@ -15,7 +15,7 @@ import { getRarityColor } from "@/components/admin/ItemManager";
 export default function AdminPage() {
   const { user } = useAuth();
   const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm, showPrompt } = useCustomModal();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "daily_cases" | "settings" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "daily_cases" | "settings" | "games" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -582,6 +582,17 @@ export default function AdminPage() {
           >
             <Settings2 size={15} />
             <span>Settings</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("games")}
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              activeTab === "games"
+                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                : "text-[#7f86a2] hover:text-white"
+            }`}
+          >
+            <Dice1 size={15} />
+            <span>Games</span>
           </button>
           <button
             onClick={() => setActiveTab("studio")}
@@ -1237,7 +1248,17 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+        <div className="lg:col-span-2">
+          <button onClick={handleSaveSettings} disabled={loading} className="w-full mt-6 py-4 bg-accent-blue text-white rounded-xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-2">
+            <Save size={20} /> Save Settings
+          </button>
+        </div>
+      </div>
+      )}
 
+      {/* TAB: GAMES */}
+      {activeTab === "games" && (
+      <div className="space-y-6">
         {/* Slots Configuration */}
         <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
           <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
@@ -1260,25 +1281,25 @@ export default function AdminPage() {
 
             <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-[10px] font-black text-[#7a819c] uppercase tracking-widest">Slots House Edge (RTP Re-roll Rate)</label>
-                <span className="text-xs font-bold text-emerald-400">Default: 5% (0.05)</span>
+                <label className="block text-[10px] font-black text-[#7a819c] uppercase tracking-widest">Slots RTP (%)</label>
+                <span className="text-xs font-bold text-emerald-400">Default: 95%</span>
               </div>
               <div className="relative flex items-center gap-4">
                 <input
                   type="range"
-                  min="0"
-                  max="0.5"
-                  step="0.01"
-                  value={settings.slotsHouseEdge ?? 0.05}
-                  onChange={e => setSettings({ ...settings, slotsHouseEdge: parseFloat(e.target.value) })}
+                  min="50"
+                  max="100"
+                  step="1"
+                  value={100 - ((settings.slotsHouseEdge ?? 0.05) * 100)}
+                  onChange={e => setSettings({ ...settings, slotsHouseEdge: (100 - parseFloat(e.target.value)) / 100 })}
  className="w-full accent-emerald-500"
                 />
                 <span className="text-sm font-black text-white w-12 text-right">
-                  {Math.round((settings.slotsHouseEdge ?? 0.05) * 100)}%
+                  {Math.round(100 - ((settings.slotsHouseEdge ?? 0.05) * 100))}%
                 </span>
               </div>
               <div className="text-[11px] text-[#7a819c] mt-2">
-                Controls the percentage of winning slot spins that the house will "steal" by re-rolling the result on the backend until a loss occurs. A setting of 5% lowers the slot's baseline RTP by roughly 5%.
+                Controls the percentage of winning slot spins that the house will "steal" by re-rolling the result on the backend until a loss occurs. For example, 95% RTP means a 5% steal rate.
               </div>
             </div>
           </div>
@@ -1297,12 +1318,17 @@ export default function AdminPage() {
                   <div className="font-bold text-white capitalize">{game}</div>
                   <div className="flex items-center gap-4 mt-2">
                     <label className="flex items-center gap-2 text-xs text-[#7a819c] font-bold">
-                      House Edge (%)
+                      RTP (%)
                       <input
-                        type="number" step="0.1"
-                        value={settings[`${game}HouseEdge`]}
-                        onChange={e => setSettings({ ...settings, [`${game}HouseEdge`]: parseFloat(e.target.value) })}
- className="w-16 bg-[#15181f] border border-[#2a2d3a] rounded-lg px-2 py-1 text-white text-center focus:outline-none focus:border-accent-blue"
+                        type="number" step="0.1" min="0" max="100"
+                        value={Number((100 - (settings[`${game}HouseEdge`] ?? 0.05) * 100).toFixed(1))}
+                        onChange={e => {
+                          const rtp = parseFloat(e.target.value);
+                          if (!isNaN(rtp)) {
+                            setSettings({ ...settings, [`${game}HouseEdge`]: (100 - rtp) / 100 });
+                          }
+                        }}
+ className="w-20 bg-[#15181f] border border-[#2a2d3a] rounded-lg px-2 py-1 text-white text-center focus:outline-none focus:border-accent-blue"
                       />
                     </label>
                   </div>
@@ -1318,7 +1344,7 @@ export default function AdminPage() {
           </div>
 
           <button onClick={handleSaveSettings} disabled={loading} className="w-full mt-6 py-4 bg-accent-blue text-white rounded-xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-2">
-            <Save size={20} /> Save Settings
+            <Save size={20} /> Save Games Configuration
           </button>
         </div>
 
