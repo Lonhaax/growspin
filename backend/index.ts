@@ -1936,7 +1936,10 @@ app.post('/api/play/mines/cashout', requireAuth, requireNotFrozen, async (req: A
         const game = await tx.minesGame.findUnique({ where: { id: gameId, userId } });
         if (!game) throw new Error('Game not found');
         if (game.status !== 'playing') throw new Error('Game is over');
-        if (game.multiplier <= 1.0) throw new Error('Cannot cashout at 1.0x'); // Must click at least one
+        
+        const boardState = JSON.parse(game.boardState);
+        const safeTilesRevealed = boardState.filter((t: number) => t === 1).length;
+        if (safeTilesRevealed === 0) throw new Error('Must click at least one tile before cashing out');
 
         const totalWin = game.betAmount + game.profit;
 
