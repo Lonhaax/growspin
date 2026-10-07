@@ -3036,7 +3036,32 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
       });
 
       const humanWinners = winningMembers.filter(id => !id.startsWith('bot-'));
-      if (winningMembers.length > 1) {
+      
+      if (activeModes.includes('shared')) {
+        // Everyone keeps their own unboxed items
+        const userItemsToCreate: any[] = [];
+        rounds.forEach(round => {
+          round.forEach((roll: any, pIndex: number) => {
+            const pId = battle.participants[pIndex].userId;
+            if (!pId.startsWith('bot-')) {
+              const itemToAward = roll.hitLuckyStar && roll.actualWinItem ? roll.actualWinItem : roll.item;
+              if (itemToAward && itemToAward.id !== -999) {
+                userItemsToCreate.push({
+                  userId: parseInt(pId),
+                  name: itemToAward.name,
+                  value: itemToAward.value,
+                  color: itemToAward.color,
+                  imageUrl: itemToAward.imageUrl || null,
+                  status: 'inventory'
+                });
+              }
+            }
+          });
+        });
+        if (userItemsToCreate.length > 0) {
+          await tx.userItem.createMany({ data: userItemsToCreate });
+        }
+      } else if (winningMembers.length > 1) {
         // Award items: pool ALL items, sell them automatically into a single split, and give a 'Battle Split' item
         // This ensures perfectly equal distribution in team modes.
         const splitValue = Math.floor(totalPotValue / winningMembers.length);
