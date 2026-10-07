@@ -1238,56 +1238,120 @@ export default function BattlesPage() {
                       className="w-full grid relative z-10" 
                       style={{ gridTemplateColumns: `repeat(${activeBattle.targetPlayerCount || 2}, minmax(0, 1fr))` }}
                     >
-                      {activeBattle.participants.map((p: any, idx: number) => {
-                        const isBot = p.userId.startsWith('bot-');
-                        const isWinner = finalWinner && finalWinner.split(',').includes(p.userId.toString());
+                      {(() => {
+                        const isJackpot = activeBattle.mode?.includes('jackpot');
+                        const isCrazy = activeBattle.mode?.includes('crazy');
+                        const isTerminal = activeBattle.mode?.includes('terminal');
                         
-                        let targetItemForSpin = null;
-                        let currentCaseItemsPool: any[] = [];
-                        
-                        const displayRound = activeBattle.status === 'finished' 
-                          ? Math.max(0, JSON.parse(activeBattle.caseIds || '[]').length - 1) 
-                          : currentRound;
+                        const format = activeBattle.format || '1v1';
+                        let teamSize = 1;
+                        if (format === '2v2' || format === '2v2v2') teamSize = 2;
+                        if (format === '3v3') teamSize = 3;
 
-                        if (fullRoundsData[displayRound]) {
-                          const myCurrentRoll = fullRoundsData[displayRound].find((r:any) => r.userId === p.userId);
-                          if (myCurrentRoll) {
-                            targetItemForSpin = myCurrentRoll.item;
-                            const caseIdsList = JSON.parse(activeBattle.caseIds || '[]');
-                            const roundCaseId = caseIdsList[displayRound];
-                            const roundCase = availableCases.find(c => c.id.toString() === roundCaseId?.toString());
-                            if (roundCase) {
-                              currentCaseItemsPool = roundCase.items || [targetItemForSpin]; 
-                            }
-                            // Store actualWinItem and hitLuckyStar for rendering
-                            (targetItemForSpin as any)._actualWinItem = myCurrentRoll.actualWinItem;
-                            (targetItemForSpin as any)._hitLuckyStar = myCurrentRoll.hitLuckyStar;
-                          }
-                        }
+                        // Calculate totals
+                        const playerTotals: Record<string, number> = {};
+                        const playerLastPulls: Record<string, number> = {};
+                        activeBattle.participants.forEach((p:any) => {
+                          playerTotals[p.userId] = 0;
+                          playerLastPulls[p.userId] = 0;
+                        });
 
-                        let currentLootValue = 0;
                         if (roundResults.length > 0) {
-                          roundResults.forEach((round: any[]) => {
-                            const myRoll = round.find(r => r.userId === p.userId);
-                            if (myRoll) {
-                              currentLootValue += myRoll.actualWinItem ? myRoll.actualWinItem.value : myRoll.item.value;
-                            }
+                          roundResults.forEach((round: any[], rIdx: number) => {
+                            round.forEach(r => {
+                               const val = r.actualWinItem ? r.actualWinItem.value : r.item.value;
+                               playerTotals[r.userId] += val;
+                               if (rIdx === roundResults.length - 1) {
+                                 playerLastPulls[r.userId] = val;
+                               }
+                            });
                           });
                         }
+
+                        const teamTotals: number[] = [];
+                        const teamLastPulls: number[] = [];
+                        activeBattle.participants.forEach((p:any, idx:number) => {
+                           const tId = Math.floor(idx / teamSize);
+                           if (!teamTotals[tId]) { teamTotals[tId] = 0; teamLastPulls[tId] = 0; }
+                           teamTotals[tId] += playerTotals[p.userId];
+                           teamLastPulls[tId] += playerLastPulls[p.userId];
+                        });
+
+                        let teamWeights: number[] = [];
+                        let totalWeight = 0;
+                        if (isJackpot) {
+                           const statArray = isTerminal ? teamLastPulls : teamTotals;
+                           if (isCrazy) {
+                              const maxVal = Math.max(...statArray);
+                              teamWeights = statArray.map(t => maxVal - t + 1);
+                           } else {
+                              teamWeights = statArray;
+                           }
+                           totalWeight = teamWeights.reduce((a,b)=>a+b, 0);
+                        }
+
+                        const PLAYER_COLORS = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#f43f5e'];
+
+                        return activeBattle.participants.map((p: any, idx: number) => {
+                          const isBot = p.userId.startsWith('bot-');
+                          const isWinner = finalWinner && finalWinner.split(',').includes(p.userId.toString());
+                          
+                          const tId = Math.floor(idx / teamSize);
+                          const percentage = isJackpot && totalWeight > 0 ? (teamWeights[tId] / totalWeight) * 100 : 0;
+                          const pColor = PLAYER_COLORS[idx % PLAYER_COLORS.length];
                         
-                        return (
-                          <div key={p.id} className={`relative flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWinner ? 'bg-accent-green/5' : ''}`}>
-                            {isWinner && <div className="absolute inset-0 bg-gradient-to-b from-accent-green/20 to-transparent pointer-events-none z-0" />}
-                            
-                            {/* Player Badge */}
-                            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-transparent flex items-center gap-2 min-w-max">
-                              <div className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-[10px]">
-                                {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : (p.username?.[0] || p.userId[0])}
+                          let targetItemForSpin = null;
+                          let currentCaseItemsPool: any[] = [];
+                          
+                          const displayRound = activeBattle.status === 'finished' 
+                            ? Math.max(0, JSON.parse(activeBattle.caseIds || '[]').length - 1) 
+                            : currentRound;
+
+                          if (fullRoundsData[displayRound]) {
+                            const myCurrentRoll = fullRoundsData[displayRound].find((r:any) => r.userId === p.userId);
+                            if (myCurrentRoll) {
+                              targetItemForSpin = myCurrentRoll.item;
+                              const caseIdsList = JSON.parse(activeBattle.caseIds || '[]');
+                              const roundCaseId = caseIdsList[displayRound];
+                              const roundCase = availableCases.find(c => c.id.toString() === roundCaseId?.toString());
+                              if (roundCase) {
+                                currentCaseItemsPool = roundCase.items || [targetItemForSpin]; 
+                              }
+                              // Store actualWinItem and hitLuckyStar for rendering
+                              (targetItemForSpin as any)._actualWinItem = myCurrentRoll.actualWinItem;
+                              (targetItemForSpin as any)._hitLuckyStar = myCurrentRoll.hitLuckyStar;
+                            }
+                          }
+                          
+                          return (
+                            <div key={p.id} className={`relative flex flex-col items-center justify-center transition-all duration-500 overflow-hidden ${isWinner ? 'bg-accent-green/5' : ''}`}>
+                              {isWinner && <div className="absolute inset-0 bg-gradient-to-b from-accent-green/20 to-transparent pointer-events-none z-0" />}
+                              
+                              {/* Player Badge */}
+                              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-transparent flex flex-col items-center gap-1.5 min-w-max">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded flex items-center justify-center text-white font-black text-[10px] shadow-md" style={{ backgroundColor: pColor }}>
+                                    {isBot ? <Bot size={12} className="text-white/80" /> : (p.username?.[0] || p.userId[0])}
+                                  </div>
+                                  <div className="flex items-center gap-1 font-black text-xs text-white">
+                                    <DLCurrency amount={playerTotals[p.userId]} size="xs" className="text-white" />
+                                  </div>
+                                  {isJackpot && (
+                                    <div className="bg-[#1f222b]/80 border border-[#2a2d3a] px-1.5 py-0.5 rounded text-[10px] font-black" style={{ color: pColor }}>
+                                      {percentage.toFixed(2)}%
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {isJackpot && (
+                                  <div className="w-full h-1 bg-[#15181f] rounded-full overflow-hidden">
+                                    <motion.div 
+                                      className="h-full rounded-full transition-all duration-300"
+                                      style={{ width: `${percentage}%`, backgroundColor: pColor }}
+                                    />
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex items-center gap-1 font-black text-xs text-white">
-                                <DLCurrency amount={currentLootValue} size="xs" className="text-white" />
-                              </div>
-                            </div>
 
                             {/* Spinner Container */}
                             <div className="relative z-10 w-full h-[400px] flex items-center justify-center">
@@ -1348,7 +1412,7 @@ export default function BattlesPage() {
                             </div>
                           </div>
                         )
-                      })}
+                      })})()}
                       
                       {/* Empty slots for missing participants to maintain grid */}
                       {Array.from({ length: Math.max(0, (activeBattle.targetPlayerCount || 2) - activeBattle.participants.length) }).map((_, i) => (
