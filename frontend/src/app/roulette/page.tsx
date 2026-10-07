@@ -201,19 +201,19 @@ export default function RoulettePage() {
                   {item.num === 0 && (
                     <div className="w-12 h-12 flex items-center justify-center">
                       <Clover className="text-black opacity-80" size={32} />
-                      <img src="/roulette-green.png" alt="Green" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/luck-plant.webp" alt="Green" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                   {item.num > 0 && item.num < 8 && (
                     <div className="w-12 h-12 flex items-center justify-center">
                       <Wrench className="text-white opacity-80" size={32} />
-                      <img src="/roulette-red.png" alt="Red" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/wrench.webp" alt="Red" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                   {item.num >= 8 && (
                     <div className="w-12 h-12 flex items-center justify-center">
                       <HandMetal className="text-[#7a819c] opacity-80" size={32} />
-                      <img src="/roulette-black.png" alt="Black" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
+                      <img src="/fist.webp" alt="Black" className="absolute inset-0 w-full h-full object-cover opacity-0 hover:opacity-100" onError={(e) => e.currentTarget.style.display = 'none'} />
                     </div>
                   )}
                 </div>
