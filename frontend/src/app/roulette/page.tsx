@@ -127,6 +127,7 @@ export default function RoulettePage() {
     }
   };
 
+  const myBet = players.find(p => p.userId === user?.id);
   const historyCounts = { red: 0, green: 0, black: 0 };
   history.forEach(h => {
     if (h === 'red') historyCounts.red++;
@@ -243,27 +244,33 @@ export default function RoulettePage() {
             <div className="w-full md:w-2/3 flex gap-3">
               <button
                 onClick={() => handleBet('red')}
-                disabled={gameState !== 'waiting' || !user}
-                className="flex-1 py-4 bg-[#f44336] text-white rounded-xl font-black text-lg hover:bg-[#e53935] transition-all shadow-[0_0_20px_rgba(244,67,54,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
+                disabled={gameState !== 'waiting' || !user || !!myBet}
+                className={`flex-1 py-4 text-white rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(244,67,54,0.2)] disabled:cursor-not-allowed flex flex-col items-center gap-1 ${
+                  myBet ? (myBet.betOn === 'red' ? 'bg-[#f44336] ring-4 ring-white/20' : 'bg-[#f44336]/30 opacity-50 grayscale') : 'bg-[#f44336] hover:bg-[#e53935]'
+                }`}
               >
                 <Wrench size={24} className="opacity-80" />
-                <span>Win 2x</span>
+                <span>{myBet?.betOn === 'red' ? `Betted` : `Win 2x`}</span>
               </button>
               <button
                 onClick={() => handleBet('green')}
-                disabled={gameState !== 'waiting' || !user}
-                className="flex-1 py-4 bg-[#00c74d] text-black rounded-xl font-black text-lg hover:bg-[#00b345] transition-all shadow-[0_0_20px_rgba(0,199,77,0.2)] disabled:opacity-50 flex flex-col items-center gap-1"
+                disabled={gameState !== 'waiting' || !user || !!myBet}
+                className={`flex-1 py-4 text-black rounded-xl font-black text-lg transition-all shadow-[0_0_20px_rgba(0,199,77,0.2)] disabled:cursor-not-allowed flex flex-col items-center gap-1 ${
+                  myBet ? (myBet.betOn === 'green' ? 'bg-[#00c74d] ring-4 ring-white/50' : 'bg-[#00c74d]/30 opacity-50 grayscale text-white') : 'bg-[#00c74d] hover:bg-[#00b345]'
+                }`}
               >
                 <Clover size={24} className="opacity-80" />
-                <span>Win 14x</span>
+                <span>{myBet?.betOn === 'green' ? `Betted` : `Win 14x`}</span>
               </button>
               <button
                 onClick={() => handleBet('black')}
-                disabled={gameState !== 'waiting' || !user}
-                className="flex-1 py-4 bg-[#1b1e26] border border-[#2a2d3a] text-white rounded-xl font-black text-lg hover:bg-[#2a2d3a] transition-all disabled:opacity-50 flex flex-col items-center gap-1"
+                disabled={gameState !== 'waiting' || !user || !!myBet}
+                className={`flex-1 py-4 border border-[#2a2d3a] text-white rounded-xl font-black text-lg transition-all disabled:cursor-not-allowed flex flex-col items-center gap-1 ${
+                  myBet ? (myBet.betOn === 'black' ? 'bg-[#1b1e26] ring-4 ring-white/20' : 'bg-[#1b1e26]/50 opacity-50 grayscale') : 'bg-[#1b1e26] hover:bg-[#2a2d3a]'
+                }`}
               >
                 <HandMetal size={24} className="opacity-80" />
-                <span>Win 2x</span>
+                <span>{myBet?.betOn === 'black' ? `Betted` : `Win 2x`}</span>
               </button>
             </div>
         </div>
