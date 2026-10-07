@@ -33,7 +33,7 @@ interface AuthContextType {
   authModalType: "login" | "register" | null;
   openAuthModal: (type: "login" | "register") => void;
   closeAuthModal: () => void;
-  register: (username: string, password: string) => Promise<string | null>;
+  register: (username: string, email: string, password: string) => Promise<string | null>;
   login:    (username: string, password: string) => Promise<string | null>;
   logout:   () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -78,12 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
 
-  const register = useCallback(async (username: string, password: string): Promise<string | null> => {
+  const register = useCallback(async (username: string, email: string, password: string): Promise<string | null> => {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, email, password }),
     });
     const data = await res.json();
     if (!res.ok) return data.error ?? "Registration failed.";

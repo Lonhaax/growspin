@@ -410,16 +410,43 @@ async function requireAdmin(req: AuthRequest, res: Response, next: NextFunction)
 
 // POST /api/auth/register
 app.post('/api/auth/register', async (req: Request, res: Response) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    res.status(400).json({ error: 'Username and password are required.' });
+  const { username, email, password } = req.body;
+  if (!username || !email || !password) {
+    res.status(400).json({ error: 'Username, email, and password are required.' });
     return;
   }
-  if (password.length < 6) {
-    res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    res.status(400).json({ error: 'Invalid email format.' });
     return;
   }
+
+  if (password.length < 8) {
+    res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    return;
+  }
+  if (!/(?=.*[a-z])/.test(password)) {
+    res.status(400).json({ error: 'Password must include at least one lowercase letter.' });
+    return;
+  }
+  if (!/(?=.*[A-Z])/.test(password)) {
+    res.status(400).json({ error: 'Password must include at least one uppercase letter.' });
+    return;
+  }
+  if (!/(?=.*\d)/.test(password)) {
+    res.status(400).json({ error: 'Password must include at least one number.' });
+    return;
+  }
+
   try {
+    // Check if email already exists
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      res.status(400).json({ error: 'Email already registered.' });
+      return;
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
     // Auto-assign admin ONLY if it's the very first user on the site
     const userCount = await prisma.user.count();
@@ -427,7 +454,7 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
     const lastIp = req.ip;
 
     const user = await prisma.user.create({
-      data: { username, passwordHash, role, lastIp },
+      data: { username, email, passwordHash, role, lastIp },
     });
 
     const accessToken = generateAccessToken(user.id);
