@@ -11,7 +11,7 @@ export default function OriginalsPage() {
     { name: "Mines", href: "/mines", image: "/mines.png", color: "#ef4444" },
     { name: "Roulette", href: "/roulette", image: "/roulette.png", color: "#f87171" },
     { name: "Crash", href: "/crash", image: "/crash.png", color: "#8b5cf6" },
-    { name: "Plinko", href: "/plinko", image: "/plinko.png", color: "#ec4899" },
+    // { name: "Plinko", href: "/plinko", image: "/plinko.png", color: "#ec4899" },
     { name: "Dice", href: "/dice", image: "/dice.png", color: "#3b82f6" },
   ];
 
