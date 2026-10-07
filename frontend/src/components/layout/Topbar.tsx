@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
-import { Wallet, Bell, MessageSquare, ChevronDown, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX } from "lucide-react";
+import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import DepositModal from "@/components/deposit/DepositModal";
 import RewardsModal from "@/components/rewards/RewardsModal";
 import { SoundManager } from "@/lib/audio";
 import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
+import ProfileModal from "@/components/profile/ProfileModal";
 
 export function Topbar() {
   const { user, logout, refreshUser, openAuthModal } = useAuth();
@@ -20,6 +21,7 @@ export function Topbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [claiming, setClaiming] = useState(false);
 
@@ -151,61 +153,83 @@ export function Topbar() {
                     transition={{ duration: 0.2 }}
                     className="absolute right-0 top-14 w-56 bg-[#1f222b] border border-[#2a2d3a] rounded-xl shadow-2xl overflow-hidden py-1 flex flex-col"
                   >
-                    <div className="px-4 py-3 border-b border-[#2a2d3a]">
-                      <p className="text-sm text-white font-medium truncate">{user.username}</p>
-                      <p className="text-xs text-[#7a819c] truncate">Level {user.level}</p>
-                    </div>
-
-                    <button
-                      onClick={() => { setDropdownOpen(false); setRewardsOpen(true); }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-[#2a2d3a] transition-colors border-b border-[#2a2d3a] text-left"
-                    >
-                      <Crown size={14} /> Rewards Hub
-                    </button>
-
-                    <div className="p-3 border-b border-[#2a2d3a] flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-[#7a819c] flex items-center gap-1"><Gift size={12} /> Rakeback</span>
-                        <DLCurrency amount={user.rakebackBalance} size="xs" className="text-accent-green" />
+                    <div className="px-4 py-3 border-b border-[#2a2d3a] flex items-center justify-between hover:bg-[#2a2d3a] cursor-pointer transition-colors" onClick={() => { setDropdownOpen(false); setProfileOpen(true); }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-blue p-[2px]">
+                          <div className="w-full h-full bg-[#1b1e26] rounded-[10px] flex items-center justify-center overflow-hidden">
+                            <span className="text-white font-bold">{user.username.charAt(0).toUpperCase()}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm text-white font-black truncate">{user.username}</p>
+                          <p className="text-[10px] text-accent-blue font-bold flex items-center gap-1 mt-0.5">
+                            <Crown size={10} /> Diamond 3
+                          </p>
+                        </div>
                       </div>
-                      <button
-                        onClick={handleClaimRakeback}
-                        disabled={claiming || user.rakebackBalance <= 0}
-                        className="w-full py-2 bg-accent-purple hover:bg-accent-purple/90 disabled:bg-[#2a2d3a] disabled:text-[#7a819c] text-white text-xs font-bold rounded-lg transition-colors"
-                      >
-                        {claiming ? "Claiming..." : "Claim Rakeback"}
-                      </button>
+                      <ChevronRight size={14} className="text-[#7a819c]" />
+                    </div>
 
-                      <button
-                        onClick={async () => {
-                          setClaiming(true);
-                          try {
-                            const res = await apiFetch("/user/faucet", { method: "POST" });
-                            if (res.ok) {
-                              await refreshUser();
-                              showSuccess("Claimed Daily Faucet!");
-                            } else {
-                              showError((await res.json()).error);
-                            }
-                          } finally {
-                            setClaiming(false);
-                            setDropdownOpen(false);
-                          }
-                        }}
-                        disabled={claiming}
-                        className="w-full py-2 bg-accent-green hover:bg-accent-green/90 disabled:bg-[#2a2d3a] disabled:text-[#7a819c] text-black text-xs font-bold rounded-lg transition-colors shadow-[0_0_10px_rgba(0,230,118,0.3)]"
-                      >
-                        Claim Daily Faucet
+                    {/* XP Bar */}
+                    <div className="px-4 py-2 border-b border-[#2a2d3a]">
+                      <div className="h-1.5 w-full bg-[#15181f] rounded-full overflow-hidden mb-1">
+                        <div className="h-full bg-accent-blue w-[35%]" />
+                      </div>
+                      <div className="text-[9px] text-[#7a819c] font-bold text-right">
+                        1,037,064 / 4,725,250 XP
+                      </div>
+                    </div>
+
+                    <div className="py-1">
+                      <div className="px-4 py-1.5 text-[10px] text-[#7a819c] font-bold uppercase tracking-widest">Activity</div>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <List size={16} /> My Bets
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Wallet size={16} /> Wallet
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <History size={16} /> History
+                      </button>
+                      <Link href="/inventory" onClick={() => setDropdownOpen(false)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Package size={16} /> Inventory
+                      </Link>
+                    </div>
+
+                    <div className="py-1 border-t border-[#2a2d3a]">
+                      <div className="px-4 py-1.5 text-[10px] text-[#7a819c] font-bold uppercase tracking-widest">Rewards</div>
+                      <button onClick={() => { setDropdownOpen(false); setRewardsOpen(true); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Gift size={16} /> Rewards
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Ticket size={16} /> Promo Codes
                       </button>
                     </div>
 
-                    <button
-                      onClick={logout}
-                      className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-[#2a2d3a] transition-colors text-left"
-                    >
-                      <LogOut size={16} />
-                      Sign out
-                    </button>
+                    <div className="py-1 border-t border-[#2a2d3a]">
+                      <div className="px-4 py-1.5 text-[10px] text-[#7a819c] font-bold uppercase tracking-widest">Account</div>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Bell size={16} /> Notifications
+                      </button>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Settings size={16} /> Settings
+                      </button>
+                    </div>
+
+                    <div className="py-1 border-t border-[#2a2d3a]">
+                      <div className="px-4 py-1.5 text-[10px] text-[#7a819c] font-bold uppercase tracking-widest">Support</div>
+                      <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <LifeBuoy size={16} /> Live Support
+                      </button>
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </div>
+
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -233,6 +257,7 @@ export function Topbar() {
       <>
         <DepositModal isOpen={depositOpen} onClose={() => { setDepositOpen(false); refreshUser(); }} />
         <RewardsModal isOpen={rewardsOpen} onClose={() => { setRewardsOpen(false); refreshUser(); }} />
+        <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
       </>
     )}
     <CustomModal config={modalConfig} setConfig={setModalConfig} />

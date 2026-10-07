@@ -45,7 +45,6 @@ export function Sidebar() {
       label: "Platform",
       items: [
         { name: "Home", href: "/", icon: Home },
-        { name: "My Inventory", href: "/inventory", icon: Package },
       ],
     },
     {
