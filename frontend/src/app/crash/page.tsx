@@ -29,6 +29,46 @@ export default function CrashPage() {
       </div>
 
       <CryptoCrashGame />
+
+      {/* Footer info (Provably fair, settings, game info) */}
+      <div className="bg-[#15181f] border-t border-[#1b1e26] p-4 flex flex-col gap-4 rounded-3xl mt-8">
+        <div className="flex items-center gap-4 text-sm font-bold text-[#878eab] px-2">
+          <button onClick={() => setIsFairOpen(true)} className="flex items-center gap-1.5 hover:text-white transition-colors">
+            <ShieldCheck size={16} /> Provably Fair
+          </button>
+        </div>
+        
+        <div className="bg-[#0f1118] border border-[#1b1e26] rounded-xl p-6 flex flex-col md:flex-row gap-8">
+          <div className="space-y-4 min-w-[250px]">
+            <h2 className="text-xl font-black text-white">Crash</h2>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#878eab] font-bold">RTP</span>
+                <span className="text-white font-bold">99.00%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#878eab] font-bold">Max Bet</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-white font-bold">1,000.00</span>
+                  <img src="/dl.webp" alt="DL" className="w-3 h-3 object-contain opacity-80" />
+                </div>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#878eab] font-bold">Max Win</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-white font-bold">100,000.00</span>
+                  <img src="/dl.webp" alt="DL" className="w-3 h-3 object-contain opacity-80" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="text-[#878eab] text-sm font-bold leading-relaxed max-w-2xl">
+            <p>Cash out before the multiplier crashes!</p>
+            <br/>
+            <p>The multiplier starts at 1x and grows exponentially. You can cash out at any time, but if the game crashes before you do, you lose your bet. Will you play it safe or risk it all for a massive multiplier?</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

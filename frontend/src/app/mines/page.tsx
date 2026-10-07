@@ -103,16 +103,16 @@ export default function MinesPage() {
         body: JSON.stringify({ gameId, tileIndex: index }),
       }) as any;
 
-      if (res.blownUp) {
+      if (res.status === 'blown_up') {
         setStatus('blown_up');
         setBoardState(res.boardState);
         setMineLocations(res.mineLocations);
         refreshUser();
       } else {
         setBoardState(res.boardState);
-        setMultiplier(res.newMultiplier);
+        setMultiplier(res.multiplier);
         setHits(prev => prev + 1);
-        setProfit(parseFloat(betAmount) * 100 * res.newMultiplier - (parseFloat(betAmount) * 100));
+        setProfit(parseFloat(betAmount) * 100 * res.multiplier - (parseFloat(betAmount) * 100));
       }
     } catch (err: any) {
       showToast(err.message || "Error clicking tile", "error");
@@ -234,9 +234,9 @@ export default function MinesPage() {
         <div className="flex-1 flex items-center justify-center p-4 md:p-8 relative">
           <div className="grid grid-cols-5 gap-3 w-full max-w-[500px] aspect-square">
             {[...Array(25)].map((_, i) => {
-              const isHidden = boardState[i] === 0;
-              const isGem = boardState[i] === 1;
-              const isBomb = boardState[i] === 2;
+              const isHidden = boardState?.[i] === 0;
+              const isGem = boardState?.[i] === 1;
+              const isBomb = boardState?.[i] === 2;
               
               // In cashout or blown_up state, reveal the unclicked mines with opacity
               const isRevealedMine = (status === 'blown_up' || status === 'cashout') && mineLocations.includes(i) && !isBomb;
@@ -297,8 +297,8 @@ export default function MinesPage() {
               <h2 className="text-xl font-black text-white">Mines</h2>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#878eab] font-bold">House Edge</span>
-                  <span className="text-white font-bold">1.00%</span>
+                  <span className="text-[#878eab] font-bold">RTP</span>
+                  <span className="text-white font-bold">99.00%</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[#878eab] font-bold">Max Bet</span>
