@@ -2668,7 +2668,9 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
   if (!Array.isArray(caseIds) || caseIds.length === 0 || caseIds.length > 50) {
     return res.status(400).json({ error: 'Invalid caseIds array. Max 50 cases.' });
   }
-  if (!['normal', 'crazy', 'terminal', 'jackpot', 'shared'].includes(mode)) return res.status(400).json({ error: 'Invalid mode' });
+  const validModes = ['normal', 'crazy', 'terminal', 'jackpot', 'shared'];
+  const modesArr = (mode || 'normal').split(',');
+  if (!modesArr.every((m: string) => validModes.includes(m))) return res.status(400).json({ error: 'Invalid mode combination' });
   if (![2, 3, 4, 6].includes(playerCount)) return res.status(400).json({ error: 'Invalid player count' });
   const finalFormat = format || (playerCount === 2 ? '1v1' : playerCount === 3 ? '1v1v1' : playerCount === 4 ? '1v1v1v1' : '1v1v1v1v1v1');
 
@@ -2965,36 +2967,54 @@ app.post('/api/battles/start', requireAuth, requireNotFrozen, async (req: AuthRe
       const tStatsArr = Object.entries(teamStats);
       let winningTeamIds: string[] = [];
 
-      if (battle.mode === 'crazy') {
-        const minLoot = Math.min(...tStatsArr.map(([, s]) => s.total));
-        winningTeamIds = tStatsArr.filter(([, s]) => s.total === minLoot).map(([id]) => id);
-      } else if (battle.mode === 'terminal') {
-        const maxLast = Math.max(...tStatsArr.map(([, s]) => s.lastPull));
-        const tiedLast = tStatsArr.filter(([, s]) => s.lastPull === maxLast);
-        if (tiedLast.length > 1) {
-          const maxTotal = Math.max(...tiedLast.map(([, s]) => s.total));
-          winningTeamIds = tiedLast.filter(([, s]) => s.total === maxTotal).map(([id]) => id);
-        } else {
-          winningTeamIds = tiedLast.map(([id]) => id);
+      const activeModes = (battle.mode || 'normal').split(',');
+
+      if (activeModes.includes('shared')) {
+        winningTeamIds = tStatsArr.map(([id]) => id);
+      } else if (activeModes.includes('jackpot')) {
+        let statToUse = (s: any) => s.total;
+        if (activeModes.includes('terminal')) {
+          statToUse = (s: any) => s.lastPull;
         }
-      } else if (battle.mode === 'jackpot') {
-        const totalWinnings = tStatsArr.reduce((acc, [, s]) => acc + s.total, 0);
-        if (totalWinnings === 0) {
-          winningTeamIds = [tStatsArr[Math.floor(Math.random() * tStatsArr.length)][0]];
-        } else {
-          let rand = Math.random() * totalWinnings;
-          let winnerId = tStatsArr[0][0];
-          for (const [id, s] of tStatsArr) {
-            rand -= s.total;
+        
+        if (activeModes.includes('crazy')) {
+          const maxVal = Math.max(...tStatsArr.map(([, s]) => statToUse(s)));
+          const invStats = tStatsArr.map(([id, s]) => [id, maxVal - statToUse(s) + 1] as const);
+          const totalWeight = invStats.reduce((acc, [, w]) => acc + w, 0);
+          let rand = Math.random() * totalWeight;
+          let winnerId = invStats[0][0];
+          for (const [id, weight] of invStats) {
+            rand -= weight;
             if (rand <= 0) { winnerId = id; break; }
           }
           winningTeamIds = [winnerId];
+        } else {
+          const totalWeight = tStatsArr.reduce((acc, [, s]) => acc + statToUse(s), 0);
+          if (totalWeight === 0) {
+            winningTeamIds = [tStatsArr[Math.floor(Math.random() * tStatsArr.length)][0]];
+          } else {
+            let rand = Math.random() * totalWeight;
+            let winnerId = tStatsArr[0][0];
+            for (const [id, s] of tStatsArr) {
+              rand -= statToUse(s);
+              if (rand <= 0) { winnerId = id; break; }
+            }
+            winningTeamIds = [winnerId];
+          }
         }
-      } else if (battle.mode === 'shared') {
-        winningTeamIds = tStatsArr.map(([id]) => id);
       } else {
-        const maxTotal = Math.max(...tStatsArr.map(([, s]) => s.total));
-        winningTeamIds = tStatsArr.filter(([, s]) => s.total === maxTotal).map(([id]) => id);
+        let statToUse = (s: any) => s.total;
+        if (activeModes.includes('terminal')) {
+          statToUse = (s: any) => s.lastPull;
+        }
+        
+        if (activeModes.includes('crazy')) {
+          const minVal = Math.min(...tStatsArr.map(([, s]) => statToUse(s)));
+          winningTeamIds = tStatsArr.filter(([, s]) => statToUse(s) === minVal).map(([id]) => id);
+        } else {
+          const maxVal = Math.max(...tStatsArr.map(([, s]) => statToUse(s)));
+          winningTeamIds = tStatsArr.filter(([, s]) => statToUse(s) === maxVal).map(([id]) => id);
+        }
       }
 
       let isTie = false;

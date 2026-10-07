@@ -229,7 +229,8 @@ export default function BattlesPage() {
   const [availableCases, setAvailableCases] = useState<any[]>([]);
   const [activeBattle, setActiveBattle] = useState<any>(null);
   
-  const [createMode, setCreateMode] = useState("normal"); // normal, crazy, terminal
+  const [createModes, setCreateModes] = useState<string[]>([]);
+  const toggleMode = (m: string) => setCreateModes(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
   const [createFormat, setCreateFormat] = useState("1v1");
   const [createPlayers, setCreatePlayers] = useState(2);
   const [createFast, setCreateFast] = useState(false);
@@ -368,7 +369,7 @@ export default function BattlesPage() {
     try {
       const res = await apiFetch("/battles/create", {
         method: "POST",
-        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createMode, playerCount: createPlayers, format: createFormat, isFast: createFast })
+        body: JSON.stringify({ caseIds: selectedCaseIds, mode: createModes.length ? createModes.join(',') : 'normal', playerCount: createPlayers, format: createFormat, isFast: createFast })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -470,7 +471,7 @@ export default function BattlesPage() {
             </button>
             {view === "lobby" && (
                 <button
-                onClick={() => { setView("create"); setCreateMode("normal"); setSelectedCaseIds([]); }}
+                onClick={() => { setView("create"); setCreateModes([]); setSelectedCaseIds([]); setCreateFast(false); }}
                 className="bg-accent-blue text-white px-5 py-2.5 rounded-xl font-black hover:bg-blue-600 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                 >
                 Create Case Battle
@@ -548,7 +549,7 @@ export default function BattlesPage() {
             
             <div className="space-y-2">
               {battles.map(b => {
-                const m = getModeDetails(b.mode);
+
                 let parsedCaseIds: string[] = [];
                 try { parsedCaseIds = JSON.parse(b.caseIds); } catch(e) {}
                 const maxPlayers = b.targetPlayerCount || 2;
@@ -569,10 +570,18 @@ export default function BattlesPage() {
                     <div className="flex items-center gap-8 w-full">
                       {/* Left: Mode & Players */}
                       <div className="flex flex-col gap-3 min-w-[140px]">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-white text-[11px] font-black uppercase tracking-wider">{b.mode === 'normal' ? 'Normal' : b.mode}</span>
-                          {b.mode !== 'normal' && (
-                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${m.bg} ${m.color}`}>{b.mode}</span>
+                        <div className="flex flex-wrap items-center justify-center gap-1.5">
+                          {(!b.mode || b.mode === 'normal') ? (
+                              <span className="text-white text-[11px] font-black uppercase tracking-wider">Normal</span>
+                          ) : (
+                              b.mode.split(',').map((modeStr: string, idx: number) => {
+                                  const modDetail = getModeDetails(modeStr);
+                                  return (
+                                      <span key={idx} className={`text-[9px] font-black px-1.5 py-0.5 rounded ${modDetail.bg} ${modDetail.color} flex items-center gap-1 uppercase tracking-wider`}>
+                                          {modeStr}
+                                      </span>
+                                  );
+                              })
                           )}
                         </div>
                         <div className="flex items-center justify-center gap-1">
@@ -692,82 +701,7 @@ export default function BattlesPage() {
                     {/* LEFT COLUMN: Main Area */}
                     <div className="flex-1">
                         
-                        {/* Mode Selection Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-                            <button 
-                              onClick={() => setCreateMode("normal")}
-                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'normal' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
-                            >
-                                <div className={`shrink-0 mt-1 ${createMode === 'normal' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Swords size={18} /></div>
-                                <div>
-                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'normal' ? 'text-white' : 'text-[#a0a5b8]'}`}>Normal</div>
-                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Highest total value unboxed wins</div>
-                                </div>
-                            </button>
-                            <button 
-                              onClick={() => setCreateMode("crazy")}
-                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'crazy' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
-                            >
-                                <div className={`shrink-0 mt-1 ${createMode === 'crazy' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Ghost size={18} /></div>
-                                <div>
-                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'crazy' ? 'text-white' : 'text-[#a0a5b8]'}`}>Crazy</div>
-                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Lowest total value unboxed wins</div>
-                                </div>
-                            </button>
-                            <button 
-                              onClick={() => setCreateMode("terminal")}
-                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'terminal' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
-                            >
-                                <div className={`shrink-0 mt-1 ${createMode === 'terminal' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Terminal size={18} /></div>
-                                <div>
-                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'terminal' ? 'text-white' : 'text-[#a0a5b8]'}`}>Terminal</div>
-                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Highest value in the last case wins</div>
-                                </div>
-                            </button>
-                            <button 
-                              onClick={() => setCreateMode("jackpot")}
-                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'jackpot' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
-                            >
-                                <div className={`shrink-0 mt-1 ${createMode === 'jackpot' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Gem size={18} /></div>
-                                <div>
-                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'jackpot' ? 'text-white' : 'text-[#a0a5b8]'}`}>Jackpot</div>
-                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Chance to win pot based on unboxed value</div>
-                                </div>
-                            </button>
-                            <button 
-                              onClick={() => setCreateMode("shared")}
-                              className={`bg-[#15181f] border p-3 rounded-xl text-left flex items-start gap-3 transition-all ${createMode === 'shared' ? 'border-accent-blue bg-accent-blue/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-[#2a2d3a] opacity-60 hover:opacity-100'}`}
-                            >
-                                <div className={`shrink-0 mt-1 ${createMode === 'shared' ? 'text-accent-blue' : 'text-[#a0a5b8]'}`}><Users size={18} /></div>
-                                <div>
-                                    <div className={`font-black text-sm mb-0.5 ${createMode === 'shared' ? 'text-white' : 'text-[#a0a5b8]'}`}>Shared</div>
-                                    <div className="text-[#7a819c] text-[10px] font-bold leading-tight">Share the winnings equally with all players</div>
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* Battle Settings */}
-                        <div className="mb-8">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Settings2 size={16} className="text-[#a0a5b8]" />
-                                <h3 className="text-white font-black text-sm">Battle Settings</h3>
-                            </div>
-                            <div className="flex gap-4">
-                                <button 
-                                  onClick={() => setCreateFast(!createFast)}
-                                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${createFast ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#15181f] border-[#2a2d3a] opacity-70 hover:opacity-100'}`}
-                                >
-                                    <Zap size={18} className={createFast ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
-                                    <div className="text-left">
-                                        <div className={`font-black text-xs ${createFast ? 'text-white' : 'text-[#a0a5b8]'}`}>Fast Spin</div>
-                                        <div className="text-[10px] text-[#7a819c] font-bold">Significantly speeds up the spin animation</div>
-                                    </div>
-                                    <div className={`ml-2 w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createFast ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
-                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createFast ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+                        {/* Mode Selection was moved to the right column */}
 
                         {/* Add Cases Section */}
                         <div>
@@ -825,6 +759,93 @@ export default function BattlesPage() {
                     {/* RIGHT COLUMN: Sidebar (Darker background) */}
                     <div className="w-[340px] shrink-0 bg-[#15181f] border border-[#2a2d3a] rounded-xl p-5 self-start shadow-xl">
                         
+                        {/* Modifiers / Battle Settings */}
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Settings2 size={16} className="text-[#a0a5b8]" />
+                                  <h3 className="text-white font-black text-sm">Modifiers</h3>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                                <button 
+                                  onClick={() => toggleMode("crazy")}
+                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('crazy') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Ghost size={16} className={createModes.includes('crazy') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
+                                        <div className="text-left">
+                                            <div className={`font-black text-xs ${createModes.includes('crazy') ? 'text-white' : 'text-[#a0a5b8]'}`}>Crazy Mode</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('crazy') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('crazy') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+                                
+                                <button 
+                                  onClick={() => toggleMode("terminal")}
+                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('terminal') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Terminal size={16} className={createModes.includes('terminal') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
+                                        <div className="text-left">
+                                            <div className={`font-black text-xs ${createModes.includes('terminal') ? 'text-white' : 'text-[#a0a5b8]'}`}>Terminal Mode</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('terminal') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('terminal') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+
+                                <button 
+                                  onClick={() => toggleMode("jackpot")}
+                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('jackpot') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Gem size={16} className={createModes.includes('jackpot') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
+                                        <div className="text-left">
+                                            <div className={`font-black text-xs ${createModes.includes('jackpot') ? 'text-white' : 'text-[#a0a5b8]'}`}>Jackpot Mode</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('jackpot') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('jackpot') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+
+                                <button 
+                                  onClick={() => toggleMode("shared")}
+                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all ${createModes.includes('shared') ? 'bg-accent-blue/10 border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Users size={16} className={createModes.includes('shared') ? 'text-accent-blue' : 'text-[#a0a5b8]'} />
+                                        <div className="text-left">
+                                            <div className={`font-black text-xs ${createModes.includes('shared') ? 'text-white' : 'text-[#a0a5b8]'}`}>Shared Mode</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createModes.includes('shared') ? 'bg-accent-blue' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createModes.includes('shared') ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+
+                                <button 
+                                  onClick={() => setCreateFast(!createFast)}
+                                  className={`flex items-center justify-between p-3 rounded-xl border transition-all mt-2 ${createFast ? 'bg-amber-500/10 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-[#1a1d24] border-[#2a2d3a] hover:bg-[#1f222b]'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Zap size={16} className={createFast ? 'text-amber-500' : 'text-[#a0a5b8]'} />
+                                        <div className="text-left">
+                                            <div className={`font-black text-xs ${createFast ? 'text-white' : 'text-[#a0a5b8]'}`}>Fast Spin</div>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${createFast ? 'bg-amber-500' : 'bg-[#2a2d3a]'}`}>
+                                        <div className={`w-3 h-3 bg-white rounded-full shadow-md transition-transform ${createFast ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Select Players */}
                         <div className="mb-6">
                             <div className="flex items-center justify-between mb-4">
