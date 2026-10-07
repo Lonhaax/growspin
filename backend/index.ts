@@ -68,17 +68,15 @@ function emitLiveBet(ioInstance: any, betData: any) {
   recentLiveBets.unshift(betData);
   if (recentLiveBets.length > 10) recentLiveBets.pop();
   
-  // High Rollers (Top 10 highest payout amounts)
-  const payoutAmount = betData.profit > 0 ? betData.betAmount + betData.profit : 0;
-  if (payoutAmount > 0) {
-    // Add if it beats the lowest or we don't have 10 yet
-    highRollerBets.push({ ...betData, payoutAmount });
-    highRollerBets.sort((a, b) => b.payoutAmount - a.payoutAmount);
+  // High Rollers (Bets >= 150 DLs)
+  if (betData.betAmount >= 15000) {
+    highRollerBets.push(betData);
+    highRollerBets.sort((a, b) => b.betAmount - a.betAmount);
     if (highRollerBets.length > 10) highRollerBets.pop();
   }
 
-  // Lucky Wins (Top 10 highest multipliers)
-  if (betData.multiplier >= 1) {
+  // Lucky Wins (Multiplier >= 200x)
+  if (betData.multiplier >= 200) {
     luckyWins.push(betData);
     luckyWins.sort((a, b) => b.multiplier - a.multiplier);
     if (luckyWins.length > 10) luckyWins.pop();
@@ -447,7 +445,7 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
       return;
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await bcrypt.hash(password, 10);
     // Auto-assign admin ONLY if it's the very first user on the site
     const userCount = await prisma.user.count();
     const role = (userCount === 0) ? 'admin' : 'user';
@@ -5014,6 +5012,14 @@ app.all('/api/bgaming/callback/:sessionId', async (req: Request, res: Response) 
         });
 
         finalBalance = updatedUser.mockBalance;
+        
+        emitLiveBet(io, {
+          user: updatedUser.username,
+          game: gameId,
+          betAmount: finalBetAmount,
+          multiplier: finalBetAmount > 0 ? effectiveWinAmount / finalBetAmount : 0,
+          profit: profit
+        });
       }
 
       // Override currency and balance to our real numbers

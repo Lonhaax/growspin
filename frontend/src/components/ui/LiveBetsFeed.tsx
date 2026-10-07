@@ -69,15 +69,15 @@ export function LiveBetsFeed() {
       });
 
       setHighRollers(prev => {
-        if (payoutAmount > 0) {
-          const next = [...prev, { ...newBet, payoutAmount }];
-          return next.sort((a: any, b: any) => (b.payoutAmount || 0) - (a.payoutAmount || 0)).slice(0, 10);
+        if (newBet.betAmount >= 15000) {
+          const next = [...prev, newBet];
+          return next.sort((a, b) => b.betAmount - a.betAmount).slice(0, 10);
         }
         return prev;
       });
 
       setLuckyWins(prev => {
-        if (newBet.multiplier >= 1) {
+        if (newBet.multiplier >= 200) {
           const next = [...prev, newBet];
           return next.sort((a, b) => b.multiplier - a.multiplier).slice(0, 10);
         }
