@@ -128,6 +128,30 @@ export default function InventoryPage() {
     .reduce((acc, i) => acc + (i.isBorrowed ? Math.max(0, i.value - (i.borrowPrice || 0)) : i.value), 0);
   const hasBorrowedSelected = activeItems.some(i => selectedIds.includes(i.id) && i.isBorrowed);
 
+  type StackedItem = UserItem & { count: number; stackedIds: number[] };
+  const stackedItemsMap = new Map<string, StackedItem>();
+  activeItems.forEach(item => {
+    const key = `${item.name}-${item.isBorrowed ? 'borrowed' : 'owned'}`;
+    if (!stackedItemsMap.has(key)) {
+      stackedItemsMap.set(key, { ...item, count: 1, stackedIds: [item.id] });
+    } else {
+      const stack = stackedItemsMap.get(key)!;
+      stack.count += 1;
+      stack.stackedIds.push(item.id);
+    }
+  });
+  const stackedItems = Array.from(stackedItemsMap.values()).sort((a, b) => b.value - a.value);
+
+  const handleStackClick = (stack: StackedItem) => {
+    const allSelected = stack.stackedIds.every(id => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds(prev => prev.filter(id => !stack.stackedIds.includes(id)));
+    } else {
+      const unselectedIds = stack.stackedIds.filter(id => !selectedIds.includes(id));
+      setSelectedIds(prev => [...prev, ...unselectedIds]);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-32">
       {/* Header & Controls */}
@@ -204,30 +228,40 @@ export default function InventoryPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           <AnimatePresence>
-            {activeItems.map((item) => {
-              const isBorrowed = item.isBorrowed;
-              const loan = item.borrowPrice || 0;
-              const netProfit = Math.max(0, item.value - loan);
+            {stackedItems.map((stack) => {
+              const isBorrowed = stack.isBorrowed;
+              const loan = stack.borrowPrice || 0;
+              const netProfit = Math.max(0, stack.value - loan);
+              const selectedCount = stack.stackedIds.filter(id => selectedIds.includes(id)).length;
+              const isAllSelected = selectedCount === stack.count;
+              const isPartiallySelected = selectedCount > 0 && !isAllSelected;
 
               return (
                 <motion.div
-                  key={item.id}
+                  key={`${stack.name}-${isBorrowed ? 'borrowed' : 'owned'}`}
                   layout
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  onClick={() => toggleSelect(item.id)}
+                  onClick={() => handleStackClick(stack)}
                   className={`relative cursor-pointer bg-[#1f222b] border-2 rounded-2xl p-4 flex flex-col items-center text-center transition-all shadow-lg ${
-                    selectedIds.includes(item.id) 
+                    selectedCount > 0
                       ? "border-accent-blue shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-[#2563eb]/10" 
                       : isBorrowed
                       ? "border-amber-500/40 hover:border-amber-500/70 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
                       : "border-[#2a2d3a] hover:border-[#3a3d4a]"
                   }`}
                 >
+                  {/* Stack Count Badge */}
+                  {stack.count > 1 && (
+                    <div className="absolute top-2.5 left-2.5 z-20 bg-[#15181f] border border-[#2a2d3a] text-white font-black text-[10px] px-2 py-0.5 rounded-md shadow-lg">
+                      x{stack.count}
+                    </div>
+                  )}
+
                   {/* Borrowed Pill Badge */}
                   {isBorrowed && (
-                    <div className="absolute top-2.5 left-2.5 z-20 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-black text-[9px] uppercase px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                    <div className={`absolute top-2.5 ${stack.count > 1 ? 'left-[45px]' : 'left-2.5'} z-20 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-black text-[9px] uppercase px-1.5 py-0.5 rounded-md flex items-center gap-1`}>
                       <HandCoins size={10} /> Borrowed
                     </div>
                   )}
@@ -235,53 +269,54 @@ export default function InventoryPage() {
                   {/* Glow behind image based on rarity color */}
                   <div 
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 blur-2xl rounded-full opacity-30" 
-                    style={{ backgroundColor: item.color }} 
+                    style={{ backgroundColor: stack.color }} 
                   />
                   
                   {/* Visual placeholder for the item */}
                   <div 
                     className="w-20 h-20 mb-3 rounded-lg flex items-center justify-center border border-white/10 shadow-inner z-10 p-2 mt-3"
-                    style={{ background: `linear-gradient(135deg, ${item.color}40, transparent)` }}
+                    style={{ background: `linear-gradient(135deg, ${stack.color}40, transparent)` }}
                   >
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(item.imageUrl.replace(/^https?:\/\//, ''))}` : item.imageUrl} alt={item.name} className="max-w-full max-h-full object-contain" />
+                    {stack.imageUrl ? (
+                      <img src={stack.imageUrl.startsWith('http') ? `https://wsrv.nl/?url=${encodeURIComponent(stack.imageUrl.replace(/^https?:\/\//, ''))}` : stack.imageUrl} alt={stack.name} className="max-w-full max-h-full object-contain" />
                     ) : (
-                      <Package size={32} style={{ color: item.color }} />
+                      <Package size={32} style={{ color: stack.color }} />
                     )}
                   </div>
                   
-                  <h3 className="text-xs font-bold text-white mb-1 z-10 truncate w-full px-1" title={item.name}>{item.name}</h3>
+                  <h3 className="text-xs font-bold text-white mb-1 z-10 truncate w-full px-1" title={stack.name}>{stack.name}</h3>
                   <div className="z-10 flex items-center justify-center">
-                    <DLCurrency amount={item.value} size="xs" className="font-black text-white" />
+                    <DLCurrency amount={stack.value * stack.count} size="xs" className="font-black text-white" />
                   </div>
 
                   {isBorrowed && (
                     <div className="mt-2 w-full pt-2 border-t border-white/5 text-[10px] space-y-1 z-10">
                       <div className="text-amber-400 font-medium flex items-center justify-between">
-                        <span>Loan:</span>
+                        <span>Loan (each):</span>
                         <span>{(loan / 100).toFixed(2)} DL</span>
                       </div>
                       <div className="text-accent-green font-bold flex items-center justify-between">
-                        <span>Net if sold:</span>
-                        <span>+{(netProfit / 100).toFixed(2)} DL</span>
+                        <span>Net if sold (all):</span>
+                        <span>+{((netProfit * stack.count) / 100).toFixed(2)} DL</span>
                       </div>
                       <button
-                        onClick={(e) => handleRepay(item.id, e)}
-                        disabled={repayingId === item.id || (user?.mockBalance || 0) < loan}
-                        title={((user?.mockBalance || 0) < loan) ? `Need ${(loan / 100).toFixed(2)} DLs in balance` : "Pay off loan to own item permanently"}
+                        onClick={(e) => handleRepay(stack.stackedIds[0], e)}
+                        disabled={repayingId === stack.stackedIds[0] || (user?.mockBalance || 0) < loan}
+                        title={((user?.mockBalance || 0) < loan) ? `Need ${(loan / 100).toFixed(2)} DLs in balance` : "Pay off loan to own 1 item permanently"}
                         className="w-full mt-1.5 py-1 px-2 bg-[#2a1d40] hover:bg-[#382658] border border-purple-500/40 text-purple-300 font-bold rounded-lg text-[9px] transition-all disabled:opacity-40 flex items-center justify-center gap-1 cursor-pointer"
                       >
                         <Coins size={10} className="text-purple-400" />
-                        {repayingId === item.id ? "Repaying..." : `Repay ${(loan / 100).toFixed(2)} DL`}
+                        {repayingId === stack.stackedIds[0] ? "Repaying..." : `Repay 1 for ${(loan / 100).toFixed(2)} DL`}
                       </button>
                     </div>
                   )}
                   
                   {/* Checkbox indicator */}
-                  <div className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors z-20 ${
-                    selectedIds.includes(item.id) ? "border-accent-blue bg-accent-blue" : "border-[#7a819c] bg-transparent"
+                  <div className={`absolute top-2.5 right-2.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors z-20 ${
+                    isAllSelected ? "border-accent-blue bg-accent-blue" : isPartiallySelected ? "border-accent-blue bg-accent-blue/50" : "border-[#7a819c] bg-transparent"
                   }`}>
-                    {selectedIds.includes(item.id) && <div className="w-2 h-2 bg-white rounded-full" />}
+                    {isAllSelected && <CheckCircle2 size={12} className="text-white" />}
+                    {isPartiallySelected && <div className="text-[10px] font-black text-white leading-none">{selectedCount}</div>}
                   </div>
                 </motion.div>
               );
