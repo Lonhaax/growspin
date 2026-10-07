@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useWallet } from "@/context/WalletContext";
 import { useLayout } from "@/context/LayoutContext";
-import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket, Menu } from "lucide-react";
+import { Wallet, Bell, MessageSquare, ChevronDown, ChevronRight, LogOut, Star, Gift, Crown, HandCoins, Volume2, VolumeX, User, List, History, Package, Settings, LifeBuoy, Ticket, Menu, Banknote } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
@@ -155,6 +155,13 @@ export function Topbar() {
                       <button onClick={() => { setDropdownOpen(false); setInventoryOpen(true); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
                         <Package size={16} /> Inventory
                       </button>
+                    </div>
+
+                    <div className="py-1 border-t border-[#2a2d3a]">
+                      <div className="px-4 py-1.5 text-[10px] text-[#7a819c] font-bold uppercase tracking-widest">Finance</div>
+                      <Link href="/loan" onClick={() => setDropdownOpen(false)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[#878eab] hover:text-white hover:bg-[#2a2d3a] transition-colors text-left font-bold">
+                        <Banknote size={16} /> Loans
+                      </Link>
                     </div>
 
                     <div className="py-1 border-t border-[#2a2d3a]">
