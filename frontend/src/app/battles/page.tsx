@@ -1345,7 +1345,7 @@ export default function BattlesPage() {
                               {isWinner && <div className="absolute inset-0 bg-gradient-to-b from-accent-green/20 to-transparent pointer-events-none z-0" />}
                               
                               {/* Player Badge */}
-                              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-transparent flex flex-col items-center gap-1.5 min-w-max">
+                              <div className="absolute top-14 left-1/2 -translate-x-1/2 z-20 bg-transparent flex flex-col items-center gap-1.5 min-w-max">
                                 <div className="flex items-center gap-2">
                                   <div className="w-6 h-6 rounded flex items-center justify-center text-white font-black text-[10px] shadow-md" style={{ backgroundColor: pColor }}>
                                     {isBot ? <Bot size={12} className="text-white/80" /> : (p.username?.[0] || p.userId[0])}
