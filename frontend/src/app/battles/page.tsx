@@ -269,7 +269,7 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
       const runAnim = async () => {
         await controls.set({ x: 0 });
         const containerWidth = trackRef.current ? trackRef.current.clientWidth : 320;
-        const itemCenter = (55 * 52) + 24; // 48 width + 4 gap = 52 step
+        const itemCenter = (55 * 42) + 21; // 40 width + 2 gap = 42 step
         const jitter = (Math.random() - 0.5) * 30;
         const targetX = (containerWidth / 2) - itemCenter + jitter;
 
@@ -285,27 +285,21 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
   }, [strip]);
 
   return (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="w-full mb-4 flex flex-col items-center overflow-hidden">
-      <div className="text-accent-blue font-black text-[10px] uppercase tracking-widest mb-1 flex items-center gap-1.5">
-        <PackageOpen size={12} /> Jackpot Spin
-      </div>
-      
-      <div className="relative w-80 h-[64px] rounded-lg overflow-hidden bg-gradient-to-r from-[#1f222b] via-[#15181f] to-[#1f222b] border border-[#2a2d3a] shadow-inner">
+    <motion.div initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} className="w-full flex items-center overflow-hidden h-[48px] rounded-lg">
+      <div className="relative w-full h-full overflow-hidden bg-gradient-to-r from-[#1f222b] via-[#15181f] to-[#1f222b] border border-[#2a2d3a] shadow-inner">
         {/* Center Target Line */}
-        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-yellow-400 z-20 shadow-[0_0_10px_rgba(234,179,8,1)] pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,1)]" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,1)]" />
+        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-yellow-400 z-20 shadow-[0_0_10px_rgba(234,179,8,1)] pointer-events-none" />
         
         {/* Fades */}
-        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#1f222b] to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#1f222b] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1f222b] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1f222b] to-transparent z-10 pointer-events-none" />
         
         <div ref={trackRef} className="w-full h-full flex items-center relative overflow-hidden">
           <motion.div 
             className="flex items-center absolute left-0" 
             initial={{ x: 0 }}
             animate={controls} 
-            style={{ gap: '4px' }}
+            style={{ gap: '2px' }}
           >
             {strip.map((tId, i) => {
               const members = teamStats[parseInt(tId)]?.members || [];
@@ -317,8 +311,8 @@ function JackpotSpinner({ teamStats, winnerId, onComplete, participants = [], is
               const color = PLAYER_COLORS[parseInt(tId) % PLAYER_COLORS.length];
 
               return (
-                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative rounded w-12 will-change-transform shadow-md border-2 border-black/20" style={{ height: '48px', backgroundColor: color }}>
-                  <div className="text-white font-black text-[12px] uppercase tracking-wider mix-blend-overlay drop-shadow-md">
+                <div key={i} className="flex-shrink-0 flex flex-col items-center justify-center relative rounded w-10 will-change-transform shadow-sm border border-black/20" style={{ height: '40px', backgroundColor: color }}>
+                  <div className="text-white font-black text-[10px] uppercase tracking-wider mix-blend-overlay drop-shadow-sm">
                     {displayName.substring(0,3)}
                   </div>
                 </div>
@@ -1100,29 +1094,10 @@ export default function BattlesPage() {
                   </div>
                 </div>
 
-                {/* JACKPOT SPINNER (If active) */}
-                <AnimatePresence>
-                  {isJackpotSpinnerOpen && jackpotSpinnerData && (
-                    <JackpotSpinner
-                      teamStats={jackpotSpinnerData.teamStats}
-                      winnerId={jackpotSpinnerData.winnerId}
-                      mode={jackpotSpinnerData.mode}
-                      participants={activeBattle.participants}
-                      isFast={activeBattle?.isFast}
-                      onComplete={() => {
-                        setIsJackpotSpinnerOpen(false);
-                        setFinalWinner(jackpotSpinnerData.winnerId);
-                        setActiveBattle({ ...activeBattle, status: 'finished', winnerId: jackpotSpinnerData.winnerId, totalPotValue: jackpotSpinnerData.totalPotValue });
-                        refreshUser();
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-
                 {/* BATTLE HEADER ROW 2 */}
-                <div className="flex items-center justify-between mb-6 relative">
+                <div className="flex items-center justify-between mb-6 relative w-full">
                   {/* Left Side */}
-                  <div className="flex flex-col">
+                  <div className="flex flex-col min-w-[120px]">
                     <div className="text-white font-black text-lg mb-1">
                       {activeBattle.format === '1v1' ? '2 Players' : activeBattle.format === '1v1v1' ? '3 Players' : activeBattle.format === '1v1v1v1' ? '4 Players' : `${Math.ceil((activeBattle.targetPlayerCount || 2) / (activeBattle.format.startsWith('2') ? 2 : 3))} Teams`}
                     </div>
@@ -1134,21 +1109,42 @@ export default function BattlesPage() {
                     </div>
                   </div>
 
-                  {/* Center Case Sequence */}
-                  <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-                    {JSON.parse(activeBattle.caseIds || '[]').map((cid: string, i: number) => {
-                      const c = availableCases.find(x => x.id.toString() === cid);
-                      const isPast = i < currentRound;
-                      return (
-                        <div key={i} className={`w-12 h-12 flex flex-col items-center justify-center transition-all ${isPast ? 'opacity-30 grayscale' : ''}`}>
-                          {c?.image ? <img src={c.image} className="w-10 h-10 object-contain drop-shadow" /> : <PackageOpen size={20} className="text-[#4d5366]" />}
-                        </div>
-                      )
-                    })}
+                  {/* Center Sequence */}
+                  <div className="flex-1 mx-6 flex items-center justify-center overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {isJackpotSpinnerOpen && jackpotSpinnerData ? (
+                        <JackpotSpinner
+                          key="spinner"
+                          teamStats={jackpotSpinnerData.teamStats}
+                          winnerId={jackpotSpinnerData.winnerId}
+                          mode={jackpotSpinnerData.mode}
+                          participants={activeBattle.participants}
+                          isFast={activeBattle?.isFast}
+                          onComplete={() => {
+                            setIsJackpotSpinnerOpen(false);
+                            setFinalWinner(jackpotSpinnerData.winnerId);
+                            setActiveBattle({ ...activeBattle, status: 'finished', winnerId: jackpotSpinnerData.winnerId, totalPotValue: jackpotSpinnerData.totalPotValue });
+                            refreshUser();
+                          }}
+                        />
+                      ) : (
+                        <motion.div key="cases" className="flex items-center gap-2" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+                          {JSON.parse(activeBattle.caseIds || '[]').map((cid: string, i: number) => {
+                            const c = availableCases.find(x => x.id.toString() === cid);
+                            const isPast = i < currentRound;
+                            return (
+                              <div key={i} className={`w-12 h-12 flex flex-col items-center justify-center transition-all ${isPast ? 'opacity-30 grayscale' : ''}`}>
+                                {c?.image ? <img src={c.image} className="w-10 h-10 object-contain drop-shadow" /> : <PackageOpen size={20} className="text-[#4d5366]" />}
+                              </div>
+                            )
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Right Side */}
-                  <div className="flex flex-col items-end">
+                  <div className="flex flex-col items-end min-w-[120px]">
                     <span className="text-[#7a819c] font-black text-[10px] uppercase tracking-widest mb-1">Battle Cost:</span>
                     <span className="text-white font-black flex items-center gap-1 text-sm">
                       <DLCurrency amount={activeBattle.participants.length * activeBattle.entryFee} size="sm" className="text-white" />
