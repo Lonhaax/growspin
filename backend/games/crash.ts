@@ -23,7 +23,7 @@ export class CrashManager {
   public currentMultiplier: number = 1.00;
   public crashPoint: number = 1.00;
   public players: Map<number, CrashPlayer> = new Map();
-  public history: number[] = [];
+  public history: { id: string, crashPoint: number }[] = [];
   public startTime: number = 0;
   private loopInterval: NodeJS.Timeout | null = null;
   private tickInterval: NodeJS.Timeout | null = null;
@@ -104,7 +104,7 @@ export class CrashManager {
       }
     });
 
-    this.history.unshift(this.crashPoint);
+    this.history.unshift({ id: Math.random().toString(36).substring(7), crashPoint: this.crashPoint });
     if (this.history.length > 30) this.history.pop();
 
     this.io.emit('crash:crashed', { crashPoint: this.crashPoint, history: this.history, players: Array.from(this.players.values()) });

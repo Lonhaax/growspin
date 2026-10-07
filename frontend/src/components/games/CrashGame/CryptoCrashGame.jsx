@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import io from 'socket.io-client';
 import { useWallet } from '@/context/WalletContext';
 import { apiFetch } from '@/lib/auth';
@@ -180,10 +181,24 @@ export default function CryptoCrashGame() {
     return (
         <div className="crypto-crash-wrapper">
             <div className="crash-history-strip">
-                {history.map((h, i) => {
-                    const colorClass = h < 1.5 ? 'x1' : h < 5 ? 'x2' : 'x3';
-                    return <div key={i} className={`history-item ${colorClass}`}>{h.toFixed(2)}x</div>;
-                })}
+                <AnimatePresence>
+                    {history.map((item) => {
+                        const h = item.crashPoint;
+                        const colorClass = h < 1.5 ? 'x1' : h < 5 ? 'x2' : 'x3';
+                        return (
+                            <motion.div 
+                                key={item.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.5, x: -20 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                className={`history-item ${colorClass}`}
+                            >
+                                {h.toFixed(2)}x
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
             </div>
 
             <div className="crash-container">
