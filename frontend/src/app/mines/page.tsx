@@ -51,17 +51,19 @@ export default function MinesPage() {
   useEffect(() => {
     const fetchActiveGame = async () => {
       try {
-        const res = await apiFetch("/play/mines/active") as any;
-        if (res.activeGame) {
-          setGameId(res.activeGame.id);
-          setBetAmount((res.activeGame.betAmount / 100).toFixed(2));
-          setMinesCount(res.activeGame.minesCount);
-          setBoardState(JSON.parse(res.activeGame.boardState));
+        const res = await apiFetch("/play/mines/active");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.activeGame) {
+          setGameId(data.activeGame.id);
+          setBetAmount((data.activeGame.betAmount / 100).toFixed(2));
+          setMinesCount(data.activeGame.minesCount);
+          setBoardState(JSON.parse(data.activeGame.boardState));
           setStatus('playing');
-          setMultiplier(res.activeGame.multiplier);
-          setProfit(res.activeGame.profit);
+          setMultiplier(data.activeGame.multiplier);
+          setProfit(data.activeGame.profit);
           
-          const parsedBoard = JSON.parse(res.activeGame.boardState);
+          const parsedBoard = JSON.parse(data.activeGame.boardState);
           setHits(parsedBoard.filter((t: number) => t === 1).length);
         }
       } catch (err) {
@@ -87,8 +89,11 @@ export default function MinesPage() {
       const res = await apiFetch("/play/mines/start", {
         method: "POST",
         body: JSON.stringify({ amount, minesCount }),
-      }) as any;
-      setGameId(res.gameId);
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setGameId(data.gameId);
       setStatus('playing');
       setBoardState(Array(25).fill(0));
       setMineLocations([]);
@@ -111,18 +116,20 @@ export default function MinesPage() {
       const res = await apiFetch("/play/mines/click", {
         method: "POST",
         body: JSON.stringify({ gameId, tileIndex: index }),
-      }) as any;
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-      if (res.status === 'blown_up') {
+      if (data.status === 'blown_up') {
         setStatus('blown_up');
-        setBoardState(res.boardState);
-        setMineLocations(res.mineLocations);
+        setBoardState(data.boardState);
+        setMineLocations(data.mineLocations);
         refreshUser();
       } else {
-        setBoardState(res.boardState);
-        setMultiplier(res.multiplier);
+        setBoardState(data.boardState);
+        setMultiplier(data.multiplier);
         setHits(prev => prev + 1);
-        setProfit(parseFloat(betAmount) * 100 * res.multiplier - (parseFloat(betAmount) * 100));
+        setProfit(parseFloat(betAmount) * 100 * data.multiplier - (parseFloat(betAmount) * 100));
       }
     } catch (err: any) {
       showToast(err.message || "Error clicking tile", "error");
@@ -139,11 +146,14 @@ export default function MinesPage() {
       const res = await apiFetch("/play/mines/cashout", {
         method: "POST",
         body: JSON.stringify({ gameId }),
-      }) as any;
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
       setStatus('cashout');
-      setMineLocations(res.mineLocations);
+      setMineLocations(data.mineLocations);
       refreshUser();
-      showToast(`Cashed out successfully! Win: ${(res.payout / 100).toFixed(2)} DLs`, "success");
+      showToast(`Cashed out successfully! Win: ${(data.payout / 100).toFixed(2)} DLs`, "success");
     } catch (err: any) {
       showToast(err.message || "Failed to cashout", "error");
     } finally {
