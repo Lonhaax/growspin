@@ -23,7 +23,8 @@ export default function CryptoCrashGame() {
     const canvasRef = useRef(null);
 
     useEffect(() => {
-        const newSocket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        const newSocket = io(backendUrl, { path: '/socket.io' });
         setSocket(newSocket);
 
         newSocket.on('crash:state', (data) => {
