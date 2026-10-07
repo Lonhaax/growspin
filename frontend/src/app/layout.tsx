@@ -25,6 +25,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { ChatSidebar } from "@/components/layout/ChatSidebar";
 import { Footer } from "@/components/layout/Footer";
+import { SplashScreen } from "@/components/layout/SplashScreen";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="h-full flex bg-bg-primary text-white overflow-hidden">
         <AuthProvider>
+          <SplashScreen />
           <WalletProvider>
             <LayoutProvider>
               <Sidebar />
