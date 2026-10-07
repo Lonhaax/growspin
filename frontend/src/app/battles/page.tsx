@@ -573,7 +573,7 @@ export default function BattlesPage() {
                         <div className="flex items-center justify-center gap-1">
                           {b.participants.map((p: any) => (
                             <div key={p.id} className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-xs font-black text-white">
-                              {p.userId.startsWith('bot-') ? <Bot size={12} className="text-[#1c7ced]" /> : p.userId[0]}
+                              {p.userId.startsWith('bot-') ? <Bot size={12} className="text-[#1c7ced]" /> : (p.username?.[0] || p.userId[0])}
                             </div>
                           ))}
                           {Array.from({ length: Math.max(0, maxPlayers - b.participants.length) }).map((_, i) => (
@@ -1172,7 +1172,7 @@ export default function BattlesPage() {
                             {/* Player Badge */}
                             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-transparent flex items-center gap-2 min-w-max">
                               <div className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-[10px]">
-                                {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : p.userId[0]}
+                                {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : (p.username?.[0] || p.userId[0])}
                               </div>
                               <div className="flex items-center gap-1 font-black text-xs text-white">
                                 <DLCurrency amount={currentLootValue} size="xs" className="text-white" />
@@ -1275,9 +1275,9 @@ export default function BattlesPage() {
                         <div className={`p-3 rounded-xl border ${isWinner ? 'border-accent-green/50 bg-accent-green/10' : 'border-[#2a2d3a] bg-[#15181f]'} flex items-center justify-between`}>
                           <div className="flex items-center gap-2 overflow-hidden">
                             <div className="w-6 h-6 rounded bg-[#2a2d3a] flex items-center justify-center text-white font-black text-[10px] flex-shrink-0">
-                              {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : p.userId[0]}
+                              {isBot ? <Bot size={12} className="text-[#a0a5b8]" /> : (p.username?.[0] || p.userId[0])}
                             </div>
-                            <div className="text-white font-black text-[11px] truncate">{p.userId}</div>
+                            <div className="text-white font-black text-[11px] truncate">{p.username || p.userId}</div>
                           </div>
                           <div className="bg-[#1a1d24] border border-[#2a2d3a] px-2 py-1 rounded flex items-center gap-1 font-black text-xs">
                             <DLCurrency amount={currentLootValue} size="xs" className={isWinner ? 'text-accent-green' : 'text-white'} />

@@ -2603,6 +2603,31 @@ app.post('/api/inventory/repay', requireAuth, async (req: AuthRequest, res: Resp
 
 // ─── CASE BATTLES ENDPOINTS ──────────────────────────────────────────────────
 
+async function enrichBattleWithUsernames(battle: any) {
+  if (!battle || !battle.participants) return battle;
+  const userIds = battle.participants
+    .filter((p: any) => !p.userId.startsWith('bot-'))
+    .map((p: any) => parseInt(p.userId));
+    
+  let users: any[] = [];
+  if (userIds.length > 0) {
+    users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, username: true }
+    });
+  }
+  
+  const enrichedParticipants = battle.participants.map((p: any) => {
+    if (p.userId.startsWith('bot-')) {
+      return { ...p, username: `Bot #${p.userId.split('-')[1]}` };
+    }
+    const u = users.find(u => u.id.toString() === p.userId);
+    return { ...p, username: u ? u.username : p.userId };
+  });
+  
+  return { ...battle, participants: enrichedParticipants };
+}
+
 // GET /api/battles
 app.get('/api/battles', async (req: Request, res: Response) => {
   try {
@@ -2612,7 +2637,8 @@ app.get('/api/battles', async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
       take: 20
     });
-    res.json(battles);
+    const enrichedBattles = await Promise.all(battles.map(enrichBattleWithUsernames));
+    res.json(enrichedBattles);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -2627,7 +2653,8 @@ app.get('/api/battles/:id', async (req: Request, res: Response) => {
       include: { participants: true }
     });
     if (!battle) return res.status(404).json({ error: 'Battle not found' });
-    res.json(battle);
+    const enrichedBattle = await enrichBattleWithUsernames(battle);
+    res.json(enrichedBattle);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -2703,8 +2730,9 @@ app.post('/api/battles/create', requireAuth, requireNotFrozen, async (req: AuthR
       });
     });
 
-    io.emit('battle_updated', result);
-    res.json(result);
+    const enrichedResult = await enrichBattleWithUsernames(result);
+    io.emit('battle_updated', enrichedResult);
+    res.json(enrichedResult);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
   }
@@ -2759,8 +2787,9 @@ app.post('/api/battles/join', requireAuth, requireNotFrozen, async (req: AuthReq
       return await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
     });
 
-    io.emit('battle_updated', result);
-    res.json(result);
+    const enrichedResult = await enrichBattleWithUsernames(result);
+    io.emit('battle_updated', enrichedResult);
+    res.json(enrichedResult);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
   }
@@ -2791,8 +2820,9 @@ app.post('/api/battles/call-bots', requireAuth, requireNotFrozen, async (req: Au
       return await tx.battle.findUnique({ where: { id: battleId }, include: { participants: true } });
     });
     
-    io.emit('battle_updated', result);
-    res.json(result);
+    const enrichedResult = await enrichBattleWithUsernames(result);
+    io.emit('battle_updated', enrichedResult);
+    res.json(enrichedResult);
   } catch (error: any) {
     console.error("PUT ERROR:", error); res.status(400).json({ error: error.message });
   }
