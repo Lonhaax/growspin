@@ -1723,7 +1723,8 @@ app.post('/api/play/roulette/bet', requireAuth, requireNotFrozen, async (req: Au
 app.get('/api/play/mines/active', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const game = await prisma.minesGame.findFirst({
-      where: { userId: req.userId!, status: 'playing' }
+      where: { userId: req.userId!, status: 'playing' },
+      orderBy: { id: 'desc' }
     });
     if (!game) {
       return res.json({ active: false });
