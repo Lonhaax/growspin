@@ -68,3 +68,65 @@ export async function syncCryptoInvoices(io: Server) {
     console.error('Error syncing crypto invoices:', err);
   }
 }
+
+function chunkArray(arr: any[], size: number) {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+}
+
+export async function checkAllBalances() {
+  const totals = { BTC: 0, LTC: 0, ETH: 0 };
+  try {
+    const invoices = await prisma.cryptoInvoice.findMany({
+      where: { address: { not: null } }
+    });
+
+    const btcAddrs = invoices.filter(i => i.payCurrency === 'BTC').map(i => i.address!);
+    const ltcAddrs = invoices.filter(i => i.payCurrency === 'LTC').map(i => i.address!);
+    const ethAddrs = invoices.filter(i => i.payCurrency === 'ETH').map(i => i.address!);
+
+    // Check BTC
+    for (const chunk of chunkArray(btcAddrs, 50)) {
+      try {
+        const url = `https://api.blockcypher.com/v1/btc/main/addrs/${chunk.join(',')}/balance`;
+        const res = await axios.get(url);
+        // If single address, it returns an object. If multiple, it returns an array of objects.
+        const data = Array.isArray(res.data) ? res.data : [res.data];
+        for (const item of data) {
+          if (item.balance) totals.BTC += item.balance / 100000000;
+        }
+      } catch (e) { console.error("BTC chunk error", e); }
+    }
+
+    // Check LTC
+    for (const chunk of chunkArray(ltcAddrs, 50)) {
+      try {
+        const url = `https://api.blockcypher.com/v1/ltc/main/addrs/${chunk.join(',')}/balance`;
+        const res = await axios.get(url);
+        const data = Array.isArray(res.data) ? res.data : [res.data];
+        for (const item of data) {
+          if (item.balance) totals.LTC += item.balance / 100000000;
+        }
+      } catch (e) { console.error("LTC chunk error", e); }
+    }
+
+    // Check ETH
+    for (const chunk of chunkArray(ethAddrs, 20)) {
+      try {
+        const url = `https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest`;
+        const res = await axios.get(url);
+        if (res.data.status === '1' && Array.isArray(res.data.result)) {
+          for (const item of res.data.result) {
+            if (item.balance) totals.ETH += Number(item.balance) / 1e18;
+          }
+        }
+      } catch (e) { console.error("ETH chunk error", e); }
+    }
+
+  } catch (e) {
+    console.error("Error checking all balances:", e);
+  }
+  return totals;
+}
+

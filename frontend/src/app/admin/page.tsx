@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [newFilterWord, setNewFilterWord] = useState("");
   const [depositLogs, setDepositLogs] = useState<any[]>([]);
   const [cryptoDepositLogs, setCryptoDepositLogs] = useState<any[]>([]);
+  const [cryptoTotals, setCryptoTotals] = useState<any>({ BTC: 0, LTC: 0, ETH: 0 });
   
   const [affiliates, setAffiliates] = useState<any[]>([]);
   const [affiliatesLoading, setAffiliatesLoading] = useState(false);
@@ -130,12 +131,14 @@ export default function AdminPage() {
 
   const fetchDeposits = async () => {
     try {
-      const [res1, res2] = await Promise.all([
+      const [res1, res2, res3] = await Promise.all([
         apiFetch('/admin/deposits'),
-        apiFetch('/admin/crypto-deposits')
+        apiFetch('/admin/crypto-deposits'),
+        apiFetch('/admin/crypto/balances')
       ]);
       if (res1.ok) setDepositLogs(await res1.json());
       if (res2.ok) setCryptoDepositLogs(await res2.json());
+      if (res3.ok) setCryptoTotals(await res3.json());
     } catch (e) {}
   };
 
@@ -1284,10 +1287,26 @@ export default function AdminPage() {
             </table>
           </div>
 
-          <div className="mt-8 flex items-center justify-between">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
-            </h3>
+          <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-black text-white flex items-center gap-2 mb-2">
+                <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
+              </h3>
+              <div className="flex gap-4">
+                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
+                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total BTC</p>
+                  <p className="text-white font-mono font-bold">{cryptoTotals.BTC.toFixed(8)}</p>
+                </div>
+                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
+                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total LTC</p>
+                  <p className="text-white font-mono font-bold">{cryptoTotals.LTC.toFixed(8)}</p>
+                </div>
+                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
+                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total ETH</p>
+                  <p className="text-white font-mono font-bold">{cryptoTotals.ETH.toFixed(6)}</p>
+                </div>
+              </div>
+            </div>
             <button 
               onClick={async () => {
                 try {

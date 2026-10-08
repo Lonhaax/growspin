@@ -4265,6 +4265,17 @@ app.post('/api/admin/crypto/sync', requireAuth, requireAdmin, async (req: AuthRe
   }
 });
 
+// GET /api/admin/crypto/balances
+app.get('/api/admin/crypto/balances', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const { checkAllBalances } = await import('./utils/cryptoSync');
+    const totals = await checkAllBalances();
+    res.json(totals);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseInt(String(req.params.id));
