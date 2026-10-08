@@ -78,7 +78,7 @@ function AreaChart({ data, color, label }: { data: number[]; color: string; labe
           <Tooltip
             contentStyle={{ backgroundColor: "#1b202e", borderColor: "#2a2d3a", borderRadius: "8px", fontSize: "12px", fontWeight: "bold" }}
             itemStyle={{ color: "#fff" }}
-            formatter={(value: number) => [`${(value / 100).toFixed(2)} DL`, label]}
+            formatter={(value: any) => [`${(Number(value) / 100).toFixed(2)} DL`, label]}
             labelFormatter={() => ""}
           />
           <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fillOpacity={1} fill={`url(#color-${label})`} />
