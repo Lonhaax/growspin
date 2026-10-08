@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useLayout } from "@/context/LayoutContext";
 import { ChevronLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
 interface NavGroup {
@@ -77,11 +77,27 @@ export function Sidebar() {
   ];
 
   return (
-    <motion.aside 
-      initial={false}
-      animate={{ width: isSidebarOpen ? 256 : 64 }}
-      className="flex-shrink-0 border-r border-[#1f222b] bg-[#11141e] h-full flex flex-col pt-4 overflow-y-auto hidden md:flex z-10 relative overflow-x-hidden"
-    >
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            onClick={toggleSidebar}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside 
+        initial={false}
+        animate={{ width: isSidebarOpen ? 256 : 64 }}
+        className={`fixed md:relative flex-shrink-0 border-r border-[#1f222b] bg-[#11141e] h-full flex flex-col pt-4 overflow-y-auto z-50 overflow-x-hidden transition-transform duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
       {/* Search Bar */}
       <div className={`px-4 mb-6 transition-opacity duration-200 ${isSidebarOpen ? "opacity-100" : "opacity-0 invisible h-0 mb-0"}`}>
         <div className="relative">
