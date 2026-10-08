@@ -89,82 +89,91 @@ export async function checkAllBalances() {
   const wallets: { address: string, currency: string, balance: number }[] = [];
   try {
     // Only get unique addresses
-    const invoices = await prisma.cryptoInvoice.findMany({
-      where: { address: { not: null } },
+    const invoices = (await prisma.cryptoInvoice.findMany({
       distinct: ['address']
-    });
+    })).filter(i => i.address && i.address.trim() !== '');
+
+    // Initialize all wallets with 0 balance
+    for (const inv of invoices) {
+      if (inv.address) {
+        wallets.push({ address: inv.address, currency: inv.payCurrency, balance: 0 });
+      }
+    }
 
     const btcAddrs = invoices.filter(i => i.payCurrency === 'BTC').map(i => i.address!);
     const ltcAddrs = invoices.filter(i => i.payCurrency === 'LTC').map(i => i.address!);
     const ethAddrs = invoices.filter(i => i.payCurrency === 'ETH').map(i => i.address!);
     const usdtAddrs = invoices.filter(i => i.payCurrency === 'USDT').map(i => i.address!);
 
+    // Helper to update balance
+    const setBal = (addr: string, bal: number, curr: string) => {
+      if (bal > 0) {
+        const w = wallets.find(w => w.address === addr);
+        if (w) w.balance = bal;
+        (totals as any)[curr] += bal;
+      }
+    };
+
     // Check BTC
     for (const chunk of chunkArray(btcAddrs, 50)) {
       try {
         const url = `https://api.blockcypher.com/v1/btc/main/addrs/${chunk.join(',')}/balance`;
-        const res = await axios.get(url);
-        const data = Array.isArray(res.data) ? res.data : [res.data];
-        for (const item of data) {
-          if (item.address && item.balance !== undefined) {
-            const bal = item.balance / 100000000;
-            totals.BTC += bal;
-            wallets.push({ address: item.address, currency: 'BTC', balance: bal });
+        const res = await axios.get(url, { validateStatus: () => true });
+        if (res.status === 200 && res.data) {
+          const data = Array.isArray(res.data) ? res.data : [res.data];
+          for (const item of data) {
+            if (item.address && item.balance !== undefined) {
+              setBal(item.address, item.balance / 100000000, 'BTC');
+            }
           }
         }
-      } catch (e) { console.error("BTC chunk error", e); }
+      } catch (e) { console.error("BTC chunk error", (e as any).message); }
     }
 
     // Check LTC
     for (const chunk of chunkArray(ltcAddrs, 50)) {
       try {
         const url = `https://api.blockcypher.com/v1/ltc/main/addrs/${chunk.join(',')}/balance`;
-        const res = await axios.get(url);
-        const data = Array.isArray(res.data) ? res.data : [res.data];
-        for (const item of data) {
-          if (item.address && item.balance !== undefined) {
-            const bal = item.balance / 100000000;
-            totals.LTC += bal;
-            wallets.push({ address: item.address, currency: 'LTC', balance: bal });
+        const res = await axios.get(url, { validateStatus: () => true });
+        if (res.status === 200 && res.data) {
+          const data = Array.isArray(res.data) ? res.data : [res.data];
+          for (const item of data) {
+            if (item.address && item.balance !== undefined) {
+              setBal(item.address, item.balance / 100000000, 'LTC');
+            }
           }
         }
-      } catch (e) { console.error("LTC chunk error", e); }
+      } catch (e) { console.error("LTC chunk error", (e as any).message); }
     }
 
     // Check ETH
     for (const chunk of chunkArray(ethAddrs, 20)) {
       try {
         const url = `https://api.etherscan.io/api?module=account&action=balancemulti&address=${chunk.join(',')}&tag=latest`;
-        const res = await axios.get(url);
-        if (res.data.status === '1' && Array.isArray(res.data.result)) {
+        const res = await axios.get(url, { validateStatus: () => true });
+        if (res.status === 200 && res.data && res.data.status === '1' && Array.isArray(res.data.result)) {
           for (const item of res.data.result) {
             if (item.account && item.balance !== undefined) {
-              const bal = Number(item.balance) / 1e18;
-              totals.ETH += bal;
-              wallets.push({ address: item.account, currency: 'ETH', balance: bal });
+              setBal(item.account, Number(item.balance) / 1e18, 'ETH');
             }
           }
         }
-      } catch (e) { console.error("ETH chunk error", e); }
+      } catch (e) { console.error("ETH chunk error", (e as any).message); }
     }
 
     // Check USDT
-    // Etherscan does not support tokenbalance multi natively for array of addresses in standard API
-    // We fetch one by one, but slowly or just promise all
-    for (const chunk of chunkArray(usdtAddrs, 5)) { // Smaller chunk to avoid rate limits when firing one by one
+    for (const chunk of chunkArray(usdtAddrs, 5)) { 
       try {
         await Promise.all(chunk.map(async (addr) => {
           try {
             const url = API_ENDPOINTS.USDT(addr);
-            const res = await axios.get(url);
-            if (res.data.status === '1') {
-              const bal = Number(res.data.result) / 1e6;
-              totals.USDT += bal;
-              wallets.push({ address: addr, currency: 'USDT', balance: bal });
+            const res = await axios.get(url, { validateStatus: () => true });
+            if (res.status === 200 && res.data && res.data.status === '1') {
+              setBal(addr, Number(res.data.result) / 1e6, 'USDT');
             }
           } catch (e) {}
         }));
-      } catch (e) { console.error("USDT chunk error", e); }
+      } catch (e) { console.error("USDT chunk error", (e as any).message); }
     }
 
   } catch (e) {
