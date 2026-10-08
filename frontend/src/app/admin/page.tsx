@@ -11,6 +11,9 @@ import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import { Image as ImageIcon } from "lucide-react";
 import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 import { getRarityColor } from "@/components/admin/ItemManager";
+import PlayersTab from "@/components/admin/PlayersTab";
+import SettingsTab from "@/components/admin/SettingsTab";
+import WithdrawalsTab from "@/components/admin/WithdrawalsTab";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -513,178 +516,92 @@ export default function AdminPage() {
   if (user?.role !== 'admin') return <div className="text-center py-20 text-red-500 font-black">UNAUTHORIZED</div>;
   if (!settings) return <div className="text-center py-20 text-[#7a819c] font-black">LOADING...</div>;
 
+  const SidebarBtn = ({ active, onClick, icon: Icon, label, count }: { active: boolean, onClick: () => void, icon: any, label: string, count?: number }) => (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-[13px] font-black tracking-wide transition-all duration-300 relative overflow-hidden group ${
+        active
+          ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]"
+          : "text-[#6b7391] hover:text-white border border-transparent hover:border-[#2a3044] hover:bg-[#1b202e]/80"
+      }`}
+    >
+      {/* Active Glow Backdrop */}
+      {active && (
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 to-transparent blur-md pointer-events-none" />
+      )}
+      
+      {/* Left Accent Bar for Active State */}
+      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1.5 rounded-r-full transition-all duration-300 ${active ? 'h-3/4 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]' : 'h-0 bg-transparent'}`} />
+      
+      <div className="flex items-center gap-3.5 relative z-10 transition-transform duration-300 group-hover:translate-x-1">
+        <Icon size={18} className={active ? 'drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]' : 'group-hover:text-cyan-400/70 transition-colors'} />
+        {label}
+      </div>
+      {count !== undefined && (
+        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black relative z-10 transition-colors ${active ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-inner' : 'bg-[#0c0e14] text-[#7f86a2] group-hover:bg-[#131620] group-hover:text-white'}`}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-32">
+    <div className="flex h-[calc(100vh-3.5rem)] -mx-4 sm:-mx-0 overflow-hidden bg-[#050608] relative">
       <CustomModal config={modalConfig} setConfig={setModalConfig} />
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6 bg-[#131620] p-5 rounded-2xl border border-[#222738] shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400">
-            <Shield size={28} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-white tracking-tight">Admin Control Room</h1>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                <Database size={12} /> MySQL Active
-              </span>
-            </div>
-            <p className="text-[#7f86a2] font-medium mt-0.5 text-xs">
-              Live MySQL database control: edit player balances, roles, VIP stats, and site configuration.
-            </p>
-          </div>
-        </div>
+      {/* Global Background Accents */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-900/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
 
-        {/* Tab Selector */}
-        <div className="overflow-x-auto pb-2 scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
-          <div className="flex items-center gap-1.5 bg-[#0c0e14] p-1 rounded-2xl border border-[#202535] min-w-max">
-            <button
-            onClick={() => setActiveTab("players")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "players"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Users size={15} />
-            <span>Players ({users.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("cases")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "cases"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <PackageOpen size={15} />
-            <span>Cases ({cases.filter((c: any) => c.type === 'normal').length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("daily_cases")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "daily_cases"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Gift size={15} />
-            <span>Daily Cases ({cases.filter((c: any) => c.type !== 'normal').length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("settings")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "settings"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Settings2 size={15} />
-            <span>Settings</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("games")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "games"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Dice1 size={15} />
-            <span>Games</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("studio")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "studio"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <ImageIcon size={15} />
-            <span>Studio</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("items")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "items"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Database size={15} />
-            <span>Items</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("analytics")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "analytics"
-                ? "bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Activity size={15} />
-            <span>Analytics</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("withdrawals")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "withdrawals"
-                ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <ArrowDownToLine size={15} />
-            <span>Withdrawals</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("bots")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "bots"
-                ? "bg-purple-500 text-black shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Activity size={15} />
-            <span>Bots ({(botState?.bots || []).length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("chat")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "chat"
-                ? "bg-rose-500 text-black shadow-[0_0_15px_rgba(244,63,94,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <MessageSquare size={15} />
-            <span>Chat Logs</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("deposits")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "deposits"
-                ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <ArrowDownToLine size={15} />
-            <span>Deposit Ledger</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("affiliates")}
- className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              activeTab === "affiliates"
-                ? "bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                : "text-[#7f86a2] hover:text-white"
-            }`}
-          >
-            <Users size={15} />
-            <span>Affiliates</span>
-          </button>
+      {/* Modern Glass Sidebar */}
+      <div className="w-[280px] bg-[#0a0c12]/80 backdrop-blur-2xl border-r border-[#1f2433] flex flex-col h-full z-20 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.5)] relative">
+        <div className="p-6 border-b border-[#1f2433]/50 flex flex-col gap-2 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 blur-[40px] pointer-events-none" />
+          <h1 className="text-xl font-black text-white flex items-center gap-2.5 relative z-10 drop-shadow-md">
+            <Shield className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]" size={22} /> System Admin
+          </h1>
+          <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 w-fit relative z-10 shadow-inner">
+            <Database size={12} /> MySQL Active
+          </span>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-5 space-y-2 scrollbar-hide relative z-10">
+          <div className="text-[10px] font-black text-[#4b5166] uppercase tracking-[0.2em] mb-3 px-2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#4b5166]" /> Core Data
+          </div>
+          
+          <SidebarBtn active={activeTab==="players"} onClick={()=>setActiveTab("players")} icon={Users} label="Players" count={users.length} />
+          <SidebarBtn active={activeTab==="analytics"} onClick={()=>setActiveTab("analytics")} icon={Activity} label="Analytics" />
+          <SidebarBtn active={activeTab==="deposits"} onClick={()=>setActiveTab("deposits")} icon={ArrowDownToLine} label="Deposits" />
+          <SidebarBtn active={activeTab==="withdrawals"} onClick={()=>setActiveTab("withdrawals")} icon={ArrowDownToLine} label="Withdrawals" />
+          <SidebarBtn active={activeTab==="affiliates"} onClick={()=>setActiveTab("affiliates")} icon={Users} label="Affiliates" />
+
+          <div className="text-[10px] font-black text-[#4b5166] uppercase tracking-[0.2em] mt-8 mb-3 px-2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#4b5166]" /> Configuration
+          </div>
+          
+          <SidebarBtn active={activeTab==="settings"} onClick={()=>setActiveTab("settings")} icon={Settings2} label="Site Settings" />
+          <SidebarBtn active={activeTab==="games"} onClick={()=>setActiveTab("games")} icon={Dice1} label="Game Config" />
+          <SidebarBtn active={activeTab==="bots"} onClick={()=>setActiveTab("bots")} icon={Activity} label="Bots" count={botState?.bots?.length} />
+          
+          <div className="text-[10px] font-black text-[#4b5166] uppercase tracking-[0.2em] mt-8 mb-3 px-2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#4b5166]" /> Economy
+          </div>
+          <SidebarBtn active={activeTab==="items"} onClick={()=>setActiveTab("items")} icon={Database} label="Items Master" />
+          <SidebarBtn active={activeTab==="cases"} onClick={()=>setActiveTab("cases")} icon={PackageOpen} label="Cases" count={cases.filter((c: any) => c.type === 'normal').length} />
+          <SidebarBtn active={activeTab==="daily_cases"} onClick={()=>setActiveTab("daily_cases")} icon={Gift} label="Daily Cases" count={cases.filter((c: any) => c.type !== 'normal').length} />
+          <SidebarBtn active={activeTab==="studio"} onClick={()=>setActiveTab("studio")} icon={ImageIcon} label="Asset Studio" />
+
+          <div className="text-[10px] font-black text-[#4b5166] uppercase tracking-[0.2em] mt-8 mb-3 px-2 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#4b5166]" /> Logs
+          </div>
+          <SidebarBtn active={activeTab==="chat"} onClick={()=>setActiveTab("chat")} icon={MessageSquare} label="Chat Logs" />
         </div>
       </div>
-      </div>
+
+      {/* Main Content Pane */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-10 relative">
+        <div className="max-w-6xl mx-auto space-y-10 pb-32">
 
       {(error || success) && (
         <div className={`p-4 rounded-xl border font-bold text-xs text-center ${error ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-accent-green/10 border-accent-green/20 text-accent-green'}`}>
@@ -694,566 +611,17 @@ export default function AdminPage() {
 
       {/* TAB 1: PLAYER MANAGEMENT */}
       {activeTab === "players" && (
-        <div className="space-y-6">
-          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-black text-white flex items-center gap-2">
-                  <Users className="text-cyan-400" size={20} /> Registered Players
-                </h2>
-                <p className="text-xs text-[#7f86a2] font-medium mt-0.5">
-                  Direct live MySQL user table records. Change balances, reset passwords, promote roles.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#585e75]" size={14} />
-                  <input
-                    type="text"
-                    placeholder="Search player username..."
-                    value={userSearch}
-                    onChange={(e) => {
-                      setUserSearch(e.target.value);
-                      fetchUsers(e.target.value);
-                    }}
- className="bg-[#0c0e14] border border-[#202535] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-[#585e75] focus:outline-none focus:border-cyan-400 font-semibold"
-                  />
-                </div>
-                <button
-                  onClick={() => fetchUsers(userSearch)}
- className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
-                  title="Refresh Players"
-                >
-                  <RefreshCw size={14} className={usersLoading ? "animate-spin" : ""} />
-                </button>
-                <button
-                  onClick={handleTriggerRain}
- className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white text-xs font-bold shadow-lg hover:shadow-cyan-500/20 transition-all"
-                >
-                  <AlertTriangle size={14} /> Drop Rain
-                </button>
-              </div>
-            </div>
-
-            {/* Players Table */}
-            <div className="overflow-x-auto rounded-2xl border border-[#1f2433]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#0c0e14] border-b border-[#1f2433] text-[#6b7391] uppercase tracking-wider font-black text-[10px]">
-                    <th className="py-3.5 px-4">ID</th>
-                    <th className="py-3.5 px-4">Username</th>
-                    <th className="py-3.5 px-4">Role</th>
-                    <th className="py-3.5 px-4">Balance</th>
-                    <th className="py-3.5 px-4">Level / XP</th>
-                    <th className="py-3.5 px-4">Total Wagered</th>
-                    <th className="py-3.5 px-4">Rakeback</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1b202e]">
-                  {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-[#181c28] transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-[#646b85]">#{u.id}</td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-black text-white text-sm">{u.username}</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>
-                          {u.role}
-                        </span>
-                        {u.isFrozen && (
-                          <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30">
-                            FROZEN
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <DLCurrency amount={u.mockBalance} size="xs" className="text-white" />
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-[#a0a5b8]">
-                        Lvl {u.level} <span className="text-[10px] text-[#646b85]">({u.xp} XP)</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <DLCurrency amount={u.totalWagered} size="xs" className="text-[#a0a5b8]" />
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <DLCurrency amount={u.rakebackBalance} size="xs" className="text-emerald-400" />
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-2">
-                          <button
-                            onClick={() => setEditingUser({
-                              id: u.id,
-                              username: u.username,
-                              role: u.role,
-                              mockBalanceDL: (u.mockBalance / 100).toString(),
-                              level: u.level.toString(),
-                              xp: u.xp.toString(),
-                              rakebackBalanceDL: (u.rakebackBalance / 100).toString(),
-                              totalWageredDL: (u.totalWagered / 100).toString(),
-                              newPassword: ""
-                            })}
- className="px-3 py-1.5 bg-[#1b1f2c] hover:bg-cyan-500/20 hover:border-cyan-500/40 text-cyan-400 border border-[#2a3044] rounded-lg font-bold text-xs transition-all flex items-center gap-1.5"
-                          >
-                            <Edit size={12} /> Edit
-                          </button>
-                          {user?.id !== u.id && (
-                            <>
-                              <button
-                                onClick={() => handleChatBan(u.id, u.username, u.isChatBanned)}
- className={`p-1.5 border rounded-lg transition-colors ${
-                                  u.isChatBanned 
-                                    ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/20' 
-                                    : 'bg-slate-500/10 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-slate-500/20 hover:border-rose-500/20'
-                                }`}
-                                title={u.isChatBanned ? "Unban from Chat" : "Ban from Chat"}
-                              >
-                                <MicOff size={13} />
-                              </button>
-                              <button
-                                onClick={() => handleFreezeUser(u.id, u.username, u.isFrozen)}
- className={`p-1.5 border rounded-lg transition-colors ${
-                                  u.isFrozen 
-                                    ? 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border-orange-500/20' 
-                                    : 'bg-slate-500/10 hover:bg-orange-500/20 text-slate-400 hover:text-orange-400 border-slate-500/20 hover:border-orange-500/20'
-                                }`}
-                                title={u.isFrozen ? "Unfreeze Player" : "Freeze Player"}
-                              >
-                                {u.isFrozen ? <Unlock size={13} /> : <Lock size={13} />}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteUser(u.id, u.username)}
- className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
-                                title="Purge Player"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleAuditUser(u)}
- className="p-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg transition-colors"
-                            title="Audit Player"
-                          >
-                            <Search size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* AUDIT PLAYER MODAL */}
-          {auditUser && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-              <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 w-full max-w-4xl shadow-2xl space-y-6 flex flex-col max-h-[90vh]">
-                <div className="flex items-center justify-between pb-4 border-b border-[#202535]">
-                  <div>
-                    <h3 className="text-xl font-black text-white flex items-center gap-2">
-                      <Search size={18} className="text-purple-400" /> Audit Logs: {auditUser.username}
-                    </h3>
-                    <p className="text-xs text-[#7f86a2] mt-0.5">Last 100 transactions across all games.</p>
-                  </div>
-                  <button
-                    onClick={() => setAuditUser(null)}
- className="text-[#646b85] hover:text-white text-xs font-black uppercase"
-                  >
-                    Close
-                  </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto min-h-[400px]">
-                  {auditTransactions.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-[#646b85] font-black">
-                      No transactions found or loading...
-                    </div>
-                  ) : (
-                    <table className="w-full text-left text-sm">
-                      <thead className="bg-[#0b0e14] sticky top-0 z-10">
-                        <tr>
-                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider rounded-tl-xl">ID</th>
-                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Game</th>
-                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Amount</th>
-                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider">Result</th>
-                          <th className="px-4 py-3 font-black text-[#7a819c] uppercase text-[10px] tracking-wider rounded-tr-xl">Time</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#202535]">
-                        {auditTransactions.map(tx => (
-                          <tr key={tx.id} className="hover:bg-[#1a1f2e]/50 transition-colors">
-                            <td className="px-4 py-3 text-[#7f86a2] font-mono text-xs">#{tx.id}</td>
-                            <td className="px-4 py-3 font-bold text-white capitalize">{tx.gameType}</td>
-                            <td className="px-4 py-3">
-                              <DLCurrency amount={tx.amount} />
-                            </td>
-                            <td className="px-4 py-3 font-mono text-xs text-white">
-                              {tx.result.length > 50 ? tx.result.substring(0, 50) + "..." : tx.result}
-                            </td>
-                            <td className="px-4 py-3 text-[#7f86a2] text-xs">
-                              {new Date(tx.timestamp).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* EDIT PLAYER MODAL / PANEL */}
-          {editingUser && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-              <div className="bg-[#131620] border border-[#262c3f] rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b border-[#202535]">
-                  <div>
-                    <h3 className="text-xl font-black text-white flex items-center gap-2">
-                      <Edit size={18} className="text-cyan-400" /> Edit Player: {editingUser.username}
-                    </h3>
-                    <p className="text-xs text-[#7f86a2] mt-0.5">Modify database attributes and commit to MySQL immediately.</p>
-                  </div>
-                  <button
-                    onClick={() => setEditingUser(null)}
- className="text-[#646b85] hover:text-white text-xs font-black uppercase"
-                  >
-                    Close
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest">Username</label>
-                    <input
-                      type="text"
-                      value={editingUser.username}
-                      onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest">Role</label>
-                    <select
-                      value={editingUser.role}
-                      onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest flex items-center gap-1">
-                      <span>Balance (DL)</span>
-                      <img src="/dl.webp" alt="DL" className="w-3.5 h-3.5 object-contain" />
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={editingUser.mockBalanceDL}
-                      onChange={(e) => setEditingUser({ ...editingUser, mockBalanceDL: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest flex items-center gap-1">
-                      <span>Rakeback (DL)</span>
-                      <img src="/dl.webp" alt="DL" className="w-3.5 h-3.5 object-contain" />
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={editingUser.rakebackBalanceDL}
-                      onChange={(e) => setEditingUser({ ...editingUser, rakebackBalanceDL: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest">Level (Max 100)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={editingUser.level}
-                      onChange={(e) => setEditingUser({ ...editingUser, level: Math.min(100, Math.max(1, parseInt(e.target.value) || 1)).toString() })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest">XP Points</label>
-                    <input
-                      type="number"
-                      value={editingUser.xp}
-                      onChange={(e) => setEditingUser({ ...editingUser, xp: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest">Total Wagered (DL)</label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={editingUser.totalWageredDL}
-                      onChange={(e) => setEditingUser({ ...editingUser, totalWageredDL: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold"
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-1 tracking-widest flex items-center gap-1">
-                      <Key size={11} /> Reset Password (Optional)
-                    </label>
-                    <input
-                      type="password"
-                      placeholder="Leave blank to keep unchanged"
-                      value={editingUser.newPassword}
-                      onChange={(e) => setEditingUser({ ...editingUser, newPassword: e.target.value })}
- className="w-full bg-[#0c0e14] border border-[#202535] rounded-xl px-3.5 py-2.5 text-white font-bold placeholder-[#585e75]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setEditingUser(null)}
- className="flex-1 py-3 bg-[#1b1f2c] border border-[#2a3044] text-white font-bold rounded-xl text-xs hover:bg-[#222838] transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveUser}
-                    disabled={loading}
- className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center justify-center gap-2"
-                  >
-                    <Save size={14} /> Commit Changes
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <PlayersTab user={user} />
       )}
 
       {/* TAB: WITHDRAWALS */}
       {activeTab === "withdrawals" && (
-        <div className="space-y-6">
-          <div className="bg-[#131620] border border-[#222738] rounded-2xl p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-black text-white flex items-center gap-2">
-                  <ArrowDownToLine className="text-emerald-400" size={20} /> Withdrawal Queue
-                </h2>
-                <p className="text-xs text-[#7f86a2] font-medium mt-0.5">
-                  Approve or reject manual withdrawal requests. Balances are already held in escrow.
-                </p>
-              </div>
-              <button
-                onClick={fetchWithdrawals}
- className="p-2.5 bg-[#1b1f2c] border border-[#2a3044] rounded-xl text-[#7f86a2] hover:text-white transition-colors"
-              >
-                <RefreshCw size={14} className={withdrawalsLoading ? "animate-spin" : ""} />
-              </button>
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-[#1f2433]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#0c0e14] border-b border-[#1f2433] text-[#6b7391] uppercase tracking-wider font-black text-[10px]">
-                    <th className="py-3.5 px-4">Date</th>
-                    <th className="py-3.5 px-4">Player</th>
-                    <th className="py-3.5 px-4">Method</th>
-                    <th className="py-3.5 px-4">Address / Info</th>
-                    <th className="py-3.5 px-4">Amount</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1b202e]">
-                  {withdrawals.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-[#7f86a2] font-bold">No withdrawals found.</td>
-                    </tr>
-                  )}
-                  {withdrawals.map((w) => (
-                    <tr key={w.id} className="hover:bg-[#181c28] transition-colors">
-                      <td className="py-3.5 px-4 text-[#7f86a2] font-semibold">{new Date(w.createdAt).toLocaleString()}</td>
-                      <td className="py-3.5 px-4 font-black text-white">{w.user?.username || `User #${w.userId}`}</td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${w.method === 'crypto' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'} border`}>
-                          {w.method}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-[#a0a8c0] font-mono text-[10px]">{w.address}</td>
-                      <td className="py-3.5 px-4">
-                        <DLCurrency amount={w.amount} size="xs" className="text-white" />
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                          w.status === 'pending' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                          w.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                          'bg-red-500/20 text-red-400 border-red-500/30'
-                        } border`}>
-                          {w.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {w.status === 'pending' && (
-                          <div className="inline-flex gap-2">
-                            <button
-                              onClick={() => handleApproveWithdrawal(w.id)}
- className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg transition-colors"
-                              title="Mark Approved"
-                            >
-                              <Check size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleRejectWithdrawal(w.id)}
- className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-colors"
-                              title="Reject & Refund"
-                            >
-                              <XCircle size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <WithdrawalsTab />
       )}
 
       {/* TAB 2: GLOBAL SETTINGS */}
       {activeTab === "settings" && (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        {/* Casino Pot */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl mb-8">
-          <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
-            <Settings2 className="text-amber-400" size={20} /> Casino Pot
-          </h2>
-          <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a] flex items-center justify-between">
-            <div>
-              <div className="font-bold text-white text-2xl">${((settings.casinoPot || 0) / 100).toFixed(2)}</div>
-              <div className="text-xs text-[#7a819c]">Total pot accumulated from game edge and loan interest.</div>
-            </div>
-            <button
-              onClick={handleWithdrawPot}
-              disabled={loading || !settings.casinoPot || settings.casinoPot <= 0}
- className="bg-amber-400 hover:bg-amber-300 text-black font-black px-4 py-2 rounded-xl transition-all disabled:opacity-50"
-            >
-              Withdraw
-            </button>
-          </div>
-        </div>
-
-        {/* Global Configuration */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
-          <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
-            <Settings2 className="text-accent-blue" size={20} /> Global Configuration
-          </h2>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
-              <div>
-                <div className="font-bold text-white">Maintenance Mode</div>
-                <div className="text-xs text-[#7a819c]">Disable access for regular users.</div>
-              </div>
-              <button
-                onClick={() => setSettings({ ...settings, maintenanceMode: !settings.maintenanceMode })}
- className={`w-14 h-7 rounded-full transition-colors relative ${settings.maintenanceMode ? 'bg-red-500' : 'bg-[#2a2d3a]'}`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-transform ${settings.maintenanceMode ? 'left-8' : 'left-1'}`} />
-              </button>
-            </div>
-
-            <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
-              <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-2 tracking-widest">Mock Balance on Register ($)</label>
-              <input
-                type="number"
-                value={settings.mockBalanceOnRegister / 100}
-                onChange={e => setSettings({ ...settings, mockBalanceOnRegister: Math.floor(parseFloat(e.target.value) * 100) })}
- className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
-              />
-            </div>
-
-            <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
-              <label className="block text-[10px] font-black text-[#7a819c] uppercase mb-2 tracking-widest">XP Base (Scaling Rate)</label>
-              <p className="text-xs text-white/50 mb-2">Controls how quickly players level up (default 1000). Lower = faster.</p>
-              <input
-                type="number"
-                value={settings.xpBase ?? 1000}
-                onChange={e => setSettings({ ...settings, xpBase: parseInt(e.target.value) || 1000 })}
- className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2 text-white font-bold focus:outline-none focus:border-accent-blue"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Case Borrowing Configuration */}
-        <div className="bg-[#15181f] border border-[#2a2d3a] rounded-2xl p-5 shadow-xl">
-          <h2 className="text-xl font-black text-white flex items-center gap-2 mb-6">
-            <HandCoins className="text-amber-400" size={20} /> Case Borrowing & Credit Limit
-          </h2>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
-              <div>
-                <div className="font-bold text-white">Enable Borrow System</div>
-                <div className="text-xs text-[#7a819c]">Permit players to spin cases on debt/credit without upfront DLs.</div>
-              </div>
-              <button
-                onClick={() => setSettings({ ...settings, borrowEnabled: !settings.borrowEnabled })}
- className={`w-14 h-7 rounded-full transition-colors relative ${settings.borrowEnabled ? 'bg-accent-green' : 'bg-[#2a2d3a]'}`}
-              >
-                <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-transform ${settings.borrowEnabled ? 'left-8' : 'left-1'}`} />
-              </button>
-            </div>
-
-            <div className="p-4 bg-[#1f222b] rounded-2xl border border-[#2a2d3a]">
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-[10px] font-black text-[#7a819c] uppercase tracking-widest">Global Max Credit Limit Ceiling (DLs)</label>
-                <span className="text-xs font-bold text-amber-400">Default: 1,000 DLs</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  step="10"
-                  value={(settings.maxBorrowLimit ?? 100000) / 100}
-                  onChange={e => {
-                    const val = Math.max(0, parseFloat(e.target.value) || 0);
-                    setSettings({ ...settings, maxBorrowLimit: Math.round(val * 100) });
-                  }}
- className="w-full bg-[#15181f] border border-[#2a2d3a] rounded-xl px-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-400"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-[#7a819c]">DLs</span>
-              </div>
-              <div className="text-[11px] text-[#7a819c] mt-2 space-y-1">
-                <div>Players start with a baseline credit limit of <strong>100 DLs</strong>.</div>
-                <div>Their limit increases as they play: <strong>+10% of total wagered</strong> and <strong>+10 DLs per level</strong>, capped at this global ceiling.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="lg:col-span-2">
-          <button onClick={handleSaveSettings} disabled={loading} className="w-full mt-6 py-4 bg-accent-blue text-white rounded-xl font-black text-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-2">
-            <Save size={20} /> Save Settings
-          </button>
-        </div>
-      </div>
+        <SettingsTab />
       )}
 
       {/* TAB: GAMES */}
@@ -2072,6 +1440,9 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* End Main Content Pane */}
+        </div>
+      </div>
     </div>
   );
 }
