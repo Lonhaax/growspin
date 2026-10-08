@@ -17,6 +17,8 @@ import { ethers } from 'ethers';
 import * as bip32 from 'bip32';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
+import cron from 'node-cron';
+import { syncCryptoInvoices } from './utils/cryptoSync';
 
 const bip32Instance = bip32.BIP32Factory(ecc);
 
@@ -4252,6 +4254,17 @@ app.get('/api/admin/purge-crypto', requireAuth, requireAdmin, async (req: AuthRe
   }
 });
 
+// POST /api/admin/crypto/sync
+app.post('/api/admin/crypto/sync', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    // Start background sync
+    syncCryptoInvoices(io);
+    res.json({ message: "Crypto deposit sync initiated in the background." });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/users/:id/transactions', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const userId = parseInt(String(req.params.id));
@@ -5148,6 +5161,12 @@ io.on('connection', (socket) => {
 setIoInstance(io);
 startChatBot(io);
 startCryptoWatcher();
+
+// Run Crypto Deposit Sync every 5 minutes
+cron.schedule('*/5 * * * *', () => {
+  console.log('[CryptoSync] Checking pending crypto deposits...');
+  syncCryptoInvoices(io);
+});
 
 httpServer.listen(PORT, async () => {
   console.log(`\n✅ Server running on http://0.0.0.0:${PORT}`);

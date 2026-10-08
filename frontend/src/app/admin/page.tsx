@@ -1288,6 +1288,21 @@ export default function AdminPage() {
             <h3 className="text-lg font-black text-white flex items-center gap-2">
               <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
             </h3>
+            <button 
+              onClick={async () => {
+                try {
+                  const res = await apiFetch("/admin/crypto/sync", { method: "POST" });
+                  if (res.ok) {
+                    showSuccess("Sync initiated in the background. Balances will update shortly.");
+                  } else {
+                    showError((await res.json()).error);
+                  }
+                } catch(e: any) { showError(e.message); }
+              }}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg"
+            >
+              Sync Crypto Invoices
+            </button>
           </div>
           
           <div className="overflow-x-auto rounded-xl border border-[#202535] bg-[#0c0e14]">
