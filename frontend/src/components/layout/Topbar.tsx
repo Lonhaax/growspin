@@ -98,6 +98,17 @@ export function Topbar() {
               <Bell size={18} />
             </button>
 
+            {/* Volume Toggle */}
+            <button 
+              onClick={() => {
+                const muted = SoundManager.toggleMute();
+                setIsMuted(muted);
+              }}
+              className="text-[#626983] hover:text-white transition-colors hidden sm:block"
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+
             {/* Profile Dropdown */}
             <div className="relative">
               <button

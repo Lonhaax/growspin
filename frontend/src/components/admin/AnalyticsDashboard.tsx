@@ -8,6 +8,17 @@ import {
   PackageOpen, Swords, RefreshCw, Crown, Gamepad2, Zap,
   Database, ArrowDownToLine, HandCoins
 } from "lucide-react";
+import {
+  AreaChart as RechartsAreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart as RechartsBarChart,
+  Bar
+} from "recharts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,51 +64,47 @@ function shortDate(iso: string) {
 // ─── SVG Area Chart ──────────────────────────────────────────────────────────
 
 function AreaChart({ data, color, label }: { data: number[]; color: string; label: string }) {
-  const W = 400, H = 80, PAD = 4;
-  const max = Math.max(...data, 1);
-  const pts = data.map((v, i) => {
-    const x = PAD + (i / Math.max(data.length - 1, 1)) * (W - 2 * PAD);
-    const y = H - PAD - ((v / max) * (H - 2 * PAD));
-    return `${x},${y}`;
-  });
-  const polyline = pts.join(' ');
-  const last = pts[pts.length - 1];
-  const first = pts[0];
-  const area = `${first.split(',')[0]},${H} ${polyline} ${last.split(',')[0]},${H}`;
-
+  const chartData = data.map((v, i) => ({ index: i, value: v }));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-16" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={`grad-${label}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={area} fill={`url(#grad-${label})`} />
-      <polyline points={polyline} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
+    <div className="w-full h-24">
+      <ResponsiveContainer width="100%" height="100%">
+        <RechartsAreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={`color-${label}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Tooltip
+            contentStyle={{ backgroundColor: "#1b202e", borderColor: "#2a2d3a", borderRadius: "8px", fontSize: "12px", fontWeight: "bold" }}
+            itemStyle={{ color: "#fff" }}
+            formatter={(value: number) => [`${(value / 100).toFixed(2)} DL`, label]}
+            labelFormatter={() => ""}
+          />
+          <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fillOpacity={1} fill={`url(#color-${label})`} />
+        </RechartsAreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
 // ─── SVG Bar Chart ───────────────────────────────────────────────────────────
 
 function BarChart({ data, labels, color }: { data: number[]; labels: string[]; color: string }) {
-  const W = 400, H = 80, PAD = 4;
-  const max = Math.max(...data, 1);
-  const barW = (W - 2 * PAD) / data.length - 3;
-
+  const chartData = data.map((v, i) => ({ label: labels[i] || "", value: v }));
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-16" preserveAspectRatio="none">
-      {data.map((v, i) => {
-        const x = PAD + i * ((W - 2 * PAD) / data.length) + 1.5;
-        const barH = ((v / max) * (H - 2 * PAD));
-        const y = H - PAD - barH;
-        return (
-          <rect key={i} x={x} y={y} width={barW} height={barH || 1}
-            fill={color} opacity={v > 0 ? 0.8 : 0.15} rx="2" />
-        );
-      })}
-    </svg>
+    <div className="w-full h-24">
+      <ResponsiveContainer width="100%" height="100%">
+        <RechartsBarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <Tooltip
+            contentStyle={{ backgroundColor: "#1b202e", borderColor: "#2a2d3a", borderRadius: "8px", fontSize: "12px", fontWeight: "bold" }}
+            itemStyle={{ color: "#fff" }}
+            cursor={{ fill: "rgba(255,255,255,0.05)" }}
+          />
+          <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+        </RechartsBarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 

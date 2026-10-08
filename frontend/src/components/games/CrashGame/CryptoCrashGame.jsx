@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import io from 'socket.io-client';
 import { useWallet } from '@/context/WalletContext';
 import { apiFetch } from '@/lib/auth';
+import { SoundManager } from '@/lib/audio';
 import './CryptoCrash.css';
 
 export default function CryptoCrashGame() {
@@ -70,6 +71,7 @@ export default function CryptoCrashGame() {
             setMultiplier(data.crashPoint);
             setHistory(data.history || []);
             setPlayers(data.players || []);
+            SoundManager.playPop();
             refreshUser();
         });
 
@@ -122,29 +124,39 @@ export default function CryptoCrashGame() {
             ctx.setLineDash([]);
 
             if (gameState === 'running' || gameState === 'crashed') {
-                // Draw curve
+                const maxM = Math.max(multiplier, 1.5);
+                const endX = canvas.width;
+                const endY = canvas.height - ((multiplier - 1) / (maxM - 1)) * (canvas.height * 0.85);
+                const cpX = canvas.width * 0.65;
+                const cpY = canvas.height;
+
+                // Gradient fill under the curve
                 ctx.beginPath();
                 ctx.moveTo(0, canvas.height);
+                ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
                 
-                // Simple exponential curve
-                const points = 50;
-                for(let i=0; i<=points; i++) {
-                    const pct = i/points;
-                    const x = pct * canvas.width;
-                    // The curve goes up exponentially. 
-                    // multiplier is current max
-                    const maxM = Math.max(multiplier, 2);
-                    const currentPointM = 1 + (multiplier - 1) * Math.pow(pct, 2);
-                    
-                    const normalizedY = (currentPointM - 1) / (maxM - 1);
-                    const y = canvas.height - (normalizedY * (canvas.height * 0.8));
-                    
-                    ctx.lineTo(x, y);
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                if (gameState === 'crashed') {
+                    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
+                    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
                 }
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Draw the actual smooth stroke line
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+                ctx.quadraticCurveTo(cpX, cpY, endX, endY);
                 
-                ctx.strokeStyle = gameState === 'crashed' ? '#ef4444' : '#7485b7';
+                ctx.strokeStyle = gameState === 'crashed' ? '#ef4444' : '#3b82f6';
                 ctx.lineWidth = 4;
-                ctx.shadowColor = gameState === 'crashed' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(116, 133, 183, 0.4)';
+                ctx.shadowColor = gameState === 'crashed' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)';
                 ctx.shadowBlur = 15;
                 ctx.shadowOffsetY = 4;
                 ctx.stroke();
@@ -170,6 +182,7 @@ export default function CryptoCrashGame() {
             const data = await res.json();
             if(data.error) throw new Error(data.error);
             setBetPlaced(true);
+            SoundManager.playCoinDrop();
             refreshUser();
         } catch(e) {
             alert(e.message);
@@ -184,6 +197,7 @@ export default function CryptoCrashGame() {
             const data = await res.json();
             if(data.error) throw new Error(data.error);
             setHasCashedOut(true);
+            SoundManager.playWinChime();
             refreshUser();
         } catch(e) {
             alert(e.message);
