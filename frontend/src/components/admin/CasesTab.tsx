@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Gift, PackageOpen, Search, Save } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 import { getRarityColor } from "@/components/admin/ItemManager";
-import { useCustomModal } from "@/components/ui/CustomModal";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function CasesTab({ cases, fetchSettings, adminItems }: { cases: any[], fetchSettings: () => void, adminItems: any[] }) {
-  const { showSuccess, showError, showConfirm } = useCustomModal();
+  const { modalConfig, setModalConfig, showSuccess, showError, showConfirm } = useCustomModal();
   const [editingCase, setEditingCase] = useState<any>(null);
   const [isCreatingCase, setIsCreatingCase] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +63,9 @@ export default function CasesTab({ cases, fetchSettings, adminItems }: { cases: 
   };
 
   return (
-    <div className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+    <div className="space-y-6">
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
+      <div className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
       <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/5 blur-[100px] pointer-events-none group-hover:bg-fuchsia-500/10 transition-colors" />
       
       <div className="flex items-center justify-between mb-8 relative z-10">
@@ -127,6 +129,7 @@ export default function CasesTab({ cases, fetchSettings, adminItems }: { cases: 
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }

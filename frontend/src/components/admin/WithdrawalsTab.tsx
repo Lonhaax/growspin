@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { ArrowDownToLine, RefreshCw, Check, XCircle } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 import { DLCurrency } from "@/components/ui/DLCurrency";
-import { useCustomModal } from "@/components/ui/CustomModal";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function WithdrawalsTab() {
-  const { showSuccess, showError, showConfirm } = useCustomModal();
+  const { modalConfig, setModalConfig, showSuccess, showError, showConfirm } = useCustomModal();
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -59,6 +59,7 @@ export default function WithdrawalsTab() {
 
   return (
     <div className="space-y-6">
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
       <div className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 right-1/4 w-1/3 h-32 bg-emerald-500/5 blur-[100px] pointer-events-none group-hover:bg-emerald-500/10 transition-colors" />
         

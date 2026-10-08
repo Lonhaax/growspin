@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { Users, Search, RefreshCw, AlertTriangle, Edit, MicOff, Lock, Unlock, Trash2, Save, Key } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 import { DLCurrency } from "@/components/ui/DLCurrency";
-import { useCustomModal } from "@/components/ui/CustomModal";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function PlayersTab({ user }: { user: any }) {
-  const { showSuccess, showError, showConfirm } = useCustomModal();
+  const { modalConfig, setModalConfig, showSuccess, showError, showConfirm } = useCustomModal();
   
   const [users, setUsers] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
@@ -152,6 +152,7 @@ export default function PlayersTab({ user }: { user: any }) {
 
   return (
     <div className="space-y-6">
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
       <div className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-5 shadow-2xl relative overflow-hidden">
         {/* Glow accent */}
         <div className="absolute top-0 left-1/4 w-1/2 h-32 bg-cyan-500/5 blur-[100px] pointer-events-none" />

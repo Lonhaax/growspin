@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Settings2, HandCoins, Save } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
-import { useCustomModal } from "@/components/ui/CustomModal";
+import { useCustomModal, CustomModal } from "@/components/ui/CustomModal";
 
 export default function SettingsTab() {
-  const { showSuccess, showError } = useCustomModal();
+  const { modalConfig, setModalConfig, showSuccess, showError, showConfirm } = useCustomModal();
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -66,7 +66,7 @@ export default function SettingsTab() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
+      <CustomModal config={modalConfig} setConfig={setModalConfig} />
       {/* Casino Pot */}
       <div className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-[80px] pointer-events-none group-hover:bg-amber-500/10 transition-colors" />
