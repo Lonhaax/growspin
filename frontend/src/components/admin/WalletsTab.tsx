@@ -3,7 +3,7 @@ import { Database, Wallet, Copy, CheckCircle2, RefreshCw } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 
 export default function WalletsTab() {
-  const [totals, setTotals] = useState({ BTC: 0, LTC: 0, ETH: 0 });
+  const [totals, setTotals] = useState({ BTC: 0, LTC: 0, ETH: 0, USDT: 0 });
   const [wallets, setWallets] = useState<{address: string, currency: string, balance: number}[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState("");
@@ -48,13 +48,13 @@ export default function WalletsTab() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {['BTC', 'LTC', 'ETH'].map(coin => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {['BTC', 'LTC', 'ETH', 'USDT'].map(coin => (
           <div key={coin} className="bg-[#131620]/80 backdrop-blur-xl border border-[#222738] rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] pointer-events-none transition-colors ${coin === 'BTC' ? 'bg-orange-500/10' : coin === 'ETH' ? 'bg-blue-500/10' : 'bg-slate-400/10'}`} />
+            <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] pointer-events-none transition-colors ${coin === 'BTC' ? 'bg-orange-500/10' : coin === 'ETH' ? 'bg-blue-500/10' : coin === 'USDT' ? 'bg-emerald-500/10' : 'bg-slate-400/10'}`} />
             <p className="text-[#7a819c] font-black uppercase tracking-wider text-xs mb-2">Total {coin}</p>
             <p className="text-3xl font-black text-white font-mono">
-              {(totals as any)[coin].toFixed(coin === 'ETH' ? 6 : 8)}
+              {(totals as any)[coin]?.toFixed(coin === 'ETH' || coin === 'USDT' ? 6 : 8) || "0.00"}
             </p>
           </div>
         ))}

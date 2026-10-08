@@ -10,6 +10,7 @@ const API_ENDPOINTS = {
   BTC: (addr: string) => `https://api.blockcypher.com/v1/btc/main/addrs/${addr}/balance`,
   LTC: (addr: string) => `https://api.blockcypher.com/v1/ltc/main/addrs/${addr}/balance`,
   ETH: (addr: string) => `https://api.etherscan.io/api?module=account&action=balance&address=${addr}&tag=latest`,
+  USDT: (addr: string) => `https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&address=${addr}&tag=latest`
 };
 
 export async function syncCryptoInvoices(io: Server) {
@@ -36,6 +37,14 @@ export async function syncCryptoInvoices(io: Server) {
           // Etherscan returns wei
           if (res.data.status === '1') {
             const balanceCrypto = Number(res.data.result) / 1e18;
+            if (balanceCrypto >= invoice.payAmount) hasPaidEnough = true;
+          }
+        } else if (invoice.payCurrency === 'USDT') {
+          const url = API_ENDPOINTS.USDT(invoice.address);
+          const res = await axios.get(url);
+          // USDT has 6 decimals
+          if (res.data.status === '1') {
+            const balanceCrypto = Number(res.data.result) / 1e6;
             if (balanceCrypto >= invoice.payAmount) hasPaidEnough = true;
           }
         }
@@ -76,7 +85,7 @@ function chunkArray(arr: any[], size: number) {
 }
 
 export async function checkAllBalances() {
-  const totals = { BTC: 0, LTC: 0, ETH: 0 };
+  const totals = { BTC: 0, LTC: 0, ETH: 0, USDT: 0 };
   const wallets: { address: string, currency: string, balance: number }[] = [];
   try {
     // Only get unique addresses
@@ -88,6 +97,7 @@ export async function checkAllBalances() {
     const btcAddrs = invoices.filter(i => i.payCurrency === 'BTC').map(i => i.address!);
     const ltcAddrs = invoices.filter(i => i.payCurrency === 'LTC').map(i => i.address!);
     const ethAddrs = invoices.filter(i => i.payCurrency === 'ETH').map(i => i.address!);
+    const usdtAddrs = invoices.filter(i => i.payCurrency === 'USDT').map(i => i.address!);
 
     // Check BTC
     for (const chunk of chunkArray(btcAddrs, 50)) {
@@ -136,6 +146,25 @@ export async function checkAllBalances() {
           }
         }
       } catch (e) { console.error("ETH chunk error", e); }
+    }
+
+    // Check USDT
+    // Etherscan does not support tokenbalance multi natively for array of addresses in standard API
+    // We fetch one by one, but slowly or just promise all
+    for (const chunk of chunkArray(usdtAddrs, 5)) { // Smaller chunk to avoid rate limits when firing one by one
+      try {
+        await Promise.all(chunk.map(async (addr) => {
+          try {
+            const url = API_ENDPOINTS.USDT(addr);
+            const res = await axios.get(url);
+            if (res.data.status === '1') {
+              const bal = Number(res.data.result) / 1e6;
+              totals.USDT += bal;
+              wallets.push({ address: addr, currency: 'USDT', balance: bal });
+            }
+          } catch (e) {}
+        }));
+      } catch (e) { console.error("USDT chunk error", e); }
     }
 
   } catch (e) {
