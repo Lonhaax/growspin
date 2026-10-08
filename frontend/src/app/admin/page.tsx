@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/auth";
-import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare, MicOff, Gift } from "lucide-react";
+import { Settings, Shield, Edit, Plus, Save, PackageOpen, Dice1, Settings2, Hash, AlertTriangle, Users, Trash2, Key, Database, RefreshCw, Search, Check, HandCoins, Activity, Lock, Unlock, ArrowDownToLine, XCircle, MessageSquare, MicOff, Gift, Wallet } from "lucide-react";
 import { DLCurrency } from "@/components/ui/DLCurrency";
 import AdvancedCaseCreator from "@/components/admin/AdvancedCaseCreator";
 import ItemManager from "@/components/admin/ItemManager";
@@ -14,11 +14,12 @@ import { getRarityColor } from "@/components/admin/ItemManager";
 import PlayersTab from "@/components/admin/PlayersTab";
 import SettingsTab from "@/components/admin/SettingsTab";
 import WithdrawalsTab from "@/components/admin/WithdrawalsTab";
+import WalletsTab from "@/components/admin/WalletsTab";
 
 export default function AdminPage() {
   const { user } = useAuth();
   const { modalConfig, setModalConfig, showAlert, showSuccess, showError, showConfirm, showPrompt } = useCustomModal();
-  const [activeTab, setActiveTab] = useState<"players" | "cases" | "daily_cases" | "settings" | "games" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "cases" | "daily_cases" | "settings" | "games" | "studio" | "items" | "analytics" | "withdrawals" | "bots" | "chat" | "deposits" | "affiliates" | "wallets">("players");
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -577,6 +578,7 @@ export default function AdminPage() {
           <SidebarBtn active={activeTab==="analytics"} onClick={()=>setActiveTab("analytics")} icon={Activity} label="Analytics" />
           <SidebarBtn active={activeTab==="deposits"} onClick={()=>setActiveTab("deposits")} icon={ArrowDownToLine} label="Deposits" />
           <SidebarBtn active={activeTab==="withdrawals"} onClick={()=>setActiveTab("withdrawals")} icon={ArrowDownToLine} label="Withdrawals" />
+          <SidebarBtn active={activeTab==="wallets"} onClick={()=>setActiveTab("wallets")} icon={Wallet} label="Wallets" />
           <SidebarBtn active={activeTab==="affiliates"} onClick={()=>setActiveTab("affiliates")} icon={Users} label="Affiliates" />
 
           <div className="text-[10px] font-black text-[#4b5166] uppercase tracking-[0.2em] mt-8 mb-3 px-2 flex items-center gap-2">
@@ -1287,26 +1289,10 @@ export default function AdminPage() {
             </table>
           </div>
 
-          <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-black text-white flex items-center gap-2 mb-2">
-                <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
-              </h3>
-              <div className="flex gap-4">
-                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
-                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total BTC</p>
-                  <p className="text-white font-mono font-bold">{cryptoTotals.BTC.toFixed(8)}</p>
-                </div>
-                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
-                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total LTC</p>
-                  <p className="text-white font-mono font-bold">{cryptoTotals.LTC.toFixed(8)}</p>
-                </div>
-                <div className="bg-[#151923] px-4 py-2 rounded-lg border border-[#202535]">
-                  <p className="text-[10px] text-[#7a819c] font-black uppercase">Total ETH</p>
-                  <p className="text-white font-mono font-bold">{cryptoTotals.ETH.toFixed(6)}</p>
-                </div>
-              </div>
-            </div>
+          <div className="mt-8 flex items-center justify-between">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <Database className="text-cyan-500" size={18} /> Crypto Deposits (HD Wallet)
+            </h3>
             <button 
               onClick={async () => {
                 try {
@@ -1383,6 +1369,8 @@ export default function AdminPage() {
       )}
 
       {/* TAB: AFFILIATES */}
+      {activeTab === "wallets" && <WalletsTab />}
+
       {activeTab === "affiliates" && (
         <div className="space-y-6">
           <div className="bg-[#131620] border border-[#222738] rounded-2xl shadow-xl overflow-hidden">

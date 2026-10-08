@@ -77,9 +77,12 @@ function chunkArray(arr: any[], size: number) {
 
 export async function checkAllBalances() {
   const totals = { BTC: 0, LTC: 0, ETH: 0 };
+  const wallets: { address: string, currency: string, balance: number }[] = [];
   try {
+    // Only get unique addresses
     const invoices = await prisma.cryptoInvoice.findMany({
-      where: { address: { not: null } }
+      where: { address: { not: null } },
+      distinct: ['address']
     });
 
     const btcAddrs = invoices.filter(i => i.payCurrency === 'BTC').map(i => i.address!);
@@ -91,10 +94,13 @@ export async function checkAllBalances() {
       try {
         const url = `https://api.blockcypher.com/v1/btc/main/addrs/${chunk.join(',')}/balance`;
         const res = await axios.get(url);
-        // If single address, it returns an object. If multiple, it returns an array of objects.
         const data = Array.isArray(res.data) ? res.data : [res.data];
         for (const item of data) {
-          if (item.balance) totals.BTC += item.balance / 100000000;
+          if (item.address && item.balance !== undefined) {
+            const bal = item.balance / 100000000;
+            totals.BTC += bal;
+            wallets.push({ address: item.address, currency: 'BTC', balance: bal });
+          }
         }
       } catch (e) { console.error("BTC chunk error", e); }
     }
@@ -106,7 +112,11 @@ export async function checkAllBalances() {
         const res = await axios.get(url);
         const data = Array.isArray(res.data) ? res.data : [res.data];
         for (const item of data) {
-          if (item.balance) totals.LTC += item.balance / 100000000;
+          if (item.address && item.balance !== undefined) {
+            const bal = item.balance / 100000000;
+            totals.LTC += bal;
+            wallets.push({ address: item.address, currency: 'LTC', balance: bal });
+          }
         }
       } catch (e) { console.error("LTC chunk error", e); }
     }
@@ -118,7 +128,11 @@ export async function checkAllBalances() {
         const res = await axios.get(url);
         if (res.data.status === '1' && Array.isArray(res.data.result)) {
           for (const item of res.data.result) {
-            if (item.balance) totals.ETH += Number(item.balance) / 1e18;
+            if (item.account && item.balance !== undefined) {
+              const bal = Number(item.balance) / 1e18;
+              totals.ETH += bal;
+              wallets.push({ address: item.account, currency: 'ETH', balance: bal });
+            }
           }
         }
       } catch (e) { console.error("ETH chunk error", e); }
@@ -127,6 +141,6 @@ export async function checkAllBalances() {
   } catch (e) {
     console.error("Error checking all balances:", e);
   }
-  return totals;
+  return { totals, wallets };
 }
 
